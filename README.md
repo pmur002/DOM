@@ -4,5 +4,7 @@
 
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/pmur002/DOM?branch=master&svg=true)](https://ci.appveyor.com/project/pmur002/DOM)
 
+[![Coverage Status](https://codecov.io/github/hadley/devtools/coverage.svg?branch=master)](https://codecov.io/github/hadley/devtools?branch=master)
+
 Drive web browser content from R
 
