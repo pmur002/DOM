@@ -1,4 +1,7 @@
 
+importFrom("utils",
+           "browseURL")
+
 importFrom("httpuv",
            "startDaemonizedServer",
            "stopDaemonizedServer")
