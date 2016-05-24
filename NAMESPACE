@@ -1,0 +1,23 @@
+
+importFrom("httpuv",
+           "startDaemonizedServer",
+           "stopDaemonizedServer")
+
+importFrom("jsonlite",
+           "fromJSON",
+           "toJSON")
+                     
+export(
+    ## Start/stop servers
+    "appServer",
+    "fileServer",
+    "urlServer",
+    "stopServer",
+
+    ## Get/set server info (for Apps to use)
+    "registerServerSocket",
+    "serverInfo",
+
+    ## Manipulate DOM
+    "appendChild",
+    "removeChild")
