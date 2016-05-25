@@ -17,14 +17,10 @@ build_script:
 
 test_script:
   - travis-tool.sh run_tests
-  - travis-tool.sh github_package jimhester/covr
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*
   - appveyor PushArtifact failure.zip
-
-on_success:
-  - Rscript -e 'covr::codecov()'
 
 artifacts:
   - path: '*.Rcheck\**\*.log'
