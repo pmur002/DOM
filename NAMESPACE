@@ -12,10 +12,10 @@ importFrom("jsonlite",
                      
 export(
     ## Start/stop pages
-    "appPage",
+    "htmlPage",
     "filePage",
     "urlPage",
-    "stopPage",
+    "closePage",
 
     ## Get/set page info (for Apps to use)
     "registerPageSocket",

@@ -13,7 +13,7 @@ pageFunctionGenerator <- function() {
         if (id <= length(pages) && !is.null(pages[[id]])) {
             stop(paste0("Page ", id, " handle already registered"))
         }
-        servers[[id]] <<- list(handle=handle)
+        pages[[id]] <<- list(handle=handle)
     }
     registerPort <- function(id, port) {
         if (!is.null(pages[[id]]$port)) {
@@ -65,7 +65,7 @@ selectPort <- function() {
 }
 
 # If 'port' is NULL, randomly select a port
-openPage <- function(pageID, app, port=NULL) {
+openPage <- function(pageID, port=NULL, body="") {
     # Fail immediately if port is specified and is already in use by
     # an existing page
     if (!is.null(port) && portInUse(port)) {
@@ -83,7 +83,7 @@ openPage <- function(pageID, app, port=NULL) {
             port <- selectPort()
         }
         result <- try(startDaemonizedServer("0.0.0.0", port,
-                                            app(pageID, port)),
+                                            nullApp(pageID, port, body)),
                       silent=TRUE)
         attempts <- attempts + 1
         if (!inherits(result, "try-error")) {
@@ -104,13 +104,13 @@ closePage <- function(pageID) {
     unregisterPage(pageID)
 }
 
-# Browse http://localhost:port/, with 'app' (i.e., R) supplying the
-# initial web page content
-# (some example apps are distributed with the package)
+# Browse http://localhost:port/, with 'html' (character vector)
+# supplying the <body> of the initial web page content
+# (default is a blank page)
 # PLUS open web socket between R and browser
-appPage <- function(app) {
+htmlPage <- function(html="") {
     pageID <- getPageID()
-    openPage(pageID, app)
+    openPage(pageID, body=html)
     browseURL(paste0("http://localhost:", pageInfo(pageID)$port, "/"))
     pageID
 }
@@ -125,7 +125,7 @@ filePage <- function(file) {
     if (!grepl("^file://", file)) {
         file <- paste0("file://", file)
     }
-    openPage(pageID, nullApp, 52000)
+    openPage(pageID, 52000)
     browseURL(file)
     pageID
 }
@@ -139,7 +139,7 @@ urlPage <- function(url) {
     if (!grepl("^http://", url)) {
         url <- paste0("http://", url)
     }
-    openPage(pageID, nullApp, 52000)
+    openPage(pageID, 52000)
     browseURL(url)
     pageID
 }
