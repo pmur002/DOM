@@ -10,15 +10,15 @@
 # it to be HTML code OR a CSS selector.
 
 # 'node' should be a character value describing a valid HTML element
-appendChild <- function(serverID, node, parent="body", css=TRUE) {
+appendChild <- function(pageID, node, parent="body", css=TRUE) {
     msg <- list(fun="appendChild", node=node, parent=parent, css=css)
     msgJSON <- toJSON(msg)
-    serverInfo(serverID)$socket$send(msgJSON)
+    pageInfo(pageID)$socket$send(msgJSON)
 }
 
-removeChild <- function(serverID, child, css=TRUE) {
+removeChild <- function(pageID, child, css=TRUE) {
     msg <- list(fun="removeChild", child=child, css=css)
     msgJSON <- toJSON(msg)
-    serverInfo(serverID)$socket$send(msgJSON)
+    pageInfo(pageID)$socket$send(msgJSON)
 }
 

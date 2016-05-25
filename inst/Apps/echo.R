@@ -1,10 +1,10 @@
 
 # NOTE that this is a FUNCTION that generates an app
-# (so that the app is contains closures that know which server they belong to)
+# (so that the app is contains closures that know which page they belong to)
 
 # App for testing; bounces user input from web page to R and back
 # (taken from 'httpuv' demo)
-echoApp <- function(serverID, port) {
+echoApp <- function(pageID, port) {
     list(
         call = function(req) {
             wsUrl = paste(sep='',

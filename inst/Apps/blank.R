@@ -1,10 +1,10 @@
 
 # NOTE that this is a FUNCTION that generates an app
-# (so that the app is contains closures that know which server they belong to)
+# (so that the app is contains closures that know which page they belong to)
 
 # App that creates blank web page
 # with javascript code to respond to DOM requests
-blankApp <- function(serverID, port) {
+blankApp <- function(pageID, port) {
     file <- system.file("JS", "DOM.js", package="DOM")
     html <- paste(
         '<html>',
@@ -30,7 +30,7 @@ blankApp <- function(serverID, port) {
                  body = html)
         },
         onWSOpen = function(ws) {
-            registerServerSocket(serverID, ws)
+            registerPageSocket(pageID, ws)
         }
     )
 }

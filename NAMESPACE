@@ -11,15 +11,15 @@ importFrom("jsonlite",
            "toJSON")
                      
 export(
-    ## Start/stop servers
-    "appServer",
-    "fileServer",
-    "urlServer",
-    "stopServer",
+    ## Start/stop pages
+    "appPage",
+    "filePage",
+    "urlPage",
+    "stopPage",
 
-    ## Get/set server info (for Apps to use)
-    "registerServerSocket",
-    "serverInfo",
+    ## Get/set page info (for Apps to use)
+    "registerPageSocket",
+    "pageInfo",
 
     ## Manipulate DOM
     "appendChild",

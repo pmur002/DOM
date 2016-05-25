@@ -1,11 +1,11 @@
 
 # NOTE that this is a FUNCTION that generates an app
-# (so that the app is contains closures that know which server they belong to)
+# (so that the app is contains closures that know which page they belong to)
 
 # App that returns empty-string body
 # This is NOT designed to serve HTTP requests
 # It is ONLY for establishing web socket connection with browser
-nullApp <- function(serverID, port) {
+nullApp <- function(pageID, port) {
     list(
         call = function(req) {
             list(status = 200L,
@@ -15,7 +15,7 @@ nullApp <- function(serverID, port) {
                  body = "")
         },
         onWSOpen = function(ws) {
-            registerServerSocket(serverID, ws)
+            registerPageSocket(pageID, ws)
         }
     )
 }

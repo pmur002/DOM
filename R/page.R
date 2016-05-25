@@ -1,43 +1,43 @@
 
-serverFunctionGenerator <- function() {
-    # Server IDs
+pageFunctionGenerator <- function() {
+    # Page IDs
     id <- 0
     getID <- function() {
         id <<- id + 1
         id
     }
 
-    # Server info
-    servers <- list()
+    # Page info
+    pages <- list()
     registerHandle <- function(id, handle) {
-        if (id <= length(servers) && !is.null(servers[[id]])) {
-            stop(paste0("Server ", id, " handle already registered"))
+        if (id <= length(pages) && !is.null(pages[[id]])) {
+            stop(paste0("Page ", id, " handle already registered"))
         }
         servers[[id]] <<- list(handle=handle)
     }
     registerPort <- function(id, port) {
-        if (!is.null(servers[[id]]$port)) {
-            stop(paste0("Server ", id, " port already registered"))
+        if (!is.null(pages[[id]]$port)) {
+            stop(paste0("Page ", id, " port already registered"))
         }
-        servers[[id]]$port <<- port
+        pages[[id]]$port <<- port
     }
     registerSocket <- function(id, socket) {
-        if (!is.null(servers[[id]]$socket)) {
-            stop(paste0("Server ", id, " socket already registered"))
+        if (!is.null(pages[[id]]$socket)) {
+            stop(paste0("Page ", id, " socket already registered"))
         }
-        servers[[id]]$socket <<- socket
+        pages[[id]]$socket <<- socket
     }
     unregister <- function(id) {
-        servers[[id]] <<- NULL
+        pages[[id]] <<- NULL
     }
     info <- function(id) {
-        if (id > length(servers) || is.null(servers[[id]])) {
-            stop(paste0("Server ", id, " not registered"))
+        if (id > length(pages) || is.null(pages[[id]])) {
+            stop(paste0("Page ", id, " not registered"))
         }
-        servers[[id]]
+        pages[[id]]
     }
     inUse <- function(port) {
-        port %in% sapply(servers, function(x) x$port)
+        port %in% sapply(pages, function(x) x$port)
     }        
     
     list(getID=getID,
@@ -48,15 +48,15 @@ serverFunctionGenerator <- function() {
          info=info,
          inUse=inUse)
 }
-serverFunctions <- serverFunctionGenerator()
+pageFunctions <- pageFunctionGenerator()
 
-getServerID <- serverFunctions$getID
-registerServerHandle <- serverFunctions$registerHandle
-registerServerPort <- serverFunctions$registerPort
-registerServerSocket <- serverFunctions$registerSocket
-unregisterServer <- serverFunctions$unregister
-serverInfo <- serverFunctions$info
-portInUse <- serverFunctions$inUse
+getPageID <- pageFunctions$getID
+registerPageHandle <- pageFunctions$registerHandle
+registerPagePort <- pageFunctions$registerPort
+registerPageSocket <- pageFunctions$registerSocket
+unregisterPage <- pageFunctions$unregister
+pageInfo <- pageFunctions$info
+portInUse <- pageFunctions$inUse
 
 # http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml
 # "Dynamic and/or Private Ports (49152-65535)"
@@ -65,81 +65,81 @@ selectPort <- function() {
 }
 
 # If 'port' is NULL, randomly select a port
-startServer <- function(serverID, app, port=NULL) {
+openPage <- function(pageID, app, port=NULL) {
     # Fail immediately if port is specified and is already in use by
-    # an existing server
+    # an existing page
     if (!is.null(port) && portInUse(port)) {
         msg <- paste0("port ", port, " already in use")
         if (port == 52000) {
-            msg <- paste0(msg, "; stop existing fileServer/urlServer.")
+            msg <- paste0(msg, "; stop existing filePage/urlPage.")
         }
         stop(msg)
     }
-    serverStarted <- FALSE
+    pageStarted <- FALSE
     attempts <- 0
     handle <- NULL
-    while (!serverStarted && attempts < 10) {
+    while (!pageStarted && attempts < 10) {
         while (is.null(port) || portInUse(port)) {
             port <- selectPort()
         }
         result <- try(startDaemonizedServer("0.0.0.0", port,
-                                            app(serverID, port)),
+                                            app(pageID, port)),
                       silent=TRUE)
         attempts <- attempts + 1
         if (!inherits(result, "try-error")) {
-            serverStarted <- TRUE
+            pageStarted <- TRUE
             handle <- result
         }
     }
     if (is.null(handle)) {
-        stop("Failed to start server")
+        stop("Failed to start page")
     }
-    registerServerHandle(serverID, handle)
-    registerServerPort(serverID, port)
+    registerPageHandle(pageID, handle)
+    registerPagePort(pageID, port)
     invisible()
 }
 
-stopServer <- function(serverID) {
-    stopDaemonizedServer(serverInfo(serverID)$handle)
-    unregisterServer(serverID)
+closePage <- function(pageID) {
+    stopDaemonizedServer(pageInfo(pageID)$handle)
+    unregisterPage(pageID)
 }
 
 # Browse http://localhost:port/, with 'app' (i.e., R) supplying the
 # initial web page content
 # (some example apps are distributed with the package)
 # PLUS open web socket between R and browser
-appServer <- function(app) {
-    serverID <- getServerID()
-    startServer(serverID, app)
-    browseURL(paste0("http://localhost:", serverInfo(serverID)$port, "/"))
-    serverID
+appPage <- function(app) {
+    pageID <- getPageID()
+    openPage(pageID, app)
+    browseURL(paste0("http://localhost:", pageInfo(pageID)$port, "/"))
+    pageID
 }
 
 # Browse file://localhost:port/<file> (i.e., 'file' supplies the
 # initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-fileServer <- function(file) {
-    serverID <- getServerID()
+filePage <- function(file) {
+    pageID <- getPageID()
     # Allow for "file://" missing
     if (!grepl("^file://", file)) {
         file <- paste0("file://", file)
     }
-    startServer(serverID, nullApp, 52000)
+    openPage(pageID, nullApp, 52000)
     browseURL(file)
-    serverID
+    pageID
 }
 
 # Browser http://<url> (i.e., 'url' supplies the initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-urlServer <- function(url) {
-    serverID <- getServerID()
+urlPage <- function(url) {
+    pageID <- getPageID()
     # Allow for "http://" missing
     if (!grepl("^http://", url)) {
         url <- paste0("http://", url)
     }
-    startServer(serverID, nullApp, 52000)
+    openPage(pageID, nullApp, 52000)
     browseURL(url)
-    serverID
+    pageID
 }
