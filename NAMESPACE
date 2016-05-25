@@ -17,10 +17,6 @@ export(
     "urlPage",
     "closePage",
 
-    ## Get/set page info (for Apps to use)
-    "registerPageSocket",
-    "pageInfo",
-
     ## Manipulate DOM
     "appendChild",
     "removeChild")
