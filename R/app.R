@@ -2,16 +2,34 @@
 # NOTE that this is a FUNCTION that generates an app
 # (so that the app is contains closures that know which page they belong to)
 
-# App that returns empty-string body
-# This is NOT designed to serve HTTP requests
-# It is ONLY for establishing web socket connection with browser
+# App that serves web page with given 'body'
+# (but does NOT create web socket; that is expected to be handled by browser)
 nullApp <- function(pageID, port, body) {
-    file <- system.file("JS", "DOM.js", package="DOM")
+    list(
+        call = function(req) {
+            list(status = 200L,
+                 headers = list(
+                     'Content-Type' = 'text/html'
+                 ),
+                 body = body)
+        },
+        onWSOpen = function(ws) {
+            registerPageSocket(pageID, ws)
+        }
+    )
+}
+
+# App that serves web page with given 'body'
+# AND creates web socket (back to R) on load
+wsApp <- function(pageID, port, body) {
+    DOMjs <- readLines(system.file("JS", "DOM.js", package="DOM"))
+    socketjs <- readLines(system.file("JS", "socket.js", package="DOM"))
     html <- paste(
         '<html>',
         '<head>',
         '<script>',
-        paste(readLines(file), collapse="\n"),
+        paste(DOMjs, collapse="\n"),
+        paste(socketjs, collapse="\n"),
         '</script>',
         '<script>',
         paste0('ws = new WebSocket("ws://localhost:', port, '");'),

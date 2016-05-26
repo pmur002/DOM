@@ -6,6 +6,7 @@
 // @include     http://pmur002.neocities.org/*
 // @include     file:///*
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/DOM.js
+// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/socket.js
 // @grant       none
 // ==/UserScript==
 

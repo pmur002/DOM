@@ -64,8 +64,17 @@ selectPort <- function() {
     sample(49152:65535, 1)
 }
 
+# Run a browser from R (so that it can create a websocket connecting to R)
+runBrowser <- function(url, port=NULL, headless=FALSE) {
+    if (headless) {
+        phantomURL(url, port)
+    } else {
+        browseURL(url)
+    }
+}
+
 # If 'port' is NULL, randomly select a port
-openPage <- function(pageID, port=NULL, body="") {
+startServer <- function(pageID, app, port=NULL, body="") {
     # Fail immediately if port is specified and is already in use by
     # an existing page
     if (!is.null(port) && portInUse(port)) {
@@ -83,7 +92,7 @@ openPage <- function(pageID, port=NULL, body="") {
             port <- selectPort()
         }
         result <- try(startDaemonizedServer("0.0.0.0", port,
-                                            nullApp(pageID, port, body)),
+                                            app(pageID, port, body)),
                       silent=TRUE)
         attempts <- attempts + 1
         if (!inherits(result, "try-error")) {
@@ -99,19 +108,22 @@ openPage <- function(pageID, port=NULL, body="") {
     invisible()
 }
 
-closePage <- function(pageID) {
-    stopDaemonizedServer(pageInfo(pageID)$handle)
-    unregisterPage(pageID)
-}
-
 # Browse http://localhost:port/, with 'html' (character vector)
 # supplying the <body> of the initial web page content
 # (default is a blank page)
 # PLUS open web socket between R and browser
-htmlPage <- function(html="") {
+htmlPage <- function(html="", headless=FALSE) {
     pageID <- getPageID()
-    openPage(pageID, body=html)
-    browseURL(paste0("http://localhost:", pageInfo(pageID)$port, "/"))
+    if (headless) {
+        app <- nullApp
+    } else {
+        app <- wsApp
+    }
+    startServer(pageID, app, body=html)
+    port <- pageInfo(pageID)$port
+    ## Use 127.0.0.1 rather than 'localhost' to keep PhantomJS happy (?)
+    runBrowser(paste0("http://127.0.0.1:", port, "/"),
+               port, headless)
     pageID
 }
 
@@ -119,27 +131,33 @@ htmlPage <- function(html="") {
 # initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-filePage <- function(file) {
+filePage <- function(file, headless=FALSE) {
     pageID <- getPageID()
     # Allow for "file://" missing
     if (!grepl("^file://", file)) {
         file <- paste0("file://", file)
     }
-    openPage(pageID, 52000)
-    browseURL(file)
+    startServer(pageID, nullApp, 52000)
+    runBrowser(file, port, headless)
     pageID
 }
 
 # Browser http://<url> (i.e., 'url' supplies the initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-urlPage <- function(url) {
+urlPage <- function(url, headless=FALSE) {
     pageID <- getPageID()
     # Allow for "http://" missing
     if (!grepl("^http://", url)) {
         url <- paste0("http://", url)
     }
-    openPage(pageID, 52000)
-    browseURL(url)
+    startServer(pageID, nullApp, 52000)
+    runBrowser(url, port, headless)
     pageID
 }
+
+closePage <- function(pageID) {
+    stopDaemonizedServer(pageInfo(pageID)$handle)
+    unregisterPage(pageID)
+}
+

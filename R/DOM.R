@@ -28,3 +28,13 @@ removeChild <- function(pageID, child, css=TRUE) {
     sock$send(msgJSON)
 }
 
+## For stopping a headless browser (PhantomJS)
+kill <- function(pageID) {
+    sock <- pageInfo(pageID)$socket
+    if (is.null(sock))
+        stop("No socket open")
+    msg <- list(fun="DIE")
+    msgJSON <- toJSON(msg)
+    sock$send(msgJSON)
+}
+    
