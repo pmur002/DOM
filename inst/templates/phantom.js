@@ -1,6 +1,11 @@
 // Do NOT have empty line at start of template, or whisker::whisker.render()
 // will just return "" (!)
+log = function(msg) {
+    console.log("R package DOM: " + msg);
+}
+    
 initSocket = function(ws) {
+
     ws.onopen = function() {
         log("Connection opened");
     }
@@ -15,6 +20,7 @@ initSocket = function(ws) {
     ws.onmessage = function(evt) {
         var msgJSON = JSON.parse(evt.data);
         if (msgJSON.fun[0] === "DIE") {
+            fs.write("phantom.html", page.content, "w");
             phantom.exit();
         } else {
             page.evaluate(handleMessage, evt);

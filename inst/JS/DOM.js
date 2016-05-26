@@ -1,18 +1,22 @@
-
-log = function(msg) {
-    console.log("R package DOM: " + msg);
-}
-
-resolveTarget = function(target, css) {
-    if (css) {
-        return document.querySelector(target);
-    } else {
-        return document.evaluate(target, document, 
-                                 null, XPathResult.ANY_TYPE, null);
-    }
-}
-
 handleMessage = function(msg) {
+
+    // Make log() and resolveTarget() part of handleMessage() closure
+    // so that PhantomJS page.evaluate(handleMessage) can see them
+    // (should have no negative consequences for other browsers?)
+
+    log = function(msg) {
+        console.log("R package DOM: " + msg);
+    }
+    
+    resolveTarget = function(target, css) {
+        if (css) {
+            return document.querySelector(target);
+        } else {
+            return document.evaluate(target, document, 
+                                     null, XPathResult.ANY_TYPE, null);
+        }
+    }
+
     var msgJSON = JSON.parse(msg.data);
     switch(msgJSON.fun[0]) {
     case "replaceChild": // newchild, oldchild, css

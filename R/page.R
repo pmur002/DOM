@@ -80,7 +80,7 @@ startServer <- function(pageID, app, port=NULL, body="") {
     if (!is.null(port) && portInUse(port)) {
         msg <- paste0("port ", port, " already in use")
         if (port == 52000) {
-            msg <- paste0(msg, "; stop existing filePage/urlPage.")
+            msg <- paste0(msg, "; close existing filePage/urlPage.")
         }
         stop(msg)
     }
