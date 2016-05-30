@@ -138,7 +138,7 @@ filePage <- function(file, headless=FALSE) {
         file <- paste0("file://", file)
     }
     startServer(pageID, nullApp, 52000)
-    runBrowser(file, port, headless)
+    runBrowser(file, 52000, headless)
     pageID
 }
 
@@ -152,7 +152,7 @@ urlPage <- function(url, headless=FALSE) {
         url <- paste0("http://", url)
     }
     startServer(pageID, nullApp, 52000)
-    runBrowser(url, port, headless)
+    runBrowser(url, 52000, headless)
     pageID
 }
 
