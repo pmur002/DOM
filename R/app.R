@@ -15,6 +15,11 @@ nullApp <- function(pageID, port, body) {
         },
         onWSOpen = function(ws) {
             registerPageSocket(pageID, ws)
+            ws$onMessage(function(binary, msg) {
+                if (binary)
+                    stop("Unable to handle binary message")
+                handleMessage(msg)
+            })
         }
     )
 }
@@ -51,6 +56,11 @@ wsApp <- function(pageID, port, body) {
         },
         onWSOpen = function(ws) {
             registerPageSocket(pageID, ws)
+            ws$onMessage(function(binary, msg) {
+                if (binary)
+                    stop("Unable to handle binary message")
+                handleMessage(msg)
+            })
         }
     )
 }

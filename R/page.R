@@ -1,5 +1,5 @@
 
-pageFunctionGenerator <- function() {
+pageClosure <- function() {
     # Page IDs
     id <- 0
     getID <- function() {
@@ -48,7 +48,7 @@ pageFunctionGenerator <- function() {
          info=info,
          inUse=inUse)
 }
-pageFunctions <- pageFunctionGenerator()
+pageFunctions <- pageClosure()
 
 getPageID <- pageFunctions$getID
 registerPageHandle <- pageFunctions$registerHandle

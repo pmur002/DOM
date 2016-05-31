@@ -19,11 +19,11 @@ initSocket = function(ws) {
     }
     ws.onmessage = function(evt) {
         var msgJSON = JSON.parse(evt.data);
-        if (msgJSON.fun[0] === "DIE") {
+        if (msgJSON.type[0] === "DIE") {
             fs.write("phantom.html", page.content, "w");
             phantom.exit();
         } else {
-            page.evaluate(handleMessage, evt);
+            page.evaluate(handleMessage, ws, evt);
         }
     }
 }

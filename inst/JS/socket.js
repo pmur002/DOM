@@ -1,4 +1,8 @@
 initSocket = function(ws) {
+    log = function(msg) {
+        console.log("R package DOM: " + msg);
+    }
+    
     ws.onopen = function() {
         log("Connection opened");
     }
@@ -11,6 +15,6 @@ initSocket = function(ws) {
         log("Connection closed");
     }
     ws.onmessage = function(evt) {
-        handleMessage(evt);
+        handleMessage(ws, evt);
     }
 }
