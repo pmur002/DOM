@@ -12,5 +12,5 @@
 
 (function() {
     var ws = new WebSocket("ws://localhost:52000");
-    initSocket(ws);
+    initSocket(ws, "-1");
 })();

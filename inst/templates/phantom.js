@@ -4,9 +4,10 @@ log = function(msg) {
     console.log("R package DOM: " + msg);
 }
     
-initSocket = function(ws) {
+initSocket = function(ws, tag) {
 
     ws.onopen = function() {
+        ws.send(JSON.stringify({ type: "ALIVE", tag: tag }));
         log("Connection opened");
     }
     ws.onerror = function(evt) { 
@@ -43,7 +44,7 @@ page.open("{{{url}}}",
                   log("opening socket")
                   ws = new WebSocket("ws://127.0.0.1:{{{port}}}");
                   log("socket: " + ws.toString());
-                  initSocket(ws);
+                  initSocket(ws, "{{{tag}}}");
                   log("socket initialised");
               } else {
                   log("Failed to load page");

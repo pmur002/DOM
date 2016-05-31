@@ -4,7 +4,8 @@
 
 # App that serves web page with given 'body'
 # (but does NOT create web socket; that is expected to be handled by browser)
-nullApp <- function(pageID, port, body) {
+# 'port' and 'tag' are not used because they are hard-coded in RDOM.user.js
+nullApp <- function(pageID, port=52000, body, tag="-1") {
     list(
         call = function(req) {
             list(status = 200L,
@@ -26,7 +27,7 @@ nullApp <- function(pageID, port, body) {
 
 # App that serves web page with given 'body'
 # AND creates web socket (back to R) on load
-wsApp <- function(pageID, port, body) {
+wsApp <- function(pageID, port, body, tag) {
     DOMjs <- readLines(system.file("JS", "DOM.js", package="DOM"))
     socketjs <- readLines(system.file("JS", "socket.js", package="DOM"))
     html <- paste(
@@ -38,7 +39,7 @@ wsApp <- function(pageID, port, body) {
         '</script>',
         '<script>',
         paste0('ws = new WebSocket("ws://localhost:', port, '");'),
-        'initSocket(ws);',
+        paste0('initSocket(ws, "', tag, '");'),
         '</script>',
         '</head>',
         '<body>',

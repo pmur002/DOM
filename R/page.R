@@ -65,16 +65,16 @@ selectPort <- function() {
 }
 
 # Run a browser from R (so that it can create a websocket connecting to R)
-runBrowser <- function(url, port=NULL, headless=FALSE) {
+runBrowser <- function(url, port=NULL, headless=FALSE, tag=NULL) {
     if (headless) {
-        phantomURL(url, port)
+        phantomURL(url, port, tag)
     } else {
         browseURL(url)
     }
 }
 
 # If 'port' is NULL, randomly select a port
-startServer <- function(pageID, app, port=NULL, body="") {
+startServer <- function(pageID, app, port=NULL, body="", tag=NULL) {
     # Fail immediately if port is specified and is already in use by
     # an existing page
     if (!is.null(port) && portInUse(port)) {
@@ -92,7 +92,7 @@ startServer <- function(pageID, app, port=NULL, body="") {
             port <- selectPort()
         }
         result <- try(startDaemonizedServer("0.0.0.0", port,
-                                            app(pageID, port, body)),
+                                            app(pageID, port, body, tag)),
                       silent=TRUE)
         attempts <- attempts + 1
         if (!inherits(result, "try-error")) {
@@ -119,11 +119,18 @@ htmlPage <- function(html="", headless=FALSE) {
     } else {
         app <- wsApp
     }
-    startServer(pageID, app, body=html)
+    ## Register a request so can wait for a response from browser
+    tag <- getRequestID()
+    addRequest(tag, NULL)
+    ## Start R server to handle web socket activity
+    ## (and possibly serve initial HTML)
+    startServer(pageID, app, body=html, tag=tag)
     port <- pageInfo(pageID)$port
     ## Use 127.0.0.1 rather than 'localhost' to keep PhantomJS happy (?)
     runBrowser(paste0("http://127.0.0.1:", port, "/"),
-               port, headless)
+               port, headless, tag=tag)
+    ## Block until web socket has been established by browser
+    waitForResponse(tag)
     pageID
 }
 
@@ -137,8 +144,10 @@ filePage <- function(file, headless=FALSE) {
     if (!grepl("^file://", file)) {
         file <- paste0("file://", file)
     }
+    addRequest("-1", NULL)
     startServer(pageID, nullApp, 52000)
     runBrowser(file, 52000, headless)
+    waitForResponse("-1")
     pageID
 }
 
@@ -151,8 +160,10 @@ urlPage <- function(url, headless=FALSE) {
     if (!grepl("^http://", url)) {
         url <- paste0("http://", url)
     }
+    addRequest("-1", NULL)
     startServer(pageID, nullApp, 52000)
     runBrowser(url, 52000, headless)
+    waitForResponse("-1")
     pageID
 }
 

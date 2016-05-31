@@ -1,9 +1,10 @@
-initSocket = function(ws) {
+initSocket = function(ws, tag) {
     log = function(msg) {
         console.log("R package DOM: " + msg);
     }
     
     ws.onopen = function() {
+        ws.send(JSON.stringify({ type: "ALIVE", tag: tag }));
         log("Connection opened");
     }
     ws.onerror = function(evt) { 

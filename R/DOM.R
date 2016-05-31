@@ -98,7 +98,10 @@ requestPending <- DOMfunctions$pending
 handleMessage <- function(msgJSON) {
     # Assume content is character vector JSON
     msg <- fromJSON(msgJSON)
-    if (msg$type == "RESPONSE") {
+    if (msg$type == "ALIVE") {
+        ## Page is waiting for this to know that browser has opened web socket
+        setRequestValue(msg$tag, TRUE)
+    } else if (msg$type == "RESPONSE") {
         ## Get response value
         value <- msg$body$value
         ## Find the request that generated this response
@@ -117,9 +120,15 @@ handleMessage <- function(msgJSON) {
     }
 }
 
-waitForResponse <- function(tag) {
+## Block until response with 'tag' is received
+## (if 'limit' is exceeded, error out)
+waitForResponse <- function(tag, limit=5) {
+    ptm <- proc.time()
     while (requestPending(tag)) {
         Sys.sleep(.1)
+        if ((proc.time() - ptm)[3] > limit) {
+            stop("Exceeded wait time")
+        }
     }
     value <- getRequestValue(tag)
     ## Deregister request

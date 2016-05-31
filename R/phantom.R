@@ -1,7 +1,7 @@
 
 # Code for running PhantomJS (headless browser)
 
-phantomURL <- function(url, port) {
+phantomURL <- function(url, port, tag) {
     if (!requireNamespace("whisker", quietly=TRUE)) {
         stop("Headless browser requires package 'whisker'")
     }
@@ -11,7 +11,7 @@ phantomURL <- function(url, port) {
     jsFile <- "phantom-test.js"
     writeLines(c(DOMjs,
                  whisker::whisker.render(template,
-                                         list(url=url, port=port))),
+                                         list(url=url, port=port, tag=tag))),
                jsFile)
     phantom_run(jsFile)
 }
