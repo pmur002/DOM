@@ -30,7 +30,9 @@ DOMclosure <- function() {
             stop(paste0("Request ", tag, " already registered",
                         " (add failed)"))
         } else {
-            requests[[tag]] <<- list(callback=callback)
+            requests[[tag]] <<- list(callback=callback,
+                                     state="pending")
+            cat("Adding request", tag, "\n")
         }
     }
     remove <- function(tag) {
@@ -40,15 +42,35 @@ DOMclosure <- function() {
                         " (remove failed)"))
         } else {
             requests[[tag]] <<- NULL
+            cat("Removing request", tag, "\n")
         }
     }
-    fetch <- function(tag) {
+    state <- function(tag) {
         req <- requests[[tag]]
         if (is.null(req)) {
             stop(paste0("Request ", tag, " not registered",
-                        " (fetch failed)"))
+                        " (get state failed)"))
         } else {
-            req
+            req$state
+        }
+    }
+    callback <- function(tag) {
+        req <- requests[[tag]]
+        if (is.null(req)) {
+            stop(paste0("Request ", tag, " not registered",
+                        " (get callback failed)"))
+        } else {
+            req$callback
+        }
+    }
+    handle <- function(tag) {
+        req <- requests[[tag]]
+        if (is.null(req)) {
+            stop(paste0("Request ", tag, " not registered",
+                        " (request handling failed)"))
+        } else {
+            requests[[tag]]$state <<- "handling"
+            cat("Handling request", tag, "\n")
         }
     }
     setValue <- function(tag, value) {
@@ -57,7 +79,9 @@ DOMclosure <- function() {
             stop(paste0("Request ", tag, " not registered",
                         " (setValue failed)"))
         } else {
+            cat("Setting value for request", tag, "\n")
             requests[[tag]]$value <<- value
+            requests[[tag]]$state <<- "complete"
         }
     }
     getValue <- function(tag) {
@@ -70,14 +94,22 @@ DOMclosure <- function() {
         }
     }
     pending <- function(tag) {
-        is.null(requests[[tag]]$value)
+        req <- requests[[tag]]
+        if (is.null(req)) {
+            stop(paste0("Request ", tag, " not registered",
+                        " (pending test failed)"))
+        } else {
+            requests[[tag]]$state != "complete"
+        }
     }
 
     list(getID=getID,
          ls=ls,
          add=add,
          remove=remove,
-         fetch=fetch,
+         state=state,
+         callback=callback,
+         handle=handle,
          setValue=setValue,
          getValue=getValue,
          pending=pending)
@@ -88,7 +120,9 @@ getRequestID <- DOMfunctions$getID
 listRequests <- DOMfunctions$ls
 addRequest <- DOMfunctions$add
 removeRequest <- DOMfunctions$remove
-fetchRequest <- DOMfunctions$fetch
+getRequestState <- DOMfunctions$state
+getRequestCallback <- DOMfunctions$callback
+handleRequest <- DOMfunctions$handle
 setRequestValue <- DOMfunctions$setValue
 getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
@@ -105,15 +139,24 @@ handleMessage <- function(msgJSON) {
         ## Get response value
         value <- msg$body$value
         ## Find the request that generated this response
-        request <- fetchRequest(msg$tag)
-        if (is.null(request$callback)) {
-            ## Record value (someone will be waiting for it)
-            setRequestValue(msg$tag, value)
+        state <- getRequestState(msg$tag)
+        if (state == "pending") {
+            callback <- getRequestCallback(msg$tag)
+            if (is.null(callback)) {
+                ## Record value (someone will be waiting for it)
+                setRequestValue(msg$tag, value)
+            } else {
+                ## Start handling request
+                handleRequest(msg$tag)
+                ## Run callback
+                callback(value)
+                ## Deregister request
+                removeRequest(msg$tag)
+            }
         } else {
-            ## Deregister request
-            removeRequest(msg$tag)
-            ## Run callback
-            request$callback(value)
+            # we are already handling this message
+            # (which can happen if a request callback includes a request)
+            ;  
         }
     } else {
         stop("Cannot handle REQUESTs yet")
@@ -127,6 +170,7 @@ waitForResponse <- function(tag, limit=5) {
     while (requestPending(tag)) {
         Sys.sleep(.1)
         if ((proc.time() - ptm)[3] > limit) {
+            removeRequest(tag)
             stop("Exceeded wait time")
         }
     }
