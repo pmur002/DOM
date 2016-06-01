@@ -185,6 +185,10 @@ waitForResponse <- function(tag, limit=5) {
 }
 
 # SEND either REQUEST or RESPONSE
+# IF 'callback' is non-NULL, the request is asynchronous and the callback
+# will be called when a response with 'tag' is received
+# IF 'callback' is NULL, the request is synchronous and R will block until
+# a response with 'tag' is received AND the response value will be returned
 sendRequest <- function(pageID, msg, tag, callback) {
     sock <- pageInfo(pageID)$socket
     if (is.null(sock))
@@ -221,6 +225,7 @@ kill <- function(pageID) {
     msg <- list(type="PREPARETODIE", tag=tag)
     result <- sendRequest(pageID, msg, tag, NULL)
     msg <- list(type="DIE")
+    sendRequest(pageID, msg, getRequestID(), function() {})
     result
 }
     
