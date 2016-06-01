@@ -1,5 +1,6 @@
 
 library(DOM)
+library(testthat)
 context("htmlPage")
 
 test_that("htmlPage works", {    

@@ -72,6 +72,7 @@ handleMessage = function(msg) {
         throw new Error("Cannot handle RESPONSEs yet");
     }
     
+    log("RETURNING " + JSON.stringify(result));
     return JSON.stringify(result);
 }
 
