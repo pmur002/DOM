@@ -32,7 +32,7 @@ DOMclosure <- function() {
         } else {
             requests[[tag]] <<- list(callback=callback,
                                      state="pending")
-            cat("Adding request", tag, "\n")
+            # cat("Adding request", tag, "\n")
         }
     }
     remove <- function(tag) {
@@ -42,7 +42,7 @@ DOMclosure <- function() {
                         " (remove failed)"))
         } else {
             requests[[tag]] <<- NULL
-            cat("Removing request", tag, "\n")
+            # cat("Removing request", tag, "\n")
         }
     }
     state <- function(tag) {
@@ -70,7 +70,7 @@ DOMclosure <- function() {
                         " (request handling failed)"))
         } else {
             requests[[tag]]$state <<- "handling"
-            cat("Handling request", tag, "\n")
+            # cat("Handling request", tag, "\n")
         }
     }
     setValue <- function(tag, value) {
@@ -79,7 +79,7 @@ DOMclosure <- function() {
             stop(paste0("Request ", tag, " not registered",
                         " (setValue failed)"))
         } else {
-            cat("Setting value for request", tag, "\n")
+            # cat("Setting value for request", tag, "\n")
             requests[[tag]]$value <<- value
             requests[[tag]]$state <<- "complete"
         }
@@ -170,6 +170,7 @@ waitForResponse <- function(tag, limit=5) {
     while (requestPending(tag)) {
         Sys.sleep(.1)
         if ((proc.time() - ptm)[3] > limit) {
+            ## Give up on this request
             removeRequest(tag)
             stop("Exceeded wait time")
         }
