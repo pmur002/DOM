@@ -145,8 +145,8 @@ filePage <- function(file, headless=FALSE) {
         file <- paste0("file://", file)
     }
     addRequest("-1", NULL)
-    startServer(pageID, nullApp, 52000)
-    runBrowser(file, 52000, headless)
+    startServer(pageID, nullApp, 52000, tag="-1")
+    runBrowser(file, 52000, headless, tag="-1")
     waitForResponse("-1")
     pageID
 }
@@ -161,8 +161,8 @@ urlPage <- function(url, headless=FALSE) {
         url <- paste0("http://", url)
     }
     addRequest("-1", NULL)
-    startServer(pageID, nullApp, 52000)
-    runBrowser(url, 52000, headless)
+    startServer(pageID, nullApp, 52000, tag="-1")
+    runBrowser(url, 52000, headless, tag="-1")
     waitForResponse("-1")
     pageID
 }
