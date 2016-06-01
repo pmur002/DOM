@@ -3,35 +3,19 @@
 log = function(msg) {
     console.log("R package DOM: " + msg);
 }
-    
-initSocket = function(ws, tag) {
-
-    ws.onopen = function() {
-        ws.send(JSON.stringify({ type: "ALIVE", tag: tag }));
-        log("Connection opened");
-    }
-    ws.onerror = function(evt) { 
-        msg = "An error occurred with the WebSocket. " +
-            "Has the R server been started?";
-        log(msg);
-    };
-    ws.onclose = function(evt) {
-        log("Connection closed");
-    }
-    ws.onmessage = function(evt) {
-        var msgJSON = JSON.parse(evt.data);
-        if (msgJSON.type[0] === "PREPARETODIE") {
-            var msg = JSON.stringify({ type: "DEAD",
-                                       tag: msgJSON.tag[0],
-                                       body: page.content
-                                     });
-            ws.send(msg);
-        } else if (msgJSON.type[0] === "DIE") {
-            phantom.exit();
-        } else {
-            var response = page.evaluate(handleMessage, evt);
-            ws.send(response); 
-        }
+messageHandler = function(evt) {
+    var msgJSON = JSON.parse(evt.data);
+    if (msgJSON.type[0] === "PREPARETODIE") {
+        var msg = JSON.stringify({ type: "DEAD",
+                                   tag: msgJSON.tag[0],
+                                   body: page.content
+                                 });
+        ws.send(msg);
+    } else if (msgJSON.type[0] === "DIE") {
+        phantom.exit();
+    } else {
+        var response = page.evaluate(handleMessage, evt);
+        ws.send(response); 
     }
 }
 // Must load page from R server before trying to create websocket

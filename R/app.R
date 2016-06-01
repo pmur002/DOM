@@ -28,8 +28,6 @@ nullApp <- function(pageID, port=52000, body, tag="-1") {
 # App that serves web page with given 'body'
 # AND creates web socket (back to R) on load
 wsApp <- function(pageID, port, body, tag) {
-    DOMjs <- readLines(system.file("JS", "DOM.js", package="DOM"))
-    socketjs <- readLines(system.file("JS", "socket.js", package="DOM"))
     template <- readLines(system.file("templates", "app.html", package="DOM"))
     html <- whisker.render(template,
                            list(port=port, tag=tag,
