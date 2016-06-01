@@ -16,6 +16,7 @@ initSocket = function(ws, tag) {
         log("Connection closed");
     }
     ws.onmessage = function(evt) {
-        handleMessage(ws, evt);
+        var response = handleMessage(evt);
+        ws.send(response); 
     }
 }
