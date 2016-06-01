@@ -9,7 +9,10 @@ importFrom("httpuv",
 importFrom("jsonlite",
            "fromJSON",
            "toJSON")
-                     
+
+importFrom("whisker",
+           "whisker.render")
+
 export(
     ## Start/stop pages
     "htmlPage",

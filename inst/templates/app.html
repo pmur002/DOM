@@ -1,0 +1,15 @@
+<html>
+  <head>
+    <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/DOM.js">
+    </script>
+    <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/socket.js">
+    </script>
+    <script>
+      ws = new WebSocket("ws://localhost:{{{port}}}");
+      initSocket(ws, "{{{tag}}}");
+    </script>
+  </head>
+  <body>
+    {{{body}}}
+  </body>
+</html>

@@ -30,23 +30,10 @@ nullApp <- function(pageID, port=52000, body, tag="-1") {
 wsApp <- function(pageID, port, body, tag) {
     DOMjs <- readLines(system.file("JS", "DOM.js", package="DOM"))
     socketjs <- readLines(system.file("JS", "socket.js", package="DOM"))
-    html <- paste(
-        '<html>',
-        '<head>',
-        '<script>',
-        paste(DOMjs, collapse="\n"),
-        paste(socketjs, collapse="\n"),
-        '</script>',
-        '<script>',
-        paste0('ws = new WebSocket("ws://localhost:', port, '");'),
-        paste0('initSocket(ws, "', tag, '");'),
-        '</script>',
-        '</head>',
-        '<body>',
-        paste(body, collapse="\n"),
-        '</body>',
-        '</html>',
-        collapse="\n")
+    template <- readLines(system.file("templates", "app.html", package="DOM"))
+    html <- whisker.render(template,
+                           list(port=port, tag=tag,
+                                body=paste(body, collapse="\n")))
     list(
         call = function(req) {
             list(status = 200L,
