@@ -12,6 +12,11 @@ install:
 
 # Adapt as necessary starting from here
 
+install:
+  - ps: Install-Product node "0.10"
+  # Install PhantomJS
+  - npm install phantomjs-prebuilt
+
 build_script:
   - travis-tool.sh install_deps
 
