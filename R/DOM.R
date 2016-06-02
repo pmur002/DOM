@@ -63,16 +63,6 @@ DOMclosure <- function() {
             req$callback
         }
     }
-    handle <- function(tag) {
-        req <- requests[[tag]]
-        if (is.null(req)) {
-            stop(paste0("Request ", tag, " not registered",
-                        " (request handling failed)"))
-        } else {
-            requests[[tag]]$state <<- "handling"
-            cat("Handling request", tag, "\n")
-        }
-    }
     setValue <- function(tag, value) {
         req <- requests[[tag]]
         if (is.null(req)) {
@@ -109,7 +99,6 @@ DOMclosure <- function() {
          remove=remove,
          state=state,
          callback=callback,
-         handle=handle,
          setValue=setValue,
          getValue=getValue,
          pending=pending)
@@ -122,7 +111,6 @@ addRequest <- DOMfunctions$add
 removeRequest <- DOMfunctions$remove
 getRequestState <- DOMfunctions$state
 getRequestCallback <- DOMfunctions$callback
-handleRequest <- DOMfunctions$handle
 setRequestValue <- DOMfunctions$setValue
 getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
@@ -149,8 +137,6 @@ handleMessage <- function(msgJSON) {
                 ## Record value (someone will be waiting for it)
                 setRequestValue(msg$tag, value)
             } else {
-                ## Start handling request
-                handleRequest(msg$tag)
                 ## Run callback
                 callback(value)
                 ## Deregister request

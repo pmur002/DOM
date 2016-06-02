@@ -9,7 +9,6 @@ var page = require('webpage').create();
 page.onConsoleMessage = function(msg) {
     console.log(msg);
 }
-var fs = require('fs');
 // NOTE that phantomjs wants 127.0.0.1 not 'localhost'
 // ALSO phantomjs (2) wants http: protocol explicit 
 // (otherwise it appears to assume file: protocol)

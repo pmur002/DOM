@@ -11,6 +11,7 @@ messageHandler = function(ws) {
             phantom.exit();
         } else {
             var response = page.evaluate(handleMessage, evt);
+            log("SENDING " + response);
             ws.send(response); 
         }
     }

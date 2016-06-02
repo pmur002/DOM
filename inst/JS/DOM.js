@@ -30,6 +30,7 @@ handleMessage = function(msg) {
                }    
     }
     
+    log("RECEIVING " + msg.data);
     var msgJSON = JSON.parse(msg.data);
     var result = "";
 

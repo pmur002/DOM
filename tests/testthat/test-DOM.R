@@ -4,12 +4,27 @@ library(testthat)
 
 source("utils.R")
 
-test_that("appendChild works", {    
+fileURL <- system.file("HTML", "RDOM.html", package="DOM")
+url <- "http://pmur002.neocities.org/index.html"
+
+test_that("appendChild", {    
     headlessPage <- htmlPage(headless=TRUE)
     appendChild(headlessPage, "<p>test<p>")
     expect_equal(kill(headlessPage),
                  "<html><head></head><body><p>test</p></body></html>")
     closePage(headlessPage)
+
+    headlessFile <- filePage(fileURL, headless=TRUE)
+    appendChild(headlessFile, "<p>test<p>")
+    expect_match(minifyHTML(kill(headlessFile)),
+                 "<p>test</p></body></html>$")
+    closePage(headlessFile)
+
+    headlessURL <- urlPage(url, headless=TRUE)
+    appendChild(headlessURL, "<p>test<p>")
+    expect_match(minifyHTML(kill(headlessURL)),
+                 "<p>test</p></body></html>$")
+    closePage(headlessURL)
 })
 
 test_that("appendChild with callback", {    
@@ -26,10 +41,10 @@ test_that("appendChild with callback", {
 
 test_that("appendChild with callback with callback", {    
     headlessPage <- htmlPage(headless=TRUE)
-    result <- NULL
     appendChild(headlessPage, "<p>test</p>",
                 callback=function(value) {
-                    appendChild(headlessPage, "<p>test2</p>")
+                    appendChild(headlessPage, "<p>test2</p>",
+                                callback=function(value) {})
                 })
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
@@ -38,7 +53,7 @@ test_that("appendChild with callback with callback", {
     closePage(headlessPage)
 })
 
-test_that("removeChild works", {    
+test_that("removeChild", {    
     headlessPage <- htmlPage(headless=TRUE)
     appendChild(headlessPage, "<p>test<p>")
     appendChild(headlessPage, "<p>test2<p>")
@@ -46,4 +61,24 @@ test_that("removeChild works", {
     expect_equal(kill(headlessPage),
                  "<html><head></head><body><p>test2</p></body></html>")
     closePage(headlessPage)
+
+    headlessFile <- filePage(fileURL, headless=TRUE)
+    removeChild(headlessFile, "h1")
+    removeChild(headlessFile, "p")
+    removeChild(headlessFile, "p")
+    removeChild(headlessFile, "p")
+    removeChild(headlessFile, "p")
+    expect_equal(minifyHTML(kill(headlessFile)),
+                 "<html><head></head><body></body></html>")
+    closePage(headlessFile)
+
+    headlessURL <- urlPage(url, headless=TRUE)
+    removeChild(headlessURL, "h1")
+    removeChild(headlessURL, "p")
+    removeChild(headlessURL, "p")
+    removeChild(headlessURL, "p")
+    removeChild(headlessURL, "p")
+    expect_equal(minifyHTML(kill(headlessURL)),
+                 "<!DOCTYPEhtml><html><head></head><body></body></html>")
+    closePage(headlessURL)
 })
