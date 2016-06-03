@@ -9,7 +9,6 @@ init:
 
 install:
   - ps: Bootstrap
-  - ps: Install-Product node "0.12"
   # Install PhantomJS
   - npm install phantomjs-prebuilt
 
