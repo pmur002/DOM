@@ -8,9 +8,7 @@ init:
         Import-Module '..\appveyor-tool.ps1'
 
 install:
-  - ps: |
-          Import-Module '.\scripts\appveyor-tool.ps1'
-          Bootstrap
+  - ps: Bootstrap
   - ps: Install-Product node "0.12"
   # Install PhantomJS
   - npm install phantomjs-prebuilt
