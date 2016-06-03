@@ -11,6 +11,7 @@ install:
   - ps: Bootstrap
   # Install PhantomJS
   - npm install phantomjs-prebuilt
+  - set PATH=C:\projects\dom\node_modules\phantomjs-prebuilt\lib\phantom\bin\;%PATH%
 
 # Adapt as necessary starting from here
 
