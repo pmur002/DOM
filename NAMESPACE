@@ -22,7 +22,4 @@ export(
 
     ## Manipulate DOM
     "appendChild",
-    "removeChild",
-
-    ## Kill (headless) page
-    "kill")
+    "removeChild")

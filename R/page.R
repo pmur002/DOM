@@ -9,17 +9,13 @@ pageClosure <- function() {
 
     # Page info
     pages <- list()
-    registerHandle <- function(id, handle) {
+    register <- function(id, handle, port, headless) {
         if (id <= length(pages) && !is.null(pages[[id]])) {
-            stop(paste0("Page ", id, " handle already registered"))
+            stop(paste0("Page ", id, " already registered"))
         }
-        pages[[id]] <<- list(handle=handle)
-    }
-    registerPort <- function(id, port) {
-        if (!is.null(pages[[id]]$port)) {
-            stop(paste0("Page ", id, " port already registered"))
-        }
-        pages[[id]]$port <<- port
+        pages[[id]] <<- list(handle=handle,
+                             port=port,
+                             headless=headless)
     }
     registerSocket <- function(id, socket) {
         if (!is.null(pages[[id]]$socket)) {
@@ -41,8 +37,7 @@ pageClosure <- function() {
     }        
     
     list(getID=getID,
-         registerHandle=registerHandle,
-         registerPort=registerPort,
+         register=register,
          registerSocket=registerSocket,
          unregister=unregister,
          info=info,
@@ -51,8 +46,7 @@ pageClosure <- function() {
 pageFunctions <- pageClosure()
 
 getPageID <- pageFunctions$getID
-registerPageHandle <- pageFunctions$registerHandle
-registerPagePort <- pageFunctions$registerPort
+registerPage <- pageFunctions$register
 registerPageSocket <- pageFunctions$registerSocket
 unregisterPage <- pageFunctions$unregister
 pageInfo <- pageFunctions$info
@@ -73,8 +67,18 @@ runBrowser <- function(url, port=NULL, headless=FALSE, tag=NULL) {
     }
 }
 
+killBrowser <- function(pageID) {
+    # Kill PhantomJS
+    # (nothing to be done for GUI browsers;
+    #  do not have permission to close tabs or windows)
+    if (pageInfo(pageID)$headless) {
+        kill(pageID)
+    }
+}
+
 # If 'port' is NULL, randomly select a port
-startServer <- function(pageID, app, port=NULL, body="", tag=NULL) {
+startServer <- function(pageID, app, port=NULL, body="",
+                        tag=NULL, headless=FALSE) {
     # Fail immediately if port is specified and is already in use by
     # an existing page
     if (!is.null(port) && portInUse(port)) {
@@ -103,8 +107,7 @@ startServer <- function(pageID, app, port=NULL, body="", tag=NULL) {
     if (is.null(handle)) {
         stop("Failed to start page")
     }
-    registerPageHandle(pageID, handle)
-    registerPagePort(pageID, port)
+    registerPage(pageID, handle, port, headless)
     invisible()
 }
 
@@ -124,7 +127,7 @@ htmlPage <- function(html="", headless=FALSE) {
     addRequest(tag, NULL)
     ## Start R server to handle web socket activity
     ## (and possibly serve initial HTML)
-    startServer(pageID, app, body=html, tag=tag)
+    startServer(pageID, app, body=html, tag=tag, headless=headless)
     port <- pageInfo(pageID)$port
     ## Use 127.0.0.1 rather than 'localhost' to keep PhantomJS happy (?)
     runBrowser(paste0("http://127.0.0.1:", port, "/"),
@@ -145,7 +148,7 @@ filePage <- function(file, headless=FALSE) {
         file <- paste0("file://", file)
     }
     addRequest("-1", NULL)
-    startServer(pageID, nullApp, 52000, tag="-1")
+    startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(file, 52000, headless, tag="-1")
     waitForResponse("-1")
     pageID
@@ -161,14 +164,16 @@ urlPage <- function(url, headless=FALSE) {
         url <- paste0("http://", url)
     }
     addRequest("-1", NULL)
-    startServer(pageID, nullApp, 52000, tag="-1")
+    startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(url, 52000, headless, tag="-1")
     waitForResponse("-1")
     pageID
 }
 
 closePage <- function(pageID) {
+    pageContent <- killBrowser(pageID)
     stopDaemonizedServer(pageInfo(pageID)$handle)
     unregisterPage(pageID)
+    invisible(pageContent)
 }
 
