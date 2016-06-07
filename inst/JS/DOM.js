@@ -34,17 +34,32 @@ handleMessage = function(msg) {
     var msgJSON = JSON.parse(msg.data);
     var result = "";
 
+    var CSG = new CssSelectorGenerator();
+
     if (msgJSON.type[0] === "REQUEST") {
         var msgBody = msgJSON.body;
         switch(msgBody.fun[0]) {
         case "appendChild": // parent, child, css
-            var container = document.createElement("div");
-            container.innerHTML = msgBody.node[0];
+            var child;
+            if (msgBody.byRef[0]) {
+                child = resolveTarget(msgBody.child[0], msgBody.css[0]);
+            } else {
+                var container = document.createElement("div");
+                container.innerHTML = msgBody.child[0];
+                child = container.firstChild;
+            }
             var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
-            log("ADDING " + container.firstChild.toString() + 
+            log("ADDING " + child.toString() + 
                 " TO " + parent.toString());
-            parent.appendChild(container.firstChild);
-            result = returnValue(msgJSON.tag, msgBody.fun, msgBody.node);
+            parent.appendChild(child);
+            if (msgBody.returnRef[0]) {
+                var selector = CSG.getSelector(child);
+                result = returnValue(msgJSON.tag, msgBody.fun, 
+                                     selector);
+            } else {
+                result = returnValue(msgJSON.tag, msgBody.fun, 
+                                     child.outerHTML);
+            }
             break;
         case "replaceChild": // newchild, oldchild, css
             var container = document.createElement("div");

@@ -1,5 +1,6 @@
 // Do NOT have empty line at start of template, or whisker::whisker.render()
 // will just return "" (!)
+// Log function
 log = function(msg) {
     console.log("R package DOM: " + msg);
 }
@@ -14,8 +15,10 @@ page.onConsoleMessage = function(msg) {
 // (otherwise it appears to assume file: protocol)
 page.open("{{{url}}}", 
           function(status) {
-              if (status === "success") {
-                  log("opening socket")
+             if (status === "success") {
+                 // Load css-selector-generator library
+                 page.injectJs("{{{CSGjs}}}");
+                 log("opening socket")
                   ws = new WebSocket("ws://127.0.0.1:{{{port}}}");
                   log("socket: " + ws.toString());
                   initSocket(ws, "{{{tag}}}");

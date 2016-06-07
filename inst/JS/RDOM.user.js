@@ -8,6 +8,7 @@
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/DOM.js
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/handler.js
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/socket.js
+// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/css-selector-generator.min.js
 // @grant       none
 // ==/UserScript==
 

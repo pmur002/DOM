@@ -22,4 +22,5 @@ export(
 
     ## Manipulate DOM
     "appendChild",
+    "appendChildCSS",
     "removeChild")

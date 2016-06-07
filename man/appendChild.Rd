@@ -1,5 +1,6 @@
 \name{DOM interface}
 \alias{appendChild}
+\alias{appendChildCSS}
 \alias{removeChild}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -10,25 +11,27 @@
   access existing web page content.
 }
 \usage{
-appendChild(pageID, node, parent = "body", css = TRUE,
-            callback = NULL, tag = getRequestID())
-removeChild(pageID, child, css = TRUE,
+appendChild(pageID, child = NULL, childRef = NULL, parentRef = "body",
+            css = TRUE, callback = NULL, tag = getRequestID())
+appendChildCSS(pageID, child = NULL, childRef = NULL, parentRef = "body",
+               css = TRUE, callback = NULL, tag = getRequestID())
+removeChild(pageID, childRef, css = TRUE,
             callback = NULL, tag = getRequestID())
 }
 \arguments{
   \item{pageID}{
     A page identifier, as returned by, e.g., \code{\link{htmlPage}}.
   }
-  \item{node}{
+  \item{child}{
     A character vector describing a valid HTML element.
   }
-  \item{parent}{
-    A CSS selector (or XPath) describing the parent element to which
-    a child is to be added.
+  \item{childRef}{
+    A character vector describing an existing element in the page as a CSS
+    selector (or XPath, if \code{css=FALSE}).
   }
-  \item{child}{
-    A CSS selector (or XPath) describing the child element that is
-    to be removed.
+  \item{parentRef}{
+    A character vector describing an existing element in the page as a CSS
+    selector (or XPath, if \code{css=FALSE}).
   }
   \item{css}{
     A logical indicating whether the \code{parent} is a CSS selector
@@ -44,6 +47,13 @@ removeChild(pageID, child, css = TRUE,
 \details{
   These functions implement (some of) the basic DOM interface to web
   page content.
+
+  \itemize{
+    \item \code{appendChild} adds a new element, \code{child}, to the
+    page as a child of an existing element, \code{parentRef}, \emph{or}
+    it adds an existing element, \code{childRef}, to \code{parentRef}.
+
+  }
   
   If \code{callback} is \code{NULL}, the request is synchronous and R
   blocks until the browser has sent a response.
@@ -57,10 +67,13 @@ removeChild(pageID, child, css = TRUE,
 \value{
   All functions return a character vector.
   
-  For \code{appendChild()}, the HTML code for the
+  For \code{appendChild}, the HTML code for the
   child element that was added.
 
-  For \code{removeChild()}, the HTML code for the
+  For \code{appendChildCSS}, a CSS selector for the
+  child element that was added.
+
+  For \code{removeChild}, the HTML code for the
   child element that was removed.
 }
 \references{

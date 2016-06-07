@@ -190,18 +190,45 @@ sendRequest <- function(pageID, msg, tag, callback) {
     } 
 }
 
-# 'node' should be a character value describing a valid HTML element
-appendChild <- function(pageID, node, parent="body", css=TRUE,
+nodeSpec <- function(node, nodeRef) {
+    if (!xor(is.null(node), is.null(nodeRef))) {
+        stop("Specify exactly one of 'node' and 'nodeRef'")
+    }
+    if (is.null(node)) {
+        node <- nodeRef
+        byRef <- TRUE
+    } else {
+        byRef <- FALSE
+    }
+    list(node=node, byRef=byRef)
+}
+
+appendChild <- function(pageID, child=NULL, childRef=NULL, 
+                        parentRef="body", css=TRUE, 
                         callback=NULL, tag=getRequestID()) {
+    childSpec <- nodeSpec(child, childRef)
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="appendChild", node=node, parent=parent, css=css))
+                body=list(fun="appendChild",
+                          child=childSpec$node, byRef=childSpec$byRef,
+                          parent=parentRef, css=css, returnRef=FALSE))
     sendRequest(pageID, msg, tag, callback)
 }
 
-removeChild <- function(pageID, child, css=TRUE, 
+appendChildCSS <- function(pageID, child=NULL, childRef=NULL, 
+                           parentRef="body", css=TRUE, 
+                           callback=NULL, tag=getRequestID()) {
+    childSpec <- nodeSpec(child, childRef)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="appendChild",
+                          child=childSpec$node, byRef=childSpec$byRef,
+                          parent=parentRef, css=css, returnRef=TRUE))
+    sendRequest(pageID, msg, tag, callback)
+}
+
+removeChild <- function(pageID, childRef, css=TRUE, 
                         callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="removeChild", child=child, css=css))
+                body=list(fun="removeChild", child=childRef, css=css))
     sendRequest(pageID, msg, tag, callback)
 }
 

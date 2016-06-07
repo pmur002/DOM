@@ -7,19 +7,33 @@ source("utils.R")
 fileURL <- system.file("HTML", "RDOM.html", package="DOM")
 url <- "http://pmur002.neocities.org/index.html"
 
-test_that("appendChild", {    
+test_that("appendChild", {
+    # Append HTML child
     headlessPage <- htmlPage(headless=TRUE)
     appendChild(headlessPage, "<p>test<p>")
     pageContent <- closePage(headlessPage)
     expect_equal(pageContent,
                  "<html><head></head><body><p>test</p></body></html>")
-
+    # Append CSS child
+    headlessPage <- htmlPage(headless=TRUE)
+    appendChild(headlessPage, "<p>test<p>")
+    appendChild(headlessPage, "<p>test2<p>")
+    appendChild(headlessPage, childRef="p")
+    pageContent <- closePage(headlessPage)
+    expect_equal(pageContent,
+                 "<html><head></head><body><p>test2</p><p>test</p></body></html>")
+    # Append HTML child and return CSS
+    headlessPage <- htmlPage(headless=TRUE)
+    result <- appendChildCSS(headlessPage, "<p>test<p>")
+    closePage(headlessPage)
+    expect_equal(result, "p")
+    # Append HTML child in filePage()
     headlessFile <- filePage(fileURL, headless=TRUE)
     appendChild(headlessFile, "<p>test<p>")
     pageContent <- closePage(headlessFile)
     expect_match(minifyHTML(pageContent),
                  "<p>test</p></body></html>$")
-
+    # Append HTML child in urlPage()
     headlessURL <- urlPage(url, headless=TRUE)
     appendChild(headlessURL, "<p>test<p>")
     pageContent <- closePage(headlessURL)
