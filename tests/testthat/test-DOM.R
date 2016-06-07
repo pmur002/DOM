@@ -66,7 +66,8 @@ test_that("appendChild with callback with callback", {
                  "<html><head></head><body><p>test</p><p>test2</p></body></html>")
 })
 
-test_that("removeChild", {    
+test_that("removeChild", {
+    # Remove child that exists (parent implicit)
     headlessPage <- htmlPage(headless=TRUE)
     appendChild(headlessPage, "<p>test<p>")
     appendChild(headlessPage, "<p>test2<p>")
@@ -74,7 +75,28 @@ test_that("removeChild", {
     pageContent <- closePage(headlessPage)
     expect_equal(pageContent,
                  "<html><head></head><body><p>test2</p></body></html>")
-
+    # Remove child that exists (parent implicit) and return CSS
+    headlessPage <- htmlPage(headless=TRUE)
+    appendChild(headlessPage, "<p>test<p>")
+    appendChild(headlessPage, "<p>test2<p>")
+    result <- removeChildCSS(headlessPage, "p")
+    closePage(headlessPage)
+    expect_equal(result, "body > :nth-child(1)")
+    # Remove child that does not exist
+    headlessPage <- htmlPage(headless=TRUE)
+    appendChild(headlessPage, "<p>test<p>")
+    result <- removeChild(headlessPage, "h1", tag="removeNonExistentChild")
+    expect_equal(result, "Request removeNonExistentChild failed")
+    pageContent <- closePage(headlessPage)
+    # Remove child that does not match parent
+    headlessPage <- htmlPage(headless=TRUE)
+    appendChild(headlessPage, "<p>test<p>")
+    appendChild(headlessPage, "<p>test2<p>")
+    result <- removeChild(headlessPage, "p", parentRef="p",
+                          tag="removeNotChildOfParent")
+    expect_equal(result, "Request removeNotChildOfParent failed")
+    pageContent <- closePage(headlessPage)
+    # Remove children from filePage
     headlessFile <- filePage(fileURL, headless=TRUE)
     removeChild(headlessFile, "h1")
     removeChild(headlessFile, "p")
@@ -84,7 +106,7 @@ test_that("removeChild", {
     pageContent <- closePage(headlessFile)
     expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body></body></html>")
-
+    # Remove children from urlPage
     headlessURL <- urlPage(url, headless=TRUE)
     removeChild(headlessURL, "h1")
     removeChild(headlessURL, "p")

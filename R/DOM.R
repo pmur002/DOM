@@ -126,6 +126,15 @@ handleMessage <- function(msgJSON) {
     } else if (msg$type == "DEAD") {
         ## Page is waiting for browser to die
         setRequestValue(msg$tag, msg$body)
+    } else if (msg$type == "ERROR") {
+        ## A request has failed
+        ## (so set the request value)
+        ## (so any code waiting for this request will terminate)
+        result <- paste0("Request ", msg$tag, " failed")
+        ## Warning message will be the result of the request
+        setRequestValue(msg$tag, result)
+        ## Warning message will also print to screen
+        message(result)
     } else if (msg$type == "RESPONSE") {
         ## Get response value
         value <- msg$body$value
@@ -179,7 +188,7 @@ sendRequest <- function(pageID, msg, tag, callback) {
     sock <- pageInfo(pageID)$socket
     if (is.null(sock))
         stop("No socket open")
-    msgJSON <- toJSON(msg)
+    msgJSON <- toJSON(msg, null="null")
     ## Register request (do it before send in case send returns instantly)
     addRequest(tag, callback)
     sock$send(msgJSON)
@@ -225,10 +234,19 @@ appendChildCSS <- function(pageID, child=NULL, childRef=NULL,
     sendRequest(pageID, msg, tag, callback)
 }
 
-removeChild <- function(pageID, childRef, css=TRUE, 
+removeChild <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
                         callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="removeChild", child=childRef, css=css))
+                body=list(fun="removeChild", child=childRef, parent=parentRef,
+                          css=css, returnRef=FALSE))
+    sendRequest(pageID, msg, tag, callback)
+}
+
+removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
+                           callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="removeChild", child=childRef, parent=parentRef,
+                          css=css, returnRef=TRUE))
     sendRequest(pageID, msg, tag, callback)
 }
 
