@@ -137,7 +137,7 @@ handleMessage <- function(msgJSON) {
         message(result)
     } else if (msg$type == "RESPONSE") {
         ## Get response value
-        value <- msg$body$value
+        value <- msg$body
         ## Find the request that generated this response
         state <- getRequestState(msg$tag)
         if (state == "pending") {
@@ -250,6 +250,15 @@ removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE,
     sendRequest(pageID, msg, tag, callback)
 }
 
+setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
+                         callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="setAttribute", elt=eltRef,
+                          attr=attrName, value=as.character(attrValue),
+                          css=css))
+    sendRequest(pageID, msg, tag, callback)
+}
+    
 ## For stopping a headless browser (PhantomJS)
 kill <- function(pageID) {
     tag <- getRequestID()

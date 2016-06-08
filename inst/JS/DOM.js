@@ -20,13 +20,10 @@ handleMessage = function(msg) {
         }
     }
 
-    returnValue = function(tag, fun, value) {
+    returnValue = function(tag, value) {
         return { type: "RESPONSE",
                  tag: tag,
-                 body: { 
-                     fun: fun,
-                     value: value
-                 }
+                 body: value
                }    
     }
     
@@ -62,11 +59,9 @@ handleMessage = function(msg) {
                 parent.appendChild(child);
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(child);
-                    result = returnValue(msgJSON.tag, msgBody.fun, 
-                                         selector);
+                    result = returnValue(msgJSON.tag, selector);
                 } else {
-                    result = returnValue(msgJSON.tag, msgBody.fun, 
-                                         child.outerHTML);
+                    result = returnValue(msgJSON.tag, child.outerHTML);
                 }
                 break;
             case "removeChild": // child, parent, css
@@ -82,11 +77,9 @@ handleMessage = function(msg) {
                     " FROM " + parent.toString());
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(child);
-                    result = returnValue(msgJSON.tag, msgBody.fun, 
-                                         selector);
+                    result = returnValue(msgJSON.tag, selector);
                 } else {
-                    result = returnValue(msgJSON.tag, msgBody.fun, 
-                                         child.outerHTML);
+                    result = returnValue(msgJSON.tag, child.outerHTML);
                 }
                 // Remove child AFTER determining its CSS selector !
                 parent.removeChild(child);
@@ -99,8 +92,12 @@ handleMessage = function(msg) {
                 log("REPLACING " + oldnode.toString() + 
                     " WITH " + container.firstChild.toString());
                 parent.replaceChild(container.firstChild, oldnode);
-                result = returnValue(msgJSON.tag, 
-                                     msgBody.fun, oldnode.outerHTML);
+                result = returnValue(msgJSON.tag, oldnode.outerHTML);
+                break;
+            case "setAttribute": // elt, attr, value, css
+                var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
+                element.setAttribute(msgBody.attr[0], msgBody.value[0]);
+                result = returnValue(msgJSON.tag, "");
                 break;
             default:
                 throw new Error("Unsupported DOM request");

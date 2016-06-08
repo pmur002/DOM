@@ -117,3 +117,12 @@ test_that("removeChild", {
     expect_equal(minifyHTML(pageContent),
                  "<!DOCTYPEhtml><html><head></head><body></body></html>")
 })
+
+test_that("setAttribute", {
+    headlessPage <- htmlPage(headless=TRUE)
+    appendChild(headlessPage, "<p>test<p>")
+    setAttribute(headlessPage, "p", "onclick", 'alert("test")')
+    pageContent <- closePage(headlessPage)
+    expect_equal(pageContent,
+                 '<html><head></head><body><p onclick="alert(&quot;test&quot;)">test</p></body></html>')
+})

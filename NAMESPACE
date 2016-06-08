@@ -24,5 +24,6 @@ export(
     "appendChild",
     "appendChildCSS",
     "removeChild",
-    "removeChildCSS"
+    "removeChildCSS",
+    "setAttribute"
 )

@@ -3,6 +3,7 @@
 \alias{appendChildCSS}
 \alias{removeChild}
 \alias{removeChildCSS}
+\alias{setAttribute}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Send DOM requests to a web page
@@ -20,21 +21,33 @@ removeChild(pageID, childRef, parentRef = NULL, css = TRUE,
             callback = NULL, tag = getRequestID())
 removeChildCSS(pageID, childRef, parentRef = NULL, css = TRUE,
                callback = NULL, tag = getRequestID())
+setAttribute(pageID, eltRef, attrName, attrValue, css = TRUE,
+             callback = NULL, tag = getRequestID())
 }
 \arguments{
   \item{pageID}{
     A page identifier, as returned by, e.g., \code{\link{htmlPage}}.
   }
   \item{child}{
-    A character vector describing a valid HTML element.
+    A character value describing a valid HTML element.
   }
   \item{childRef}{
-    A character vector describing an existing element in the page as a CSS
+    A character value describing an existing element in the page as a CSS
     selector (or XPath, if \code{css=FALSE}).
   }
   \item{parentRef}{
-    A character vector describing an existing element in the page as a CSS
+    A character value describing an existing element in the page as a CSS
     selector (or XPath, if \code{css=FALSE}).
+  }
+  \item{eltRef}{
+    A character value describing an existing element in the page as a CSS
+    selector (or XPath, if \code{css=FALSE}).
+  }
+  \item{attrName}{
+    The attribute name.
+  }
+  \item{attrValue}{
+    The attribute value (will be coerced to a character value).
   }
   \item{css}{
     A logical indicating whether the \code{parent} is a CSS selector
@@ -86,6 +99,8 @@ removeChildCSS(pageID, childRef, parentRef = NULL, css = TRUE,
 
   For \code{removeChildCSS}, a CSS selector for the
   child element that was removed (\emph{before} the child was removed).
+
+  For \code{setAttribute}, an empty string.
 }
 \references{
   \url{https://www.w3.org/DOM/}
