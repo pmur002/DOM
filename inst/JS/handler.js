@@ -6,7 +6,11 @@ messageHandler = function(ws) {
         }
         
         var response = handleMessage(evt);
-        log("SENDING " + response);
-        ws.send(response); 
+        if (response === null) {
+            ; // Handled a RESPONSE not a REQUEST
+        } else {
+            log("SENDING " + response);
+            ws.send(response); 
+        }
     }
 }

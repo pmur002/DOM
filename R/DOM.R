@@ -121,7 +121,7 @@ requestPending <- DOMfunctions$pending
 
 # Handling messages
 # RECEIVE either REQUEST or RESPONSE
-handleMessage <- function(msgJSON) {
+handleMessage <- function(msgJSON, ws) {
     # Assume content is character vector JSON
     msg <- fromJSON(msgJSON)
     if (msg$type == "ALIVE") {
@@ -167,9 +167,14 @@ handleMessage <- function(msgJSON) {
         } else {
             args <- as.list(msg$body$args)
         }
-        do.call(msg$body$fn, args)
+        result <- do.call(msg$body$fn, args)
+        msg <- list(type="RESPONSE",
+                    tag=msg$tag,
+                    body=result)
+        msgJSON <- toJSON(msg, null="null")
+        ws$send(msgJSON)
     } else {
-        stop("Unknown message")
+        stop("Unknown message type")
     }
 }
 
@@ -270,7 +275,17 @@ setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
                           css=css))
     sendRequest(pageID, msg, tag, callback)
 }
-    
+
+appendScript <- function(pageID, script, 
+                         parentRef="body", css=TRUE, 
+                         callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="appendScript",
+                          script=script,
+                          parent=parentRef, css=css, returnRef=FALSE))
+    sendRequest(pageID, msg, tag, callback)
+}
+
 ## For stopping a headless browser (PhantomJS)
 kill <- function(pageID) {
     tag <- getRequestID()

@@ -19,7 +19,7 @@ nullApp <- function(pageID, port=52000, body, tag="-1") {
             ws$onMessage(function(binary, msg) {
                 if (binary)
                     stop("Unable to handle binary message")
-                handleMessage(msg)
+                handleMessage(msg, ws)
             })
         }
     )
@@ -45,7 +45,7 @@ wsApp <- function(pageID, port, body, tag) {
             ws$onMessage(function(binary, msg) {
                 if (binary)
                     stop("Unable to handle binary message")
-                handleMessage(msg)
+                handleMessage(msg, ws)
             })
         }
     )

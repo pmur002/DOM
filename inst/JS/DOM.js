@@ -1,47 +1,67 @@
 // handleMessage() must ONLY accept JSON string and ONLY return JSON string
 // so that PhantomJS can call page.evaluate(handleMessage)
 // (it can only accept and receive simple objects)
-handleMessage = function(msg) {
+// A closure to encapsulate request info
+handleMessage = function() {
 
-    // Make log() and resolveTarget() part of handleMessage() closure
-    // so that PhantomJS page.evaluate(handleMessage) can see them
-    // (should have no negative consequences for other browsers?)
-
-    log = function(msg) {
-        console.log("R package DOM: " + msg);
+    var id = 0;
+    getRequestID = function() {
+        var result = id;
+        id = id + 1;
+        return result;
     }
-    
-    resolveTarget = function(target, css) {
-        if (css) {
-            return document.querySelector(target);
-        } else {
-            return document.evaluate(target, document, 
-                                     null, XPathResult.ANY_TYPE, null);
+
+    var requests = [];
+    addRequest = function(id, callback) {
+        requests[id] = { callback: callback };
+    }
+    removeRequest = function(id) {
+        requests[id] = null;
+    }
+    getRequest = function(id) {
+        return requests[id];
+    }
+
+    return function(msg) {
+
+        // Make log() and resolveTarget() part of handleMessage() closure
+        // so that PhantomJS page.evaluate(handleMessage) can see them
+        // (should have no negative consequences for other browsers?)
+
+        log = function(msg) {
+            console.log("R package DOM: " + msg);
         }
-    }
+        
+        resolveTarget = function(target, css) {
+            if (css) {
+                return document.querySelector(target);
+            } else {
+                return document.evaluate(target, document, 
+                                         null, XPathResult.ANY_TYPE, null);
+            }
+        }
 
-    returnValue = function(tag, value) {
-        return { type: "RESPONSE",
-                 tag: tag,
-                 body: value
-               }    
-    }
-    
-    errorValue = function(tag, err) {
-        return { type: "ERROR",
-                 tag: tag,
-                 body: err
-               }    
-    }
-    
-    log("RECEIVING " + msg.data);
-    var msgJSON = JSON.parse(msg.data);
-    var result = "";
+        returnValue = function(tag, value) {
+            return { type: "RESPONSE",
+                     tag: tag,
+                     body: value
+                   }    
+        }
+        
+        errorValue = function(tag, err) {
+            return { type: "ERROR",
+                     tag: tag,
+                     body: err
+                   }    
+        }
+        
+        log("RECEIVING " + msg.data);
+        var msgJSON = JSON.parse(msg.data);
 
-    var CSG = new CssSelectorGenerator();
+        var CSG = new CssSelectorGenerator();
 
-    handleMsg = function() {
-        if (msgJSON.type[0] === "REQUEST") {
+        handleRequest = function() {
+            var result = "";
             var msgBody = msgJSON.body;
             switch(msgBody.fun[0]) {
             case "appendChild": // parent, child, css
@@ -99,24 +119,49 @@ handleMessage = function(msg) {
                 element.setAttribute(msgBody.attr[0], msgBody.value[0]);
                 result = returnValue(msgJSON.tag, "");
                 break;
+            case "appendScript": // script, css
+                // Distinct from "appendChild" because of the way we need
+                // to build a script so that it not only gets ADDED, but
+                // also gets RUN
+                var script = document.createElement("script");
+                script.innerHTML = msgBody.script[0];
+                var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
+                log("ADDING " + script.toString() + 
+                    " TO " + parent.toString());
+                parent.appendChild(script);
+                result = returnValue(msgJSON.tag, "");
+                break;
             default:
                 throw new Error("Unsupported DOM request");
                 break;
             }
-        } else {
-            throw new Error("Cannot handle RESPONSEs yet");
+
+            return result;
         }
         
-        return result;
-    }
-    
-    try {
-        result = handleMsg();
-    } catch(err) {
-        result = errorValue(msgJSON.tag, err);
-    }
 
-    log("RETURNING " + JSON.stringify(result));
-    return JSON.stringify(result);
-}
+        if (msgJSON.type[0] === "REQUEST") {
+            var result = "";
+            try {
+                result = handleRequest();
+            } catch(err) {
+                result = errorValue(msgJSON.tag, err);
+            }
+
+            log("RETURNING " + JSON.stringify(result));
+            return JSON.stringify(result);
+
+        } else if (msgJSON.type[0] === "RESPONSE") {
+            // Match response tag to request tag and eval callback (if any)
+            var request = getRequest(msgJSON.tag[0]);
+            if (request.callback != null) {
+                request.callback(msgJSON.body);
+            }
+            return null;
+
+        } else {
+            throw new Error("Unknown message type");
+        }
+    }
+}();
 
