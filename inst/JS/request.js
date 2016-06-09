@@ -6,22 +6,26 @@ requestGenerator = function(ws) {
         console.log("R package DOM: " + msg);
     }
     
-    requestValue = function(fn, args, tag) {
+    requestValue = function(fn, element, selector, tag) {
         return { type: "REQUEST",
                  tag: tag,
                  body: {
                      fn: fn,
-                     args: args
+                     target: element.outerHTML,
+                     targetRef: selector
                  }    
                }
     }
     
+    var CSG = new CssSelectorGenerator();
+
     // 'fn' is name of R function (string)
     // 'args' is JSON object
-    return function(fn, args, callback) {
+    return function(fn, element, callback) {
         var tag = getRequestID();
         addRequest(tag, callback);
-        var request = requestValue(fn, args, tag);
+        var selector = CSG.getSelector(element);
+        var request = requestValue(fn, element, selector, tag);
         var msgJSON = JSON.stringify(request);
         log("SENDING " + msgJSON);
         ws.send(msgJSON); 

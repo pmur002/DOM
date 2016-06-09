@@ -162,12 +162,8 @@ handleMessage <- function(msgJSON, ws) {
         }
     } else if (msg$type == "REQUEST") {
         dblog(capture.output(msg$body), sep="\n")
-        if (is.list(msg$body$args)) {
-            args <- msg$body$args
-        } else {
-            args <- as.list(msg$body$args)
-        }
-        result <- do.call(msg$body$fn, args)
+        result <- do.call(msg$body$fn,
+                          list(msg$body$target, msg$body$targetRef))
         msg <- list(type="RESPONSE",
                     tag=msg$tag,
                     body=result)
