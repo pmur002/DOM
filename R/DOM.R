@@ -9,6 +9,10 @@
 # When the javascript code returns a DOM object, we can ask for
 # it to be HTML code OR a CSS selector.
 
+dblog <- function(...) {
+    cat("-- DOM R  : ", ...)
+}
+
 # Tracking requests to execute callbacks on response
 # Blocking requests until response received
 DOMclosure <- function() {
@@ -32,7 +36,7 @@ DOMclosure <- function() {
         } else {
             requests[[tag]] <<- list(callback=callback,
                                      state="pending")
-            cat("Adding request", tag, "\n")
+            dblog("Adding request", tag, "\n")
         }
     }
     remove <- function(tag) {
@@ -42,7 +46,7 @@ DOMclosure <- function() {
                         " (remove failed)"))
         } else {
             requests[[tag]] <<- NULL
-            cat("Removing request", tag, "\n")
+            dblog("Removing request", tag, "\n")
         }
     }
     state <- function(tag) {
@@ -69,7 +73,7 @@ DOMclosure <- function() {
             stop(paste0("Request ", tag, " not registered",
                         " (setValue failed)"))
         } else {
-            cat("Setting value for request", tag, "\n")
+            dblog("Setting value for request", tag, "\n")
             requests[[tag]]$value <<- value
             requests[[tag]]$state <<- "complete"
         }
@@ -156,8 +160,16 @@ handleMessage <- function(msgJSON) {
             # (which can happen if a request callback includes a request)
             ;  
         }
+    } else if (msg$type == "REQUEST") {
+        dblog(capture.output(msg$body), sep="\n")
+        if (is.list(msg$body$args)) {
+            args <- msg$body$args
+        } else {
+            args <- as.list(msg$body$args)
+        }
+        do.call(msg$body$fn, args)
     } else {
-        stop("Cannot handle REQUESTs yet")
+        stop("Unknown message")
     }
 }
 
