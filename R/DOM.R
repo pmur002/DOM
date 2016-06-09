@@ -267,6 +267,30 @@ removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE,
     sendRequest(pageID, msg, tag, callback)
 }
 
+replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
+                         oldChildRef=NULL, parentRef=NULL, css=TRUE, 
+                         callback=NULL, tag=getRequestID()) {
+    newChildSpec <- nodeSpec(newChild, newChildRef)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="replaceChild",
+                          newChild=newChildSpec$node, byRef=newChildSpec$byRef,
+                          oldChild=oldChildRef, parent=parentRef,
+                          css=css, returnRef=FALSE))
+    sendRequest(pageID, msg, tag, callback)    
+}
+
+replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
+                            oldChildRef=NULL, parentRef=NULL, css=TRUE, 
+                            callback=NULL, tag=getRequestID()) {
+    newChildSpec <- nodeSpec(newChild, newChildRef)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="replaceChild",
+                          child=newChildSpec$node, byRef=newChildSpec$byRef,
+                          oldChild=oldChildRef, parent=parentRef,
+                          css=css, returnRef=TRUE))
+    sendRequest(pageID, msg, tag, callback)    
+}
+
 setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
                          callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,

@@ -105,14 +105,33 @@ handleMessage = function() {
                 parent.removeChild(child);
                 break;
             case "replaceChild": // newchild, oldchild, parent, css
-                var container = document.createElement("div");
-                container.innerHTML = msgBody.newnode[0];
-                var oldnode = resolveTarget(msgBody.oldnode[0], msgBody.css[0]);
-                var parent = oldnode.parentElement;
-                log("REPLACING " + oldnode.toString() + 
-                    " WITH " + container.firstChild.toString());
-                parent.replaceChild(container.firstChild, oldnode);
-                result = returnValue(msgJSON.tag, oldnode.outerHTML);
+                var newChild;
+                if (msgBody.byRef[0]) {
+                    newChild = resolveTarget(msgBody.newChild[0], 
+                                             msgBody.css[0]);
+                } else {
+                    var container = document.createElement("div");
+                    container.innerHTML = msgBody.newChild[0];
+                    newChild = container.firstChild;
+                }
+                var oldChild = resolveTarget(msgBody.oldChild[0], 
+                                             msgBody.css[0]);
+                var parent;
+                if (msgBody.parent === null) { 
+                    parent = oldChild.parentElement;
+                } else {
+                    parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
+                }
+                log("REPLACING " + oldChild.toString() + 
+                    " WITH " + newChild.toString());
+                if (msgBody.returnRef[0]) {
+                    var selector = CSG.getSelector(oldChild);
+                    result = returnValue(msgJSON.tag, selector);
+                } else {
+                    result = returnValue(msgJSON.tag, oldChild.outerHTML);
+                }
+                // Replace oldChild AFTER determining its CSS selector !
+                parent.replaceChild(newChild, oldChild);
                 break;
             case "setAttribute": // elt, attr, value, css
                 var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);

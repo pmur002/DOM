@@ -118,6 +118,16 @@ test_that("removeChild", {
                  "<!DOCTYPEhtml><html><head></head><body></body></html>")
 })
 
+test_that("replaceChild", {
+    # Replace child that exists (parent implicit)
+    headlessPage <- htmlPage(headless=TRUE)
+    appendChild(headlessPage, "<p>test<p>")
+    replaceChild(headlessPage, "<p>test2</p>", oldChildRef="p")
+    pageContent <- closePage(headlessPage)
+    expect_equal(pageContent,
+                 "<html><head></head><body><p>test2</p></body></html>")
+})
+    
 test_that("setAttribute", {
     headlessPage <- htmlPage(headless=TRUE)
     appendChild(headlessPage, "<p>test<p>")

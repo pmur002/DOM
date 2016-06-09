@@ -3,7 +3,10 @@
 \alias{appendChildCSS}
 \alias{removeChild}
 \alias{removeChildCSS}
+\alias{replaceChild}
+\alias{replaceChildCSS}
 \alias{setAttribute}
+\alias{appendScript}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Send DOM requests to a web page
@@ -21,8 +24,16 @@ removeChild(pageID, childRef, parentRef = NULL, css = TRUE,
             callback = NULL, tag = getRequestID())
 removeChildCSS(pageID, childRef, parentRef = NULL, css = TRUE,
                callback = NULL, tag = getRequestID())
+replaceChild(pageID, newChild = NULL, newChildRef = NULL,
+             oldChildRef = NULL, parentRef = NULL, css = TRUE,
+             callback = NULL, tag = getRequestID())
+replaceChildCSS(pageID, newChild = NULL, newChildRef = NULL,
+                oldChildRef = NULL, parentRef = NULL, css = TRUE,
+                callback = NULL, tag = getRequestID())
 setAttribute(pageID, eltRef, attrName, attrValue, css = TRUE,
              callback = NULL, tag = getRequestID())
+appendScript(pageID, script, parentRef = "body",
+             css = TRUE, callback = NULL, tag = getRequestID())
 }
 \arguments{
   \item{pageID}{
@@ -34,6 +45,21 @@ setAttribute(pageID, eltRef, attrName, attrValue, css = TRUE,
   \item{childRef}{
     A character value describing an existing element in the page as a CSS
     selector (or XPath, if \code{css=FALSE}).
+  }
+  \item{newChild}{
+    A character value describing a valid HTML element.
+  }
+  \item{newChildRef}{
+    A character value describing an existing element in the page as a CSS
+    selector (or XPath, if \code{css=FALSE}).
+  }
+  \item{oldChildRef}{
+    A character value describing an existing element in the page as a CSS
+    selector (or XPath, if \code{css=FALSE}).
+  }
+  \item{script}{
+    A character value containing JavaScript code (\emph{without}
+    enclosing <script> tags).
   }
   \item{parentRef}{
     A character value describing an existing element in the page as a CSS
@@ -74,6 +100,13 @@ setAttribute(pageID, eltRef, attrName, attrValue, css = TRUE,
     also possible to explicitly specify the parent.  In the latter case,
     it is possible for the request to fail (because the specified parent
     and child are not actually related in the page).
+
+    \item \code{replaceChild} replaces an existing element.  The
+    new element is a new element, \code{newChild}, or an existing
+    element, \code{newChildRef}.  In the latter case, the new element is
+    moved from its old position to the new position.
+    If \code{parentRef} is \code{NULL}, the parent is implicit, but it is
+    also possible to explicitly specify the parent.
   }
   
   If \code{callback} is \code{NULL}, the request is synchronous and R
@@ -100,7 +133,13 @@ setAttribute(pageID, eltRef, attrName, attrValue, css = TRUE,
   For \code{removeChildCSS}, a CSS selector for the
   child element that was removed (\emph{before} the child was removed).
 
-  For \code{setAttribute}, an empty string.
+  For \code{replaceChild}, the HTML code the old child element that was
+  replaced.
+  
+  For \code{removeChildCSS}, a CSS selector for the
+  old child element that was replaced (\emph{before} it was replaced).
+
+  For \code{setAttribute} and \code{appendScript}, an empty string.
 }
 \references{
   \url{https://www.w3.org/DOM/}
