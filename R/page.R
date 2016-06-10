@@ -27,7 +27,7 @@ pageClosure <- function() {
         pages[[id]] <<- NULL
     }
     info <- function(id) {
-        if (id > length(pages) || is.null(pages[[id]])) {
+        if (!is.numeric(id) || id > length(pages) || is.null(pages[[id]])) {
             stop(paste0("Page ", id, " not registered"))
         }
         pages[[id]]
