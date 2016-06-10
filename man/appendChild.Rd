@@ -7,6 +7,7 @@
 \alias{replaceChildCSS}
 \alias{setAttribute}
 \alias{appendScript}
+\alias{click}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Send DOM requests to a web page
@@ -34,6 +35,7 @@ setAttribute(pageID, eltRef, attrName, attrValue, css = TRUE,
              callback = NULL, tag = getRequestID())
 appendScript(pageID, script, parentRef = "body",
              css = TRUE, callback = NULL, tag = getRequestID())
+click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
 }
 \arguments{
   \item{pageID}{
@@ -107,8 +109,10 @@ appendScript(pageID, script, parentRef = "body",
     moved from its old position to the new position.
     If \code{parentRef} is \code{NULL}, the parent is implicit, but it is
     also possible to explicitly specify the parent.
+
+    \item \code{click} sends a click event to an element, \code{eltRef}.
   }
-  
+
   If \code{callback} is \code{NULL}, the request is synchronous and R
   blocks until the browser has sent a response.
 
@@ -117,6 +121,10 @@ appendScript(pageID, script, parentRef = "body",
 
   The \code{callback} can contain further requests, but they \emph{must}
   be asynchronous requests.
+
+  A \code{click} is \emph{always} asynchronous (the request may be
+  fulfilled in R before the browser has completed handling the click
+  event); this function is aimed at debugging with a headless browser.
 }
 \value{
   All functions return a character vector.
@@ -139,7 +147,8 @@ appendScript(pageID, script, parentRef = "body",
   For \code{removeChildCSS}, a CSS selector for the
   old child element that was replaced (\emph{before} it was replaced).
 
-  For \code{setAttribute} and \code{appendScript}, an empty string.
+  For \code{setAttribute}, \code{appendScript}, and \code{click},
+  an empty string.
 }
 \references{
   \url{https://www.w3.org/DOM/}

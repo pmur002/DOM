@@ -306,6 +306,15 @@ appendScript <- function(pageID, script,
     sendRequest(pageID, msg, tag, callback)
 }
 
+## This request is ALWAYS asynchronous
+## Mostly for headless browser testing (?)
+click <- function(pageID, eltRef, css=TRUE,
+                  callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="click", elt=eltRef, css=css))
+    sendRequest(pageID, msg, tag, callback)    
+}
+
 ## For stopping a headless browser (PhantomJS)
 kill <- function(pageID) {
     tag <- getRequestID()

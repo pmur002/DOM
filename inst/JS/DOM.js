@@ -150,6 +150,13 @@ handleMessage = function() {
                 parent.appendChild(script);
                 result = returnValue(msgJSON.tag, "");
                 break;
+            case "click":
+                var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
+                var event = document.createEvent( 'MouseEvents' );
+                event.initMouseEvent( 'click', true, true, window, 1, 0, 0 );
+                element.dispatchEvent( event );
+                result = returnValue(msgJSON.tag, "");
+                break;
             default:
                 throw new Error("Unsupported DOM request");
                 break;

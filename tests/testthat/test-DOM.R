@@ -136,3 +136,16 @@ test_that("setAttribute", {
     expect_equal(pageContent,
                  '<html><head></head><body><p onclick="alert(&quot;test&quot;)">test</p></body></html>')
 })
+
+test_that("click", {
+    headlessPage <- htmlPage(headless=TRUE)
+    appendChild(headlessPage, "<p>test<p>")
+    setAttribute(headlessPage, "p", "onclick",
+                 'this.setAttribute("style", "color: red")')
+    click(headlessPage, "p")
+    # Call is asynchronous, so pause for it to finish
+    Sys.sleep(.2)
+    pageContent <- closePage(headlessPage)
+    expect_equal(pageContent,
+                 '<html><head></head><body><p onclick="this.setAttribute(&quot;style&quot;, &quot;color: red&quot;)" style="color: red">test</p></body></html>')
+})

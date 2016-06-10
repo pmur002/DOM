@@ -29,5 +29,6 @@ export(
     "replaceChild",
     "replaceChildCSS",
     "setAttribute",
-    "appendScript"
+    "appendScript",
+    "click"
 )
