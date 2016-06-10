@@ -7,6 +7,7 @@
 // @include     file:///*
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/DOM.js
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/handler.js
+// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/request.js
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/socket.js
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/css-selector-generator.min.js
 // @grant       none
@@ -15,4 +16,5 @@
 (function() {
     var ws = new WebSocket("ws://localhost:52000");
     initSocket(ws, "-1");
+    window.Rcall = requestGenerator(ws);
 })();
