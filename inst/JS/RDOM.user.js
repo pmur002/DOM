@@ -16,5 +16,6 @@
 (function() {
     var ws = new WebSocket("ws://localhost:52000");
     initSocket(ws, "-1");
+    // Define Rcall() within the page
     window.Rcall = requestGenerator(ws);
 })();
