@@ -45,6 +45,16 @@ RDOM = (function(){
     }
 
     // Utils for generating requests from JS to R
+    var requestValue = function(fn, element, selector, tag) {
+        return { type: "REQUEST",
+                 tag: tag,
+                 body: {
+                     fn: fn,
+                     target: element.outerHTML,
+                     targetRef: selector
+                 }
+               }
+    }
     var returnValue = function(tag, value) {
         return { type: "RESPONSE",
                  tag: tag,
