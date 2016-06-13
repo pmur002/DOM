@@ -10,3 +10,4 @@
 // @grant       none
 // ==/UserScript==
 RDOM.init("52000", "-1");
+window.RDOM = RDOM;
