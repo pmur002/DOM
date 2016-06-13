@@ -1,64 +1,67 @@
-// handleMessage() must ONLY accept JSON string and ONLY return JSON string
-// so that PhantomJS can call page.evaluate(handleMessage)
-// (it can only accept and receive simple objects)
-// A closure to encapsulate request info
-handleMessage = function() {
+// Single global 'RDOM' object
+RDOM = (function(){
 
-    var id = 0;
-    getRequestID = function() {
-        var result = id;
-        id = id + 1;
+    // INTERNALS
+    
+    // Log for debugging
+    // (named so that calls to it can be programmatically
+    //  commented out during build)
+    var dblog = function(msg) {
+        console.log("++ RDOM JS: " + msg);
+    }
+
+    // The websocket connection to R
+    var ws;
+    
+    // CSS selector generator object
+    var CSG = new CssSelectorGenerator();
+
+    // Utils for tracking requests from JS to R
+    var requestID = 0;
+    var getRequestID = function() {
+        var result = requestID;
+        requestID = requestID + 1;
         return result;
     }
-
     var requests = [];
-    addRequest = function(id, callback) {
+    var addRequest = function(id, callback) {
         requests[id] = { callback: callback };
     }
-    removeRequest = function(id) {
+    var removeRequest = function(id) {
         requests[id] = null;
     }
-    getRequest = function(id) {
+    var getRequest = function(id) {
         return requests[id];
     }
 
-    return function(msg) {
+    // Utils for handling requests from R to JS
+    var resolveTarget = function(target, css) {
+        if (css) {
+            return document.querySelector(target);
+        } else {
+            return document.evaluate(target, document, 
+                                     null, XPathResult.ANY_TYPE, null);
+        }
+    }
 
-        // Make log() and resolveTarget() part of handleMessage() closure
-        // so that PhantomJS page.evaluate(handleMessage) can see them
-        // (should have no negative consequences for other browsers?)
+    // Utils for generating requests from JS to R
+    var returnValue = function(tag, value) {
+        return { type: "RESPONSE",
+                 tag: tag,
+                 body: value
+               }    
+    }   
+    var errorValue = function(tag, err) {
+        return { type: "ERROR",
+                 tag: tag,
+                 body: err
+               }    
+    }
 
-        log = function(msg) {
-            console.log("R package DOM: " + msg);
-        }
-        
-        resolveTarget = function(target, css) {
-            if (css) {
-                return document.querySelector(target);
-            } else {
-                return document.evaluate(target, document, 
-                                         null, XPathResult.ANY_TYPE, null);
-            }
-        }
-
-        returnValue = function(tag, value) {
-            return { type: "RESPONSE",
-                     tag: tag,
-                     body: value
-                   }    
-        }
-        
-        errorValue = function(tag, err) {
-            return { type: "ERROR",
-                     tag: tag,
-                     body: err
-                   }    
-        }
-        
-        log("RECEIVING " + msg.data);
+    // Main function for handling requests from R to JS
+    var handleMessage = function(msg) {
+        dblog("RECEIVING " + msg.data);
         var msgJSON = JSON.parse(msg.data);
-
-        var CSG = new CssSelectorGenerator();
 
         handleRequest = function() {
             var result = "";
@@ -74,7 +77,7 @@ handleMessage = function() {
                     child = container.firstChild;
                 }
                 var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
-                log("ADDING " + child.toString() + 
+                dblog("ADDING " + child.toString() + 
                     " TO " + parent.toString());
                 parent.appendChild(child);
                 if (msgBody.returnRef[0]) {
@@ -93,7 +96,7 @@ handleMessage = function() {
                 } else {
                     parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
                 }
-                log("REMOVING " + child.toString() + 
+                dblog("REMOVING " + child.toString() + 
                     " FROM " + parent.toString());
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(child);
@@ -122,7 +125,7 @@ handleMessage = function() {
                 } else {
                     parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
                 }
-                log("REPLACING " + oldChild.toString() + 
+                dblog("REPLACING " + oldChild.toString() + 
                     " WITH " + newChild.toString());
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(oldChild);
@@ -145,7 +148,7 @@ handleMessage = function() {
                 var script = document.createElement("script");
                 script.innerHTML = msgBody.script[0];
                 var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
-                log("ADDING " + script.toString() + 
+                dblog("ADDING " + script.toString() + 
                     " TO " + parent.toString());
                 parent.appendChild(script);
                 result = returnValue(msgJSON.tag, "");
@@ -165,8 +168,10 @@ handleMessage = function() {
             return result;
         }
         
-
-        if (msgJSON.type[0] === "REQUEST") {
+        if (msgJSON.type[0] === "DIE") {
+	    ws.close();
+	    
+        } else if (msgJSON.type[0] === "REQUEST") {
             var result = "";
             try {
                 result = handleRequest();
@@ -174,8 +179,8 @@ handleMessage = function() {
                 result = errorValue(msgJSON.tag, err);
             }
 
-            log("RETURNING " + JSON.stringify(result));
-            return JSON.stringify(result);
+            dblog("SENDING " + JSON.stringify(result));
+            ws.send(JSON.stringify(result)); 
 
         } else if (msgJSON.type[0] === "RESPONSE") {
             // Match response tag to request tag and eval callback (if any)
@@ -183,11 +188,55 @@ handleMessage = function() {
             if (request.callback != null) {
                 request.callback(msgJSON.body);
             }
-            return null;
 
         } else {
             throw new Error("Unknown message type");
         }
     }
-}();
 
+    // EXPORTED functions
+
+    // 'onclose' allows PhantomJS to supply phantom.exit (?)
+    var init = function(port, tag) {
+	// Use 127.0.0.1 instead of 'localhost' to keep PhantomJS happy (?)
+	ws = new WebSocket("ws://127.0.0.1:" + port);
+	// Set up websocket methods
+	ws.onopen = function() {
+            ws.send(JSON.stringify({ type: "ALIVE", tag: tag }));
+            dblog("Connection opened");
+	}
+	ws.onerror = function(evt) { 
+            msg = "An error occurred with the WebSocket. " +
+		"Has the R server been started?";
+            dblog(msg);
+	};
+	ws.onclose = function(evt) {
+            dblog("Connection closed");
+	    // If we are running PhantomJS, exit when websocket closed
+	    // (encompasses DIE request AND errors that close websocket)
+	    if (typeof window.callPhantom === 'function') {
+		window.callPhantom({ type: "EXIT" });
+	    }
+	}
+	ws.onmessage = function(evt) {
+	    handleMessage(evt);
+	};	
+    }
+    
+    // 'fn' is name of R function (string)
+    // 'args' is JSON object
+    Rcall = function(fn, element, callback) {
+        var tag = getRequestID();
+        addRequest(tag, callback);
+        var selector = CSG.getSelector(element);
+        var request = requestValue(fn, element, selector, tag);
+        var msgJSON = JSON.stringify(request);
+        dblog("SENDING " + msgJSON);
+        ws.send(msgJSON); 
+    }
+
+    return {
+	init: init,
+	Rcall: Rcall
+    }
+}());

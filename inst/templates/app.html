@@ -1,19 +1,11 @@
 <html>
   <head>
-    <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/DOM.js">
-    </script>
-    <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/handler.js">
-    </script>
-    <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/request.js">
-    </script>
-    <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/socket.js">
-    </script>
     <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/css-selector-generator.min.js">
     </script>
+    <script src="https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/RDOM.js">
+    </script>
     <script>
-      ws = new WebSocket("ws://localhost:{{{port}}}");
-      initSocket(ws, "{{{tag}}}");
-      Rcall = requestGenerator(ws);
+      RDOM.init("{{{port}}}", "{{{tag}}}");
     </script>
   </head>
   <body>
