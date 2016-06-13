@@ -5,17 +5,8 @@
 // @version     1
 // @include     http://pmur002.neocities.org/*
 // @include     file:///*
-// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/DOM.js
-// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/handler.js
-// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/request.js
-// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/socket.js
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/css-selector-generator.min.js
+// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/JS/RDOM.js
 // @grant       none
 // ==/UserScript==
-
-(function() {
-    var ws = new WebSocket("ws://localhost:52000");
-    initSocket(ws, "-1");
-    // Define Rcall() within the page
-    window.Rcall = requestGenerator(ws);
-})();
+RDOM.init("52000", "-1");
