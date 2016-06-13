@@ -3,19 +3,13 @@
 
 phantomURL <- function(url, port, tag) {
     template <- readLines(system.file("templates", "phantom.js", package="DOM"))
-    DOMjs <- readLines(system.file("JS", "DOM.js", package="DOM"))
-    handlerjs <- readLines(system.file("JS", "phantom-handler.js",
-                                       package="DOM"))
-    socketjs <- readLines(system.file("JS", "socket.js", package="DOM"))
     CSGjs <- system.file("JS", "css-selector-generator.min.js", package="DOM")
+    RDOMjs <- system.file("JS", "RDOM.js", package="DOM")
     ## jsFile <- tempfile(fileext=".js")
     jsFile <- "phantom-test.js"
-    writeLines(c(DOMjs,
-                 handlerjs,
-                 socketjs,
-                 whisker.render(template,
-                                list(url=url, CSGjs=CSGjs, 
-                                     port=port, tag=tag))),
+    writeLines(whisker.render(template,
+                              list(url=url, CSGjs=CSGjs, RDOMjs=RDOMjs,
+                                   port=port, tag=tag)),
                jsFile)
     phantom_run(jsFile)
 }

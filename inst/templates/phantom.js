@@ -1,8 +1,8 @@
 // Do NOT have empty line at start of template, or whisker::whisker.render()
 // will just return "" (!)
 // Log function
-log = function(msg) {
-    console.log("R package DOM: " + msg);
+dblog = function(msg) {
+    console.log("++ RDOM JS: " + msg);
 }
 // Must load page from R server before trying to create websocket
 // (otherwise violate the "Same Origin Policy")
@@ -15,15 +15,17 @@ page.onConsoleMessage = function(msg) {
 // (otherwise it appears to assume file: protocol)
 page.open("{{{url}}}", 
           function(status) {
-             if (status === "success") {
-                 // Load css-selector-generator library
-                 page.injectJs("{{{CSGjs}}}");
-                 log("opening socket")
-                  ws = new WebSocket("ws://127.0.0.1:{{{port}}}");
-                  log("socket: " + ws.toString());
-                  initSocket(ws, "{{{tag}}}");
-                  log("socket initialised");
+              if (status === "success") {
+                  // Load css-selector-generator library
+                  page.injectJs("{{{CSGjs}}}");
+                  page.injectJs("{{{RDOMjs}}}");
+                  dblog("opening socket")
+                  page.evaluate(function(port, tag) { RDOM.init(port, tag) }, 
+                                "{{{port}}}", "{{{tag}}}");
+                  dblog("socket initialised");
+                  // Kill PhantomJS when websocket closes
+                  page.onCallback = function(data) { phantom.exit() };
               } else {
-                  log("Failed to load page");
+                  dblog("Failed to load page");
               }
           });

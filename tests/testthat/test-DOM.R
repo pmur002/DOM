@@ -115,7 +115,7 @@ test_that("removeChild", {
     removeChild(headlessURL, "p")
     pageContent <- closePage(headlessURL)
     expect_equal(minifyHTML(pageContent),
-                 "<!DOCTYPEhtml><html><head></head><body></body></html>")
+                 "<html><head></head><body></body></html>")
 })
 
 test_that("replaceChild", {

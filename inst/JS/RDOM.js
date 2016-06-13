@@ -168,7 +168,14 @@ RDOM = (function(){
             return result;
         }
         
-        if (msgJSON.type[0] === "DIE") {
+        if (msgJSON.type[0] === "PREPARETODIE") {
+	    var msg = JSON.stringify({ type: "DEAD",
+                                       tag: msgJSON.tag[0],
+                                       body: document.documentElement.outerHTML
+                                     });
+            ws.send(msg);
+	    
+        } else if (msgJSON.type[0] === "DIE") {
 	    ws.close();
 	    
         } else if (msgJSON.type[0] === "REQUEST") {
@@ -202,7 +209,8 @@ RDOM = (function(){
 	ws = new WebSocket("ws://127.0.0.1:" + port);
 	// Set up websocket methods
 	ws.onopen = function() {
-            ws.send(JSON.stringify({ type: "ALIVE", tag: tag }));
+            ws.send(JSON.stringify({ type: "ALIVE", 
+                                     tag: tag }));
             dblog("Connection opened");
 	}
 	ws.onerror = function(evt) { 

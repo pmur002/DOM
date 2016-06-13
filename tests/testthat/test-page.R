@@ -24,6 +24,6 @@ test_that("page start (and stop) works", {
     urlContents <- paste(readLines(url), collapse="")
     pageContent <- closePage(headlessURL)
     expect_equal(minifyHTML(pageContent),
-                 minifyHTML(urlContents))
+                 gsub("<!DOCTYPEhtml>", "", minifyHTML(urlContents)))
 })
 

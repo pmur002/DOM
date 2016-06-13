@@ -10,7 +10,7 @@
 # it to be HTML code OR a CSS selector.
 
 dblog <- function(...) {
-    cat("-- RDOM R  : ", ...)
+    cat("-- RDOM R : ", ...)
 }
 
 # Tracking requests to execute callbacks on response
@@ -317,6 +317,9 @@ click <- function(pageID, eltRef, css=TRUE,
 
 ## For stopping a headless browser (PhantomJS)
 kill <- function(pageID) {
+    tag <- getRequestID()
+    msg <- list(type="PREPARETODIE", tag=tag)
+    result <- sendRequest(pageID, msg, tag, NULL)
     msg <- list(type="DIE")
     sendRequest(pageID, msg, getRequestID(), function() {})
     result
