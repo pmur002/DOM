@@ -6,5 +6,5 @@ Authors@R: person("Paul", "Murrell", role = c("cre", "aut"),
 Description: Functions to connect to a web browser and manipulate the DOM
              for the page loaded in the browser.
 Imports: httpuv, jsonlite, utils, whisker
-Suggests: covr, testthat
+Suggests: covr, testthat, xtable, XML
 License: file LICENSE
