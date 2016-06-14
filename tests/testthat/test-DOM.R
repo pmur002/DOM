@@ -149,3 +149,52 @@ test_that("click", {
     expect_equal(pageContent,
                  '<html><head></head><body><p onclick="this.setAttribute(&quot;style&quot;, &quot;color: red&quot;)" style="color: red">test</p></body></html>')
 })
+
+test_that("Rcall", {
+    # Call R from browser
+    headlessPage <- htmlPage(headless=TRUE)
+    element <- ""
+    elementRef <- ""
+    assign("recordRequest",
+           function(target, targetRef) {
+               element <<- target
+               elementRef <<- targetRef
+           },
+           envir=.GlobalEnv)
+    appendChild(headlessPage, "<p>test<p>")
+    setAttribute(headlessPage, "p", "onclick",
+                 'RDOM.Rcall("recordRequest", this, null)')
+    click(headlessPage, "p")
+    # Call is asynchronous, so pause for it to finish
+    Sys.sleep(.2)
+    closePage(headlessPage)
+    expect_equal(element,
+                 '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, null)">test</p>')
+    expect_equal(elementRef, "p")
+    # Call R from browser, then call browser from R
+    headlessPage <- htmlPage(headless=TRUE)
+    callbackGen <- function(page) {
+        function(target, targetRef) {
+            require(xtable)
+            require(XML)
+            text <- xmlValue(xmlRoot(xmlParse(target)))
+            wordCount <- table(strsplit(gsub("\n", "", gsub("  +", " ", text)),
+                                        " ")[[1]])
+            wordTab <- print(xtable(wordCount), type="html",
+                             print.results=FALSE, comment=FALSE)
+            replaceChild(page, newChild=wordTab, oldChildRef=targetRef,
+                         callback=function(value) {})
+        }
+    }
+    assign("replaceWithTable", callbackGen(headlessPage), envir=.GlobalEnv)
+    appendChild(headlessPage, "<p>test<p>")
+    setAttribute(headlessPage, "p", "onclick",
+                 'RDOM.Rcall("replaceWithTable", this, null)')
+    click(headlessPage, "p")
+    # Call is asynchronous, so pause for it to finish
+    Sys.sleep(.5)
+    pageContent <- closePage(headlessPage)
+    expect_equal(minifyHTML(pageContent),
+                 '<html><head></head><body><tableborder="1"><tbody><tr><th></th><th>V1</th></tr><tr><tdalign="right">test</td><tdalign="right">1</td></tr></tbody></table></body></html>')
+})
+    
