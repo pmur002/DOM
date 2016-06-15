@@ -4,10 +4,10 @@ RDOM = (function(){
     // INTERNALS
     
     // Log for debugging
-    // (named so that calls to it can be programmatically
-    //  commented out during build)
+    var debug;
     var dblog = function(msg) {
-        console.log("++ RDOM JS: " + msg);
+        if (debug)
+            console.log("++ RDOM JS: " + msg);
     }
 
     // The websocket connection to R
@@ -88,7 +88,7 @@ RDOM = (function(){
                 }
                 var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
                 dblog("ADDING " + child.toString() + 
-                    " TO " + parent.toString());
+                      " TO " + parent.toString());
                 parent.appendChild(child);
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(child);
@@ -107,7 +107,7 @@ RDOM = (function(){
                     parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
                 }
                 dblog("REMOVING " + child.toString() + 
-                    " FROM " + parent.toString());
+                      " FROM " + parent.toString());
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(child);
                     result = returnValue(msgJSON.tag, selector);
@@ -136,7 +136,7 @@ RDOM = (function(){
                     parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
                 }
                 dblog("REPLACING " + oldChild.toString() + 
-                    " WITH " + newChild.toString());
+                      " WITH " + newChild.toString());
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(oldChild);
                     result = returnValue(msgJSON.tag, selector);
@@ -159,7 +159,7 @@ RDOM = (function(){
                 script.innerHTML = msgBody.script[0];
                 var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
                 dblog("ADDING " + script.toString() + 
-                    " TO " + parent.toString());
+                      " TO " + parent.toString());
                 parent.appendChild(script);
                 result = returnValue(msgJSON.tag, "");
                 break;
@@ -178,7 +178,10 @@ RDOM = (function(){
             return result;
         }
         
-        if (msgJSON.type[0] === "PREPARETODIE") {
+        if (msgJSON.type[0] === "DEBUG") {
+            debug = true;
+
+        } else if (msgJSON.type[0] === "PREPARETODIE") {
 	    var msg = JSON.stringify({ type: "DEAD",
                                        tag: msgJSON.tag[0],
                                        body: document.documentElement.outerHTML
@@ -239,6 +242,8 @@ RDOM = (function(){
 	ws.onmessage = function(evt) {
 	    handleMessage(evt);
 	};	
+        // Turn debugging on/off
+        debug = debug;
     }
     
     // 'fn' is name of R function (string)

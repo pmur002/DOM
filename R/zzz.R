@@ -1,2 +1,8 @@
 
-options(DOM.headless=FALSE)
+.onLoad <- function(libname, pkgname)
+{
+    options(DOM.headless=FALSE,
+            DOM.debug=FALSE)
+}
+
+    

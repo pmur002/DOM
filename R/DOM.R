@@ -10,7 +10,8 @@
 # it to be HTML code OR a CSS selector.
 
 dblog <- function(...) {
-    cat("-- RDOM R : ", ...)
+    if (getOption("DOM.debug")) 
+        cat("-- RDOM R : ", ...)
 }
 
 # Tracking requests to execute callbacks on response
@@ -325,3 +326,9 @@ kill <- function(pageID) {
     result
 }
     
+## Deliberately internal function, so have to call with DOM:::debug()
+debug <- function(pageID) {
+    options(DOM.debug=TRUE)
+    msg <- list(type="DEBUG")
+    sendRequest(pageID, msg, getRequestID(), function() {})
+}
