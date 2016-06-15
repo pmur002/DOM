@@ -7,20 +7,20 @@ source("utils.R")
 context("opening (and closing) web pages")
 
 test_that("page start (and stop) works", {    
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     pageContent <- closePage(headlessPage)
     expect_equal(pageContent,
                  "<html><head></head><body></body></html>")
 
     fileURL <- system.file("HTML", "RDOM.html", package="DOM")
-    headlessFile <- filePage(fileURL, headless=TRUE)
+    headlessFile <- filePage(fileURL)
     fileContents <- paste(readLines(fileURL), collapse="")
     pageContent <- closePage(headlessFile)
     expect_equal(minifyHTML(pageContent),
                  minifyHTML(fileContents))
 
     url <- "http://pmur002.neocities.org/index.html"
-    headlessURL <- urlPage(url, headless=TRUE)
+    headlessURL <- urlPage(url)
     urlContents <- paste(readLines(url), collapse="")
     pageContent <- closePage(headlessURL)
     expect_equal(minifyHTML(pageContent),

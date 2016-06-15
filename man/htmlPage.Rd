@@ -10,9 +10,9 @@
   Open a web page in a browser and provide a handle to that web page.
 }
 \usage{
-htmlPage(html = "", headless = FALSE)
-filePage(file, headless = FALSE)
-urlPage(url, headless = FALSE)
+htmlPage(html = "", headless = getOption("DOM.headless"))
+filePage(file, headless = getOption("DOM.headless"))
+urlPage(url, headless = getOption("DOM.headless"))
 }
 \arguments{
   \item{html}{

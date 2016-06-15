@@ -1,0 +1,2 @@
+
+options(DOM.headless=FALSE)

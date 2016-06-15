@@ -115,7 +115,7 @@ startServer <- function(pageID, app, port=NULL, body="",
 # supplying the <body> of the initial web page content
 # (default is a blank page)
 # PLUS open web socket between R and browser
-htmlPage <- function(html="", headless=FALSE) {
+htmlPage <- function(html="", headless=getOption("DOM.headless")) {
     pageID <- getPageID()
     if (headless) {
         app <- nullApp
@@ -141,7 +141,7 @@ htmlPage <- function(html="", headless=FALSE) {
 # initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-filePage <- function(file, headless=FALSE) {
+filePage <- function(file, headless=getOption("DOM.headless")) {
     pageID <- getPageID()
     # Allow for "file://" missing
     if (!grepl("^file://", file)) {
@@ -157,7 +157,7 @@ filePage <- function(file, headless=FALSE) {
 # Browser http://<url> (i.e., 'url' supplies the initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-urlPage <- function(url, headless=FALSE) {
+urlPage <- function(url, headless=getOption("DOM.headless")) {
     pageID <- getPageID()
     # Allow for "http://" missing
     if (!grepl("^http://", url)) {

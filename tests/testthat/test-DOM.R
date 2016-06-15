@@ -9,13 +9,13 @@ url <- "http://pmur002.neocities.org/index.html"
 
 test_that("appendChild", {
     # Append HTML child
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     pageContent <- closePage(headlessPage)
     expect_equal(pageContent,
                  "<html><head></head><body><p>test</p></body></html>")
     # Append CSS child
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     appendChild(headlessPage, "<p>test2<p>")
     appendChild(headlessPage, childRef="p")
@@ -23,18 +23,18 @@ test_that("appendChild", {
     expect_equal(pageContent,
                  "<html><head></head><body><p>test2</p><p>test</p></body></html>")
     # Append HTML child and return CSS
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     result <- appendChildCSS(headlessPage, "<p>test<p>")
     closePage(headlessPage)
     expect_equal(result, "p")
     # Append HTML child in filePage()
-    headlessFile <- filePage(fileURL, headless=TRUE)
+    headlessFile <- filePage(fileURL)
     appendChild(headlessFile, "<p>test<p>")
     pageContent <- closePage(headlessFile)
     expect_match(minifyHTML(pageContent),
                  "<p>test</p></body></html>$")
     # Append HTML child in urlPage()
-    headlessURL <- urlPage(url, headless=TRUE)
+    headlessURL <- urlPage(url)
     appendChild(headlessURL, "<p>test<p>")
     pageContent <- closePage(headlessURL)
     expect_match(minifyHTML(pageContent),
@@ -42,7 +42,7 @@ test_that("appendChild", {
 })
 
 test_that("appendChild with callback", {    
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     result <- NULL
     appendChild(headlessPage, "<p>test</p>",
                 callback=function(value) { result <<- value })
@@ -53,7 +53,7 @@ test_that("appendChild with callback", {
 })
 
 test_that("appendChild with callback with callback", {    
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test</p>",
                 callback=function(value) {
                     appendChild(headlessPage, "<p>test2</p>",
@@ -68,7 +68,7 @@ test_that("appendChild with callback with callback", {
 
 test_that("removeChild", {
     # Remove child that exists (parent implicit)
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     appendChild(headlessPage, "<p>test2<p>")
     removeChild(headlessPage, "p")
@@ -76,20 +76,20 @@ test_that("removeChild", {
     expect_equal(pageContent,
                  "<html><head></head><body><p>test2</p></body></html>")
     # Remove child that exists (parent implicit) and return CSS
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     appendChild(headlessPage, "<p>test2<p>")
     result <- removeChildCSS(headlessPage, "p")
     closePage(headlessPage)
     expect_equal(result, "body > :nth-child(1)")
     # Remove child that does not exist
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     result <- removeChild(headlessPage, "h1", tag="removeNonExistentChild")
     expect_equal(result, "Request removeNonExistentChild failed")
     pageContent <- closePage(headlessPage)
     # Remove child that does not match parent
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     appendChild(headlessPage, "<p>test2<p>")
     result <- removeChild(headlessPage, "p", parentRef="p",
@@ -97,7 +97,7 @@ test_that("removeChild", {
     expect_equal(result, "Request removeNotChildOfParent failed")
     pageContent <- closePage(headlessPage)
     # Remove children from filePage
-    headlessFile <- filePage(fileURL, headless=TRUE)
+    headlessFile <- filePage(fileURL)
     removeChild(headlessFile, "h1")
     removeChild(headlessFile, "p")
     removeChild(headlessFile, "p")
@@ -107,7 +107,7 @@ test_that("removeChild", {
     expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body></body></html>")
     # Remove children from urlPage
-    headlessURL <- urlPage(url, headless=TRUE)
+    headlessURL <- urlPage(url)
     removeChild(headlessURL, "h1")
     removeChild(headlessURL, "p")
     removeChild(headlessURL, "p")
@@ -120,7 +120,7 @@ test_that("removeChild", {
 
 test_that("replaceChild", {
     # Replace child that exists (parent implicit)
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     replaceChild(headlessPage, "<p>test2</p>", oldChildRef="p")
     pageContent <- closePage(headlessPage)
@@ -129,7 +129,7 @@ test_that("replaceChild", {
 })
     
 test_that("setAttribute", {
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     setAttribute(headlessPage, "p", "onclick", 'alert("test")')
     pageContent <- closePage(headlessPage)
@@ -138,7 +138,7 @@ test_that("setAttribute", {
 })
 
 test_that("click", {
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     setAttribute(headlessPage, "p", "onclick",
                  'this.setAttribute("style", "color: red")')
@@ -152,7 +152,7 @@ test_that("click", {
 
 test_that("Rcall", {
     # Call R from browser
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     element <- ""
     elementRef <- ""
     assign("recordRequest",
@@ -172,7 +172,7 @@ test_that("Rcall", {
                  '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, null)">test</p>')
     expect_equal(elementRef, "p")
     # Call R from browser, then call browser from R
-    headlessPage <- htmlPage(headless=TRUE)
+    headlessPage <- htmlPage()
     callbackGen <- function(page) {
         function(target, targetRef) {
             require(xtable)

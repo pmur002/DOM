@@ -1,7 +1,8 @@
 
 importFrom("utils",
            "browseURL",
-           "capture.output")
+           "capture.output",
+           "packageVersion")
 
 importFrom("httpuv",
            "startDaemonizedServer",
