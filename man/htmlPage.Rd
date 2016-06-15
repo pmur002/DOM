@@ -38,6 +38,12 @@ urlPage(url, headless = FALSE)
   or \code{url} is opened in the default browser
   (\code{getOptions("browser")}).  A headless browser (PhantomJS) is
   supported, which may be useful for testing.
+
+  For \code{filePage()} and \code{urlPage()} to work, the
+  \code{RDOM.user.js} user script must be installed in the browser
+  (currently only tested with greasemonkey on Firefox).
+
+  For \code{headless=TRUE} to work, PhantomJS must be installed.
 }
 \value{
   A page identifier, to be used to send DOM requests to the web page, or to
