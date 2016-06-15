@@ -29,8 +29,10 @@ nullApp <- function(pageID, port=52000, body, tag="-1") {
 # AND creates web socket (back to R) on load
 wsApp <- function(pageID, port, body, tag) {
     template <- readLines(system.file("templates", "app.html", package="DOM"))
+    pkgVersion <- packageVersion("DOM")
     html <- whisker.render(template,
-                           list(port=port, tag=tag,
+                           list(pkgVersion=as.character(pkgVersion),
+                                port=port, tag=tag,
                                 body=paste(body, collapse="\n")))
     list(
         call = function(req) {
