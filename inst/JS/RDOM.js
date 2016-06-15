@@ -216,7 +216,6 @@ RDOM = (function(){
 
     // EXPORTED functions
 
-    // 'onclose' allows PhantomJS to supply phantom.exit (?)
     var init = function(port, tag) {
 	// Use 127.0.0.1 instead of 'localhost' to keep PhantomJS happy (?)
 	ws = new WebSocket("ws://127.0.0.1:" + port);

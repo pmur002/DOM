@@ -19,13 +19,15 @@ page.open("{{{url}}}",
                   // Load css-selector-generator library
                   page.injectJs("{{{CSGjs}}}");
                   page.injectJs("{{{RDOMjs}}}");
-                  dblog("opening socket")
+                  // dblog("opening socket")
                   page.evaluate(function(port, tag) { RDOM.init(port, tag) }, 
                                 "{{{port}}}", "{{{tag}}}");
-                  dblog("socket initialised");
+                  // dblog("socket initialised");
                   // Kill PhantomJS when websocket closes
-                  page.onCallback = function(data) { phantom.exit() };
+                  page.onCallback = function(data) { 
+                      phantom.exit() 
+                  };
               } else {
-                  dblog("Failed to load page");
+                  // dblog("Failed to load page");
               }
           });

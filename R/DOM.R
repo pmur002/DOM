@@ -322,6 +322,8 @@ kill <- function(pageID) {
     msg <- list(type="PREPARETODIE", tag=tag)
     result <- sendRequest(pageID, msg, tag, NULL)
     msg <- list(type="DIE")
+    # Do not wait for browser response because browser will die before
+    # it sends a response
     sendRequest(pageID, msg, getRequestID(), function() {})
     result
 }
