@@ -39,8 +39,11 @@ RDOM = (function(){
         if (css) {
             return document.querySelector(target);
         } else {
-            return document.evaluate(target, document, 
-                                     null, XPathResult.ANY_TYPE, null);
+            return document.evaluate(target, 
+                                     document, 
+                                     null, 
+                                     XPathResult.FIRST_ORDERED_NODE_TYPE,
+                                     null).singleNodeValue;
         }
     }
 
