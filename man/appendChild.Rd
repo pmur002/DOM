@@ -18,23 +18,31 @@
 }
 \usage{
 appendChild(pageID, child = NULL, childRef = NULL, parentRef = "body",
-            css = TRUE, callback = NULL, tag = getRequestID())
-appendChildCSS(pageID, child = NULL, childRef = NULL, parentRef = "body",
-               css = TRUE, callback = NULL, tag = getRequestID())
-removeChild(pageID, childRef, parentRef = NULL, css = TRUE,
+            css = TRUE, async = !is.null(callback),
             callback = NULL, tag = getRequestID())
-removeChildCSS(pageID, childRef, parentRef = NULL, css = TRUE,
+appendChildCSS(pageID, child = NULL, childRef = NULL, parentRef = "body",
+               css = TRUE, async = !is.null(callback),
+               callback = NULL, tag = getRequestID())
+removeChild(pageID, childRef, parentRef = NULL,
+            css = TRUE, async = !is.null(callback),
+            callback = NULL, tag = getRequestID())
+removeChildCSS(pageID, childRef, parentRef = NULL,
+               css = TRUE, async = !is.null(callback),
                callback = NULL, tag = getRequestID())
 replaceChild(pageID, newChild = NULL, newChildRef = NULL,
-             oldChildRef = NULL, parentRef = NULL, css = TRUE,
+             oldChildRef = NULL, parentRef = NULL,
+             css = TRUE, async = !is.null(callback),
              callback = NULL, tag = getRequestID())
 replaceChildCSS(pageID, newChild = NULL, newChildRef = NULL,
-                oldChildRef = NULL, parentRef = NULL, css = TRUE,
+                oldChildRef = NULL, parentRef = NULL,
+                css = TRUE, async = !is.null(callback),
                 callback = NULL, tag = getRequestID())
-setAttribute(pageID, eltRef, attrName, attrValue, css = TRUE,
+setAttribute(pageID, eltRef, attrName, attrValue,
+             css = TRUE, async = !is.null(callback),
              callback = NULL, tag = getRequestID())
 appendScript(pageID, script, parentRef = "body",
-             css = TRUE, callback = NULL, tag = getRequestID())
+             css = TRUE, async = !is.null(callback),
+             callback = NULL, tag = getRequestID())
 click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
 }
 \arguments{
@@ -81,6 +89,9 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     A logical indicating whether the \code{parent} is a CSS selector
     (otherwise, it is an XPath).
   }
+  \item{async}{
+    A logical indicating whether the request is asynchronous.
+  }
   \item{callback}{
     A function to be called when the DOM request has been fulfilled.
   }
@@ -113,12 +124,16 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     \item \code{click} sends a click event to an element, \code{eltRef}.
   }
 
-  If \code{callback} is \code{NULL}, the request is synchronous and R
+  If \code{async} is \code{FALSE}, the request is synchronous and R
   blocks until the browser has sent a response.
+  Otherwise, the request is asynchronous and control is returned to
+  the command line.
 
-  Otherwise, the request is asynchronous and \code{callback} will be run
-  when the browser responds.
-
+  If \code{callback} is non-\code{NULL}, it will be run
+  when the browser responds.  The \code{callback}
+  function will be called with a single
+  argument, which will contain the response from the web browser
+  (see the Value section below).
   The \code{callback} can contain further requests, but they \emph{must}
   be asynchronous requests.
 

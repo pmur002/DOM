@@ -29,13 +29,14 @@ DOMclosure <- function() {
     ls <- function() {
         requests
     }
-    add <- function(tag, callback) {
+    add <- function(tag, async, callback) {
         req <- requests[[tag]]
         if (!is.null(req)) {
             stop(paste0("Request ", tag, " already registered",
                         " (add failed)"))
         } else {
-            requests[[tag]] <<- list(callback=callback,
+            requests[[tag]] <<- list(async=async,
+                                     callback=callback,
                                      state="pending")
             dblog("Adding request", tag, "\n")
         }
@@ -57,6 +58,15 @@ DOMclosure <- function() {
                         " (get state failed)"))
         } else {
             req$state
+        }
+    }
+    async <- function(tag) {
+        req <- requests[[tag]]
+        if (is.null(req)) {
+            stop(paste0("Request ", tag, " not registered",
+                        " (get async failed)"))
+        } else {
+            req$async
         }
     }
     callback <- function(tag) {
@@ -103,6 +113,7 @@ DOMclosure <- function() {
          add=add,
          remove=remove,
          state=state,
+         async=async,
          callback=callback,
          setValue=setValue,
          getValue=getValue,
@@ -115,6 +126,7 @@ listRequests <- DOMfunctions$ls
 addRequest <- DOMfunctions$add
 removeRequest <- DOMfunctions$remove
 getRequestState <- DOMfunctions$state
+getRequestAsync <- DOMfunctions$async
 getRequestCallback <- DOMfunctions$callback
 setRequestValue <- DOMfunctions$setValue
 getRequestValue <- DOMfunctions$getValue
@@ -146,20 +158,22 @@ handleMessage <- function(msgJSON, ws) {
         ## Find the request that generated this response
         state <- getRequestState(msg$tag)
         if (state == "pending") {
-            callback <- getRequestCallback(msg$tag)
-            if (is.null(callback)) {
-                ## Record value (someone will be waiting for it)
+            async <- getRequestAsync(msg$tag)
+            if (!async) {
+                ## Record response value (someone will be waiting for it)
                 setRequestValue(msg$tag, value)
-            } else {
+            } 
+            callback <- getRequestCallback(msg$tag)
+            if (!is.null(callback)) {
                 ## Run callback
                 callback(value)
+            }
+            if (async) {
                 ## Deregister request
                 removeRequest(msg$tag)
             }
         } else {
-            # we are already handling this message
-            # (which can happen if a request callback includes a request)
-            ;  
+            stop(paste("Already handling response", msg$tag))
         }
     } else if (msg$type == "REQUEST") {
         dblog(capture.output(msg$body), sep="\n")
@@ -198,19 +212,17 @@ waitForResponse <- function(tag, limit=5) {
 # will be called when a response with 'tag' is received
 # IF 'callback' is NULL, the request is synchronous and R will block until
 # a response with 'tag' is received AND the response value will be returned
-sendRequest <- function(pageID, msg, tag, callback) {
+sendRequest <- function(pageID, msg, tag, async, callback) {
     sock <- pageInfo(pageID)$socket
     if (is.null(sock))
         stop("No socket open")
     msgJSON <- toJSON(msg, null="null")
     ## Register request (do it before send in case send returns instantly)
-    addRequest(tag, callback)
+    addRequest(tag, async, callback)
     sock$send(msgJSON)
-    ## EITHER have callback, in which case that will be called on receipt of
-    ## response, OR block for response (and return response value)
-    if (is.null(callback)) {
+    if (!async) {
         return(waitForResponse(tag))
-    } 
+    }
 }
 
 nodeSpec <- function(node, nodeRef) {
@@ -226,85 +238,92 @@ nodeSpec <- function(node, nodeRef) {
     list(node=node, byRef=byRef)
 }
 
+################################################################################
+## The main API
 appendChild <- function(pageID, child=NULL, childRef=NULL, 
-                        parentRef="body", css=TRUE, 
+                        parentRef="body", css=TRUE, async=!is.null(callback),
                         callback=NULL, tag=getRequestID()) {
     childSpec <- nodeSpec(child, childRef)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendChild",
                           child=childSpec$node, byRef=childSpec$byRef,
                           parent=parentRef, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, callback)
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 appendChildCSS <- function(pageID, child=NULL, childRef=NULL, 
-                           parentRef="body", css=TRUE, 
+                           parentRef="body", css=TRUE, async=!is.null(callback),
                            callback=NULL, tag=getRequestID()) {
     childSpec <- nodeSpec(child, childRef)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendChild",
                           child=childSpec$node, byRef=childSpec$byRef,
                           parent=parentRef, css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, callback)
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 removeChild <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
-                        callback=NULL, tag=getRequestID()) {
+                        async=!is.null(callback), callback=NULL,
+                        tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="removeChild", child=childRef, parent=parentRef,
                           css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, callback)
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
-                           callback=NULL, tag=getRequestID()) {
+                           async=!is.null(callback), callback=NULL,
+                           tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="removeChild", child=childRef, parent=parentRef,
                           css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, callback)
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
                          oldChildRef=NULL, parentRef=NULL, css=TRUE, 
-                         callback=NULL, tag=getRequestID()) {
+                         async=!is.null(callback), callback=NULL,
+                         tag=getRequestID()) {
     newChildSpec <- nodeSpec(newChild, newChildRef)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="replaceChild",
                           newChild=newChildSpec$node, byRef=newChildSpec$byRef,
                           oldChild=oldChildRef, parent=parentRef,
                           css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, callback)    
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
                             oldChildRef=NULL, parentRef=NULL, css=TRUE, 
-                            callback=NULL, tag=getRequestID()) {
+                            async=!is.null(callback), callback=NULL,
+                            tag=getRequestID()) {
     newChildSpec <- nodeSpec(newChild, newChildRef)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="replaceChild",
                           child=newChildSpec$node, byRef=newChildSpec$byRef,
                           oldChild=oldChildRef, parent=parentRef,
                           css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, callback)    
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
-                         callback=NULL, tag=getRequestID()) {
+                         async=!is.null(callback), callback=NULL,
+                         tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="setAttribute", elt=eltRef,
                           attr=attrName, value=as.character(attrValue),
                           css=css))
-    sendRequest(pageID, msg, tag, callback)
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 appendScript <- function(pageID, script, 
-                         parentRef="body", css=TRUE, 
+                         parentRef="body", css=TRUE, async=!is.null(callback),
                          callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendScript",
                           script=script,
                           parent=parentRef, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, callback)
+    sendRequest(pageID, msg, tag, async, callback)
 }
 
 ## This request is ALWAYS asynchronous
@@ -313,18 +332,21 @@ click <- function(pageID, eltRef, css=TRUE,
                   callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="click", elt=eltRef, css=css))
-    sendRequest(pageID, msg, tag, callback)    
+    sendRequest(pageID, msg, tag, TRUE, callback)
 }
+
+################################################################################
+## Some extra utilities
 
 ## For stopping a headless browser (PhantomJS)
 kill <- function(pageID) {
     tag <- getRequestID()
     msg <- list(type="PREPARETODIE", tag=tag)
-    result <- sendRequest(pageID, msg, tag, NULL)
+    result <- sendRequest(pageID, msg, tag, FALSE, NULL)
     msg <- list(type="DIE")
     # Do not wait for browser response because browser will die before
     # it sends a response
-    sendRequest(pageID, msg, getRequestID(), function() {})
+    sendRequest(pageID, msg, getRequestID(), TRUE, NULL)
     result
 }
     
@@ -332,5 +354,5 @@ kill <- function(pageID) {
 debug <- function(pageID) {
     options(DOM.debug=TRUE)
     msg <- list(type="DEBUG")
-    sendRequest(pageID, msg, getRequestID(), function() {})
+    sendRequest(pageID, msg, getRequestID(), TRUE, NULL)
 }

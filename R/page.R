@@ -124,7 +124,7 @@ htmlPage <- function(html="", headless=getOption("DOM.headless")) {
     }
     ## Register a request so can wait for a response from browser
     tag <- getRequestID()
-    addRequest(tag, NULL)
+    addRequest(tag, FALSE, NULL)
     ## Start R server to handle web socket activity
     ## (and possibly serve initial HTML)
     startServer(pageID, app, body=html, tag=tag, headless=headless)
@@ -147,7 +147,7 @@ filePage <- function(file, headless=getOption("DOM.headless")) {
     if (!grepl("^file://", file)) {
         file <- paste0("file://", file)
     }
-    addRequest("-1", NULL)
+    addRequest("-1", FALSE, NULL)
     startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(file, 52000, headless, tag="-1")
     waitForResponse("-1")
@@ -163,7 +163,7 @@ urlPage <- function(url, headless=getOption("DOM.headless")) {
     if (!grepl("^http://", url)) {
         url <- paste0("http://", url)
     }
-    addRequest("-1", NULL)
+    addRequest("-1", FALSE, NULL)
     startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(url, 52000, headless, tag="-1")
     waitForResponse("-1")

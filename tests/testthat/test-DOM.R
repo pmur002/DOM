@@ -52,12 +52,11 @@ test_that("appendChild with callback", {
     expect_equal(result, "<p>test</p>")
 })
 
-test_that("appendChild with callback with callback", {    
+test_that("appendChild with callback with appendChild", {    
     headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test</p>",
                 callback=function(value) {
-                    appendChild(headlessPage, "<p>test2</p>",
-                                callback=function(value) {})
+                    appendChild(headlessPage, "<p>test2</p>", async=TRUE)
                 })
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
@@ -183,7 +182,7 @@ test_that("Rcall", {
             wordTab <- print(xtable(wordCount), type="html",
                              print.results=FALSE, comment=FALSE)
             replaceChild(page, newChild=wordTab, oldChildRef=targetRef,
-                         callback=function(value) {})
+                         async=TRUE)
         }
     }
     assign("replaceWithTable", callbackGen(headlessPage), envir=.GlobalEnv)
