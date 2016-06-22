@@ -6,6 +6,12 @@
 \alias{replaceChild}
 \alias{replaceChildCSS}
 \alias{setAttribute}
+\alias{getElementById}
+\alias{getElementByIdCSS}
+\alias{getElementsByTagName}
+\alias{getElementsByTagNameCSS}
+\alias{getElementsByClassName}
+\alias{getElementsByClassNameCSS}
 \alias{appendScript}
 \alias{click}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -40,6 +46,24 @@ replaceChildCSS(pageID, newChild = NULL, newChildRef = NULL,
 setAttribute(pageID, eltRef, attrName, attrValue,
              css = TRUE, async = !is.null(callback),
              callback = NULL, tag = getRequestID())
+getElementById(pageID, id,
+               async = !is.null(callback),
+               callback = NULL, tag = getRequestID())
+getElementByIdCSS(pageID, id,
+                  async = !is.null(callback),
+                  callback = NULL, tag = getRequestID())
+getElementsByTagName(pageID, name, 
+                     async = !is.null(callback),
+                     callback = NULL, tag = getRequestID())
+getElementsByTagNameCSS(pageID, name, 
+                        async = !is.null(callback),
+                        callback = NULL, tag = getRequestID())
+getElementsByClassName(pageID, name, rootRef = NULL, 
+                       css = TRUE, async = !is.null(callback),
+                       callback = NULL, tag = getRequestID())
+getElementsByClassNameCSS(pageID, name, rootRef = NULL, 
+                          css = TRUE, async = !is.null(callback),
+                          callback = NULL, tag = getRequestID())
 appendScript(pageID, script, parentRef = "body",
              css = TRUE, async = !is.null(callback),
              callback = NULL, tag = getRequestID())
@@ -64,6 +88,18 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     selector (or XPath, if \code{css=FALSE}).
   }
   \item{oldChildRef}{
+    A character value describing an existing element in the page as a CSS
+    selector (or XPath, if \code{css=FALSE}).
+  }
+  \item{id}{
+    A character value specifying an element id attribute.
+  }
+  \item{name}{
+    A character value specifying a tag name (or \sQuote{*})
+    or a class name (or 
+    several class names separated by spaces).
+  }
+  \item{rootRef}{
     A character value describing an existing element in the page as a CSS
     selector (or XPath, if \code{css=FALSE}).
   }
@@ -161,6 +197,14 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
   
   For \code{removeChildCSS}, a CSS selector for the
   old child element that was replaced (\emph{before} it was replaced).
+
+  For \code{getElementById}, \code{getElementsByTagName}, and
+  \code{getElementsByClassName}, the HTML code for the matching elements
+  (or a missing value if no match is found).
+
+  For \code{getElementByIdCSS}, \code{getElementsByTagNameCSS}, and
+  \code{getElementsByClassNameCSS}, CSS selectors for the matching elements
+  (or a missing value if no match is found).
 
   For \code{setAttribute}, \code{appendScript}, and \code{click},
   an empty string.

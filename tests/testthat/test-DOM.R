@@ -136,6 +136,62 @@ test_that("setAttribute", {
                  '<html><head></head><body><p onclick="alert(&quot;test&quot;)">test</p></body></html>')
 })
 
+test_that("getElementById", {
+    headlessPage <- htmlPage()
+    appendChild(headlessPage, '<p id="x">test</p>')
+    elt <- getElementById(headlessPage, "x")
+    css <- getElementByIdCSS(headlessPage, "x")
+    # id does not exist
+    missing <- getElementById(headlessPage, "y")
+    closePage(headlessPage)
+    expect_equal(elt, '<p id="x">test</p>')
+    expect_equal(css, '#x')
+    expect_equal(missing, NA_character_)
+})
+
+test_that("getElementsByTagName", {
+    headlessPage <- htmlPage()
+    appendChild(headlessPage, '<p>p1</p>')
+    appendChild(headlessPage, '<p>p2</p>')
+    elts <- getElementsByTagName(headlessPage, "p")
+    css <- getElementsByTagNameCSS(headlessPage, "p")
+    ## test '*' special
+    all <- getElementsByTagName(headlessPage, "*")
+    ## tag does not exist
+    missing <- getElementsByTagName(headlessPage, "table")
+    closePage(headlessPage)
+    expect_equal(elts, c("<p>p1</p>", "<p>p2</p>"))
+    expect_equal(css, c("body > :nth-child(1)", "body > :nth-child(2)"))
+    expect_equal(all,
+                 c("<html><head></head><body><p>p1</p><p>p2</p></body></html>",
+                   "<head></head>",
+                   "<body><p>p1</p><p>p2</p></body>",
+                   "<p>p1</p>",
+                   "<p>p2</p>"))
+    expect_equal(missing, NA_character_)
+})
+
+test_that("getElementsByClassName", {
+    ## test default document root
+    headlessPage <- htmlPage()
+    appendChild(headlessPage, '<p class="c1">p1<p>')
+    appendChild(headlessPage, '<div></div>')
+    appendChild(headlessPage, '<p class="c1 c2">p2<p>', parentRef="div")
+    elts <- getElementsByClassName(headlessPage, "c1")
+    css <- getElementsByClassNameCSS(headlessPage, "c1")
+    elt <- getElementsByClassName(headlessPage, "c1 c2")
+    ## test non-document root
+    nrelt <- getElementsByClassName(headlessPage, "c1", rootRef="div")
+    ## tag does not exist
+    missing <- getElementsByClassName(headlessPage, "c3")
+    closePage(headlessPage)
+    expect_equal(elts, c("<p class=\"c1\">p1</p>", "<p class=\"c1 c2\">p2</p>"))
+    expect_equal(css, c("body > :nth-child(1)", "div > .c1"))
+    expect_equal(elt, "<p class=\"c1 c2\">p2</p>")
+    expect_equal(nrelt, "<p class=\"c1 c2\">p2</p>")
+    expect_equal(missing, NA_character_)
+})
+
 test_that("click", {
     headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")

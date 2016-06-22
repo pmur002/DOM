@@ -58,10 +58,13 @@ RDOM = (function(){
                  }
                }
     }
-    var returnValue = function(tag, value) {
+    var returnValue = function(tag, fn, value) {
         return { type: "RESPONSE",
                  tag: tag,
-                 body: value
+                 body: {
+                     fn: fn,
+                     value: value
+                 }
                }    
     }   
     var errorValue = function(tag, err) {
@@ -95,9 +98,11 @@ RDOM = (function(){
                 parent.appendChild(child);
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(child);
-                    result = returnValue(msgJSON.tag, selector);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         selector);
                 } else {
-                    result = returnValue(msgJSON.tag, child.outerHTML);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         child.outerHTML);
                 }
                 break;
             case "removeChild": // child, parent, css
@@ -113,9 +118,11 @@ RDOM = (function(){
                       " FROM " + parent.toString());
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(child);
-                    result = returnValue(msgJSON.tag, selector);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         selector);
                 } else {
-                    result = returnValue(msgJSON.tag, child.outerHTML);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         child.outerHTML);
                 }
                 // Remove child AFTER determining its CSS selector !
                 parent.removeChild(child);
@@ -142,9 +149,11 @@ RDOM = (function(){
                       " WITH " + newChild.toString());
                 if (msgBody.returnRef[0]) {
                     var selector = CSG.getSelector(oldChild);
-                    result = returnValue(msgJSON.tag, selector);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         selector);
                 } else {
-                    result = returnValue(msgJSON.tag, oldChild.outerHTML);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         oldChild.outerHTML);
                 }
                 // Replace oldChild AFTER determining its CSS selector !
                 parent.replaceChild(newChild, oldChild);
@@ -153,6 +162,65 @@ RDOM = (function(){
                 var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
                 element.setAttribute(msgBody.attr[0], msgBody.value[0]);
                 result = returnValue(msgJSON.tag, "");
+                break;
+            case "getElementById": // id
+                var element = document.getElementById(msgBody.id[0]);
+                if (element === null) {
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                } else if (msgBody.returnRef[0]) {
+                    var selector = CSG.getSelector(element);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         selector);
+                } else {
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         element.outerHTML);
+                }
+                break;
+            case "getElementsByTagName": // name ('*' is special)
+                var elements = document.getElementsByTagName(msgBody.name[0]);
+                if (elements.length === 0) {
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                } else if (msgBody.returnRef[0]) {
+                    var css = [];
+                    for (i = 0; i < elements.length; i++) {
+                        css.push(CSG.getSelector(elements[i]));
+                    }
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         css);
+                } else {                
+                    var html = [];
+                    for (i = 0; i < elements.length; i++) {
+                        html.push(elements[i].outerHTML);
+                    }
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         html);
+                }
+                break;
+            case "getElementsByClassName": // name, rootRef
+                var elements;
+                if (msgBody.root === null) {
+                    elements = document.getElementsByClassName(msgBody.name[0]);
+                } else {
+                    var parent = resolveTarget(msgBody.root[0], msgBody.css[0]);
+                    elements = parent.getElementsByClassName(msgBody.name[0]);
+                }
+                if (elements.length === 0) {
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                } else if (msgBody.returnRef[0]) {
+                    var css = [];
+                    for (i = 0; i < elements.length; i++) {
+                        css.push(CSG.getSelector(elements[i]));
+                    }
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         css);
+                } else {                
+                    var html = [];
+                    for (i = 0; i < elements.length; i++) {
+                        html.push(elements[i].outerHTML);
+                    }
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         html);
+                }
                 break;
             case "appendScript": // script, css
                 // Distinct from "appendChild" because of the way we need
@@ -164,14 +232,14 @@ RDOM = (function(){
                 dblog("ADDING " + script.toString() + 
                       " TO " + parent.toString());
                 parent.appendChild(script);
-                result = returnValue(msgJSON.tag, "");
+                result = returnValue(msgJSON.tag, msgBody.fun[0], "");
                 break;
             case "click":
                 var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
                 var event = document.createEvent( 'MouseEvents' );
                 event.initMouseEvent( 'click', true, true, window, 1, 0, 0 );
                 element.dispatchEvent( event );
-                result = returnValue(msgJSON.tag, "");
+                result = returnValue(msgJSON.tag, msgBody.fun[0], "");
                 break;
             default:
                 throw new Error("Unsupported DOM request");

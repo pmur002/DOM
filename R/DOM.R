@@ -154,7 +154,14 @@ handleMessage <- function(msgJSON, ws) {
         message(result)
     } else if (msg$type == "RESPONSE") {
         ## Get response value
-        value <- msg$body
+        value <- msg$body$value
+        ## When this is a response to a getElement* request, 'null'
+        ## means no elements were found;  turn this into NA
+        if (grepl("getElement", msg$body$fn)) {
+            if (is.null(value)) {
+                value <- NA_character_
+            }
+        }
         ## Find the request that generated this response
         state <- getRequestState(msg$tag)
         if (state == "pending") {
@@ -313,6 +320,58 @@ setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
                 body=list(fun="setAttribute", elt=eltRef,
                           attr=attrName, value=as.character(attrValue),
                           css=css))
+    sendRequest(pageID, msg, tag, async, callback)
+}
+
+getElementById <- function(pageID, id,
+                           async=!is.null(callback),
+                           callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getElementById", id=id, returnRef=FALSE))
+    sendRequest(pageID, msg, tag, async, callback)
+}
+
+getElementByIdCSS <- function(pageID, id,
+                              async=!is.null(callback),
+                              callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getElementById", id=id, returnRef=TRUE))
+    sendRequest(pageID, msg, tag, async, callback)
+}
+
+getElementsByTagName <- function(pageID, name,
+                                 async=!is.null(callback),
+                                 callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getElementsByTagName", name=name,
+                          returnRef=FALSE))
+    sendRequest(pageID, msg, tag, async, callback)
+}
+
+getElementsByTagNameCSS <- function(pageID, name,
+                                    async=!is.null(callback),
+                                    callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getElementsByTagName", name=name,
+                          returnRef=TRUE))
+    sendRequest(pageID, msg, tag, async, callback)
+}
+
+getElementsByClassName <- function(pageID, name, rootRef=NULL, css=TRUE,
+                                   async=!is.null(callback),
+                                   callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getElementsByClassName", name=name,
+                          root=rootRef, css=css, returnRef=FALSE))
+    sendRequest(pageID, msg, tag, async, callback)
+}
+
+getElementsByClassNameCSS <- function(pageID, name, rootRef=NULL, css=TRUE,
+                                      async=!is.null(callback),
+                                      callback=NULL, tag=getRequestID()) {
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getElementsByClassName", name=name,
+                          root=rootRef, css=css, returnRef=TRUE))
     sendRequest(pageID, msg, tag, async, callback)
 }
 
