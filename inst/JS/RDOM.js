@@ -88,7 +88,18 @@ RDOM = (function(){
                 if (msgBody.byRef[0]) {
                     child = resolveTarget(msgBody.child[0], msgBody.css[0]);
                 } else {
-                    var container = document.createElement("div");
+                    var container;
+                    if (msgBody.ns != null) {
+                        if (msgBody.ns[0] === "HTML") {
+                            container = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                        } else if (msgBody.ns[0] === "SVG") {
+                            container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                        } else {
+                            throw new Error("Unsupported namespace");
+                        }
+                    } else {
+                        container = document.createElement("div");
+                    }        
                     container.innerHTML = msgBody.child[0];
                     child = container.firstChild;
                 }
@@ -133,7 +144,18 @@ RDOM = (function(){
                     newChild = resolveTarget(msgBody.newChild[0], 
                                              msgBody.css[0]);
                 } else {
-                    var container = document.createElement("div");
+                    var container;
+                    if (msgBody.ns != null) {
+                        if (msgBody.ns[0] === "HTML") {
+                            container = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                        } else if (msgBody.ns[0] === "SVG") {
+                            container = document.createElementNS("http://www.w3.org/2000/svg", "svg");                            
+                        } else {
+                            throw new Error("Unsupported namespace");
+                        }
+                    } else {
+                        container = document.createElement("div");
+                    }        
                     container.innerHTML = msgBody.newChild[0];
                     newChild = container.firstChild;
                 }

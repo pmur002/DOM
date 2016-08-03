@@ -247,25 +247,28 @@ nodeSpec <- function(node, nodeRef) {
 
 ################################################################################
 ## The main API
+
 appendChild <- function(pageID, child=NULL, childRef=NULL, 
-                        parentRef="body", css=TRUE, async=!is.null(callback),
+                        parentRef="body", ns=NULL,
+                        css=TRUE, async=!is.null(callback),
                         callback=NULL, tag=getRequestID()) {
     childSpec <- nodeSpec(child, childRef)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendChild",
                           child=childSpec$node, byRef=childSpec$byRef,
-                          parent=parentRef, css=css, returnRef=FALSE))
+                          parent=parentRef, ns=ns, css=css, returnRef=FALSE))
     sendRequest(pageID, msg, tag, async, callback)
 }
 
 appendChildCSS <- function(pageID, child=NULL, childRef=NULL, 
-                           parentRef="body", css=TRUE, async=!is.null(callback),
+                           parentRef="body", ns=NULL,
+                           css=TRUE, async=!is.null(callback),
                            callback=NULL, tag=getRequestID()) {
     childSpec <- nodeSpec(child, childRef)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendChild",
                           child=childSpec$node, byRef=childSpec$byRef,
-                          parent=parentRef, css=css, returnRef=TRUE))
+                          parent=parentRef, ns=ns, css=css, returnRef=TRUE))
     sendRequest(pageID, msg, tag, async, callback)
 }
 
@@ -288,7 +291,7 @@ removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE,
 }
 
 replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
-                         oldChildRef=NULL, parentRef=NULL, css=TRUE, 
+                         oldChildRef=NULL, parentRef=NULL, ns=NULL, css=TRUE, 
                          async=!is.null(callback), callback=NULL,
                          tag=getRequestID()) {
     newChildSpec <- nodeSpec(newChild, newChildRef)
@@ -296,12 +299,12 @@ replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
                 body=list(fun="replaceChild",
                           newChild=newChildSpec$node, byRef=newChildSpec$byRef,
                           oldChild=oldChildRef, parent=parentRef,
-                          css=css, returnRef=FALSE))
+                          ns=ns, css=css, returnRef=FALSE))
     sendRequest(pageID, msg, tag, async, callback)
 }
 
 replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
-                            oldChildRef=NULL, parentRef=NULL, css=TRUE, 
+                            oldChildRef=NULL, parentRef=NULL, ns=NULL, css=TRUE,
                             async=!is.null(callback), callback=NULL,
                             tag=getRequestID()) {
     newChildSpec <- nodeSpec(newChild, newChildRef)
@@ -309,7 +312,7 @@ replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
                 body=list(fun="replaceChild",
                           child=newChildSpec$node, byRef=newChildSpec$byRef,
                           oldChild=oldChildRef, parent=parentRef,
-                          css=css, returnRef=TRUE))
+                          ns=ns, css=css, returnRef=TRUE))
     sendRequest(pageID, msg, tag, async, callback)
 }
 

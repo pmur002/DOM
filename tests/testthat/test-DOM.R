@@ -39,6 +39,14 @@ test_that("appendChild", {
     pageContent <- closePage(headlessURL)
     expect_match(minifyHTML(pageContent),
                  "<p>test</p></body></html>$")
+    # Append SVG within HTML
+    # NO TEST because phantomjs does not handle creation of SVG properly
+    # (or at least not as well as Firefox and Chrome)
+    # (see AltEngine/PhantomJS/NStest/)
+    # Append HTML within SVG within HTML
+    # NO TEST because phantomjs does not handle creation of SVG properly
+    # (or at least not as well as Firefox and Chrome)
+    # (see AltEngine/PhantomJS/NStest/)
 })
 
 test_that("appendChild with callback", {    

@@ -24,10 +24,10 @@
 }
 \usage{
 appendChild(pageID, child = NULL, childRef = NULL, parentRef = "body",
-            css = TRUE, async = !is.null(callback),
+            ns = NULL, css = TRUE, async = !is.null(callback),
             callback = NULL, tag = getRequestID())
 appendChildCSS(pageID, child = NULL, childRef = NULL, parentRef = "body",
-               css = TRUE, async = !is.null(callback),
+               ns = NULL, css = TRUE, async = !is.null(callback),
                callback = NULL, tag = getRequestID())
 removeChild(pageID, childRef, parentRef = NULL,
             css = TRUE, async = !is.null(callback),
@@ -37,11 +37,11 @@ removeChildCSS(pageID, childRef, parentRef = NULL,
                callback = NULL, tag = getRequestID())
 replaceChild(pageID, newChild = NULL, newChildRef = NULL,
              oldChildRef = NULL, parentRef = NULL,
-             css = TRUE, async = !is.null(callback),
+             ns = NULL, css = TRUE, async = !is.null(callback),
              callback = NULL, tag = getRequestID())
 replaceChildCSS(pageID, newChild = NULL, newChildRef = NULL,
                 oldChildRef = NULL, parentRef = NULL,
-                css = TRUE, async = !is.null(callback),
+                ns = NULL, css = TRUE, async = !is.null(callback),
                 callback = NULL, tag = getRequestID())
 setAttribute(pageID, eltRef, attrName, attrValue,
              css = TRUE, async = !is.null(callback),
@@ -121,6 +121,10 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
   \item{attrValue}{
     The attribute value (will be coerced to a character value).
   }
+  \item{ns}{
+    A namespace for the child element that is to be created.
+    Valid values are \code{"HTML"} or \code{"SVG"} (or \code{NULL}).
+  }
   \item{css}{
     A logical indicating whether the \code{parent} is a CSS selector
     (otherwise, it is an XPath).
@@ -160,6 +164,10 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     \item \code{click} sends a click event to an element, \code{eltRef}.
   }
 
+  For adding SVG content within HTML, you should
+  specify \code{ns="SVG"} and for adding
+  HTML content within SVG, you should specify \code{ns="HTML"}.
+  
   If \code{async} is \code{FALSE}, the request is synchronous and R
   blocks until the browser has sent a response.
   Otherwise, the request is asynchronous and control is returned to
