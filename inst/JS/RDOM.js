@@ -12,7 +12,10 @@ RDOM = (function(){
 
     // The websocket connection to R
     var ws;
-    
+
+    var parser = new DOMParser();
+    var serializer = new XMLSerializer;
+
     // CSS selector generator object
     var CSG = new CssSelectorGenerator();
 
@@ -91,16 +94,20 @@ RDOM = (function(){
                     var container;
                     if (msgBody.ns != null) {
                         if (msgBody.ns[0] === "HTML") {
-                            container = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                            // "text/xml" rather than "text/html" 
+                            // to satisfy PhantomJS
+                            container = parser.parseFromString(msgBody.child[0],
+                                                              "text/xml");
                         } else if (msgBody.ns[0] === "SVG") {
-                            container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                            container = parser.parseFromString(msgBody.child[0],
+                                                              "image/svg+xml");
                         } else {
                             throw new Error("Unsupported namespace");
                         }
                     } else {
                         container = document.createElement("div");
+                        container.innerHTML = msgBody.child[0];
                     }        
-                    container.innerHTML = msgBody.child[0];
                     child = container.firstChild;
                 }
                 var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
@@ -112,8 +119,13 @@ RDOM = (function(){
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          selector);
                 } else {
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         child.outerHTML);
+                    if (msgBody.ns != null) {
+                        result = returnValue(msgJSON.tag, msgBody.fun[0],
+                                             serializer.serializeToString(child));
+                    } else {
+                        result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                             child.outerHTML);
+                    }
                 }
                 break;
             case "removeChild": // child, parent, css

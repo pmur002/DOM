@@ -40,13 +40,25 @@ test_that("appendChild", {
     expect_match(minifyHTML(pageContent),
                  "<p>test</p></body></html>$")
     # Append SVG within HTML
-    # NO TEST because phantomjs does not handle creation of SVG properly
-    # (or at least not as well as Firefox and Chrome)
-    # (see AltEngine/PhantomJS/NStest/)
+    headlessPage <- htmlPage()
+    appendChild(headlessPage,
+                '<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>',
+                ns="SVG")
+    pageContent <- closePage(headlessPage)
+    expect_equal(pageContent,
+                 '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><circle></circle></svg></body></html>')
     # Append HTML within SVG within HTML
-    # NO TEST because phantomjs does not handle creation of SVG properly
-    # (or at least not as well as Firefox and Chrome)
-    # (see AltEngine/PhantomJS/NStest/)
+    headlessPage <- htmlPage()
+    appendChild(headlessPage,
+                '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"></foreignObject></svg>',
+                ns="SVG")
+    appendChild(headlessPage,
+                '<p xmlns="http://www.w3.org/1999/xhtml">test</p>',
+                ns="HTML",
+                parentRef="#fo")
+    pageContent <- closePage(headlessPage)
+    expect_equal(pageContent,
+                 '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"><p xmlns="http://www.w3.org/1999/xhtml">test</p></foreignObject></svg></body></html>')
 })
 
 test_that("appendChild with callback", {    
