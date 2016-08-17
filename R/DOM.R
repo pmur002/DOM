@@ -29,7 +29,7 @@ DOMclosure <- function() {
     ls <- function() {
         requests
     }
-    add <- function(tag, async, callback) {
+    add <- function(tag, async, callback, returnType) {
         req <- requests[[tag]]
         if (!is.null(req)) {
             stop(paste0("Request ", tag, " already registered",
@@ -37,6 +37,7 @@ DOMclosure <- function() {
         } else {
             requests[[tag]] <<- list(async=async,
                                      callback=callback,
+                                     returnType=returnType,
                                      state="pending")
             dblog("Adding request", tag, "\n")
         }
@@ -78,6 +79,15 @@ DOMclosure <- function() {
             req$callback
         }
     }
+    type <- function(tag) {
+        req <- requests[[tag]]
+        if (is.null(req)) {
+            stop(paste0("Request ", tag, " not registered",
+                        " (get responseType failed)"))
+        } else {
+            req$returnType
+        }        
+    }
     setValue <- function(tag, value) {
         req <- requests[[tag]]
         if (is.null(req)) {
@@ -115,6 +125,7 @@ DOMclosure <- function() {
          state=state,
          async=async,
          callback=callback,
+         type=type,
          setValue=setValue,
          getValue=getValue,
          pending=pending)
@@ -128,9 +139,15 @@ removeRequest <- DOMfunctions$remove
 getRequestState <- DOMfunctions$state
 getRequestAsync <- DOMfunctions$async
 getRequestCallback <- DOMfunctions$callback
+getRequestResponseType <- DOMfunctions$type
 setRequestValue <- DOMfunctions$setValue
 getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
+
+DOMresponse <- function(x, type) {
+    class(x) <- c(paste0(type, "_DOMresponse"), "DOMresponse")
+    x
+}
 
 # Handling messages
 # RECEIVE either REQUEST or RESPONSE
@@ -139,27 +156,28 @@ handleMessage <- function(msgJSON, ws) {
     msg <- fromJSON(msgJSON)
     if (msg$type == "ALIVE") {
         ## Page is waiting for this to know that browser has opened web socket
-        setRequestValue(msg$tag, TRUE)
+        setRequestValue(msg$tag, DOMresponse(TRUE, "ALIVE"))
     } else if (msg$type == "DEAD") {
         ## Page is waiting for browser to die
-        setRequestValue(msg$tag, msg$body)
+        setRequestValue(msg$tag, DOMresponse(msg$body, "DEAD"))
     } else if (msg$type == "ERROR") {
         ## A request has failed
         ## (so set the request value)
         ## (so any code waiting for this request will terminate)
         result <- paste0("Request ", msg$tag, " failed")
         ## Warning message will be the result of the request
-        setRequestValue(msg$tag, result)
+        setRequestValue(msg$tag, DOMresponse(result, "ERROR"))
         ## Warning message will also print to screen
         message(result)
     } else if (msg$type == "RESPONSE") {
         ## Get response value
-        value <- msg$body$value
+        value <- DOMresponse(msg$body$value, getRequestResponseType(msg$tag))
         ## When this is a response to a getElement* request, 'null'
         ## means no elements were found;  turn this into NA
         if (grepl("getElement", msg$body$fn)) {
             if (is.null(value)) {
-                value <- NA_character_
+                value <- DOMresponse(NA_character_,
+                                     getRequestResponseType(msg$tag))
             }
         }
         ## Find the request that generated this response
@@ -219,13 +237,13 @@ waitForResponse <- function(tag, limit=5) {
 # will be called when a response with 'tag' is received
 # IF 'callback' is NULL, the request is synchronous and R will block until
 # a response with 'tag' is received AND the response value will be returned
-sendRequest <- function(pageID, msg, tag, async, callback) {
+sendRequest <- function(pageID, msg, tag, async, callback, returnType) {
     sock <- pageInfo(pageID)$socket
     if (is.null(sock))
         stop("No socket open")
     msgJSON <- toJSON(msg, null="null")
     ## Register request (do it before send in case send returns instantly)
-    addRequest(tag, async, callback)
+    addRequest(tag, async, callback, returnType)
     sock$send(msgJSON)
     if (!async) {
         return(waitForResponse(tag))
@@ -257,7 +275,7 @@ appendChild <- function(pageID, child=NULL, childRef=NULL,
                 body=list(fun="appendChild",
                           child=childSpec$node, byRef=childSpec$byRef,
                           parent=parentRef, ns=ns, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "HTML")
 }
 
 appendChildCSS <- function(pageID, child=NULL, childRef=NULL, 
@@ -269,7 +287,7 @@ appendChildCSS <- function(pageID, child=NULL, childRef=NULL,
                 body=list(fun="appendChild",
                           child=childSpec$node, byRef=childSpec$byRef,
                           parent=parentRef, ns=ns, css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "CSS")
 }
 
 removeChild <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
@@ -278,7 +296,7 @@ removeChild <- function(pageID, childRef, parentRef=NULL, css=TRUE,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="removeChild", child=childRef, parent=parentRef,
                           css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "HTML")
 }
 
 removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
@@ -287,7 +305,7 @@ removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="removeChild", child=childRef, parent=parentRef,
                           css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "CSS")
 }
 
 replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
@@ -300,7 +318,7 @@ replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
                           newChild=newChildSpec$node, byRef=newChildSpec$byRef,
                           oldChild=oldChildRef, parent=parentRef,
                           ns=ns, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "HTML")
 }
 
 replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
@@ -313,7 +331,7 @@ replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
                           child=newChildSpec$node, byRef=newChildSpec$byRef,
                           oldChild=oldChildRef, parent=parentRef,
                           ns=ns, css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "CSS")
 }
 
 setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
@@ -323,7 +341,7 @@ setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
                 body=list(fun="setAttribute", elt=eltRef,
                           attr=attrName, value=as.character(attrValue),
                           css=css))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "NULL")
 }
 
 getElementById <- function(pageID, id,
@@ -331,7 +349,7 @@ getElementById <- function(pageID, id,
                            callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementById", id=id, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "HTML")
 }
 
 getElementByIdCSS <- function(pageID, id,
@@ -339,7 +357,7 @@ getElementByIdCSS <- function(pageID, id,
                               callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementById", id=id, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "CSS")
 }
 
 getElementsByTagName <- function(pageID, name,
@@ -348,7 +366,7 @@ getElementsByTagName <- function(pageID, name,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementsByTagName", name=name,
                           returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "HTML")
 }
 
 getElementsByTagNameCSS <- function(pageID, name,
@@ -357,7 +375,7 @@ getElementsByTagNameCSS <- function(pageID, name,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementsByTagName", name=name,
                           returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "CSS")
 }
 
 getElementsByClassName <- function(pageID, name, rootRef=NULL, css=TRUE,
@@ -366,7 +384,7 @@ getElementsByClassName <- function(pageID, name, rootRef=NULL, css=TRUE,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementsByClassName", name=name,
                           root=rootRef, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "HTML")
 }
 
 getElementsByClassNameCSS <- function(pageID, name, rootRef=NULL, css=TRUE,
@@ -375,7 +393,7 @@ getElementsByClassNameCSS <- function(pageID, name, rootRef=NULL, css=TRUE,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementsByClassName", name=name,
                           root=rootRef, css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "CSS")
 }
 
 appendScript <- function(pageID, script, 
@@ -385,7 +403,7 @@ appendScript <- function(pageID, script,
                 body=list(fun="appendScript",
                           script=script,
                           parent=parentRef, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback)
+    sendRequest(pageID, msg, tag, async, callback, "NULL")
 }
 
 ## This request is ALWAYS asynchronous
@@ -394,7 +412,7 @@ click <- function(pageID, eltRef, css=TRUE,
                   callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="click", elt=eltRef, css=css))
-    sendRequest(pageID, msg, tag, TRUE, callback)
+    sendRequest(pageID, msg, tag, TRUE, callback, "NULL")
 }
 
 ################################################################################
@@ -404,11 +422,11 @@ click <- function(pageID, eltRef, css=TRUE,
 kill <- function(pageID) {
     tag <- getRequestID()
     msg <- list(type="PREPARETODIE", tag=tag)
-    result <- sendRequest(pageID, msg, tag, FALSE, NULL)
+    result <- sendRequest(pageID, msg, tag, FALSE, NULL, "NULL")
     msg <- list(type="DIE")
     # Do not wait for browser response because browser will die before
     # it sends a response
-    sendRequest(pageID, msg, getRequestID(), TRUE, NULL)
+    sendRequest(pageID, msg, getRequestID(), TRUE, NULL, "NULL")
     result
 }
     
@@ -416,5 +434,5 @@ kill <- function(pageID) {
 debug <- function(pageID) {
     options(DOM.debug=TRUE)
     msg <- list(type="DEBUG")
-    sendRequest(pageID, msg, getRequestID(), TRUE, NULL)
+    sendRequest(pageID, msg, getRequestID(), TRUE, NULL, "NULL")
 }
