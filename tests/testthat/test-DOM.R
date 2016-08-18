@@ -12,7 +12,7 @@ test_that("appendChild", {
     headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test</p></body></html>")
     # Append CSS child
     headlessPage <- htmlPage()
@@ -20,13 +20,13 @@ test_that("appendChild", {
     appendChild(headlessPage, "<p>test2<p>")
     appendChild(headlessPage, childRef="p")
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test2</p><p>test</p></body></html>")
     # Append HTML child and return CSS
     headlessPage <- htmlPage()
     result <- appendChildCSS(headlessPage, "<p>test<p>")
     closePage(headlessPage)
-    expect_equal(result, "p")
+    expect_equal(unclass(result), "p")
     # Append HTML child in filePage()
     headlessFile <- filePage(fileURL)
     appendChild(headlessFile, "<p>test<p>")
@@ -45,7 +45,7 @@ test_that("appendChild", {
                 '<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>',
                 ns="SVG")
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><circle></circle></svg></body></html>')
     # Append HTML within SVG within HTML
     headlessPage <- htmlPage()
@@ -57,7 +57,7 @@ test_that("appendChild", {
                 ns="HTML",
                 parentRef="#fo")
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"><p xmlns="http://www.w3.org/1999/xhtml">test</p></foreignObject></svg></body></html>')
 })
 
@@ -69,7 +69,7 @@ test_that("appendChild with callback", {
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.1)
     closePage(headlessPage)
-    expect_equal(result, "<p>test</p>")
+    expect_equal(unclass(result), "<p>test</p>")
 })
 
 test_that("appendChild with callback with appendChild", {    
@@ -81,7 +81,7 @@ test_that("appendChild with callback with appendChild", {
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test</p><p>test2</p></body></html>")
 })
 
@@ -92,7 +92,7 @@ test_that("removeChild", {
     appendChild(headlessPage, "<p>test2<p>")
     removeChild(headlessPage, "p")
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test2</p></body></html>")
     # Remove child that exists (parent implicit) and return CSS
     headlessPage <- htmlPage()
@@ -100,12 +100,12 @@ test_that("removeChild", {
     appendChild(headlessPage, "<p>test2<p>")
     result <- removeChildCSS(headlessPage, "p")
     closePage(headlessPage)
-    expect_equal(result, "body > :nth-child(1)")
+    expect_equal(unclass(result), "body > :nth-child(1)")
     # Remove child that does not exist
     headlessPage <- htmlPage()
     appendChild(headlessPage, "<p>test<p>")
     result <- removeChild(headlessPage, "h1", tag="removeNonExistentChild")
-    expect_equal(result, "Request removeNonExistentChild failed")
+    expect_equal(unclass(result), "Request removeNonExistentChild failed")
     pageContent <- closePage(headlessPage)
     # Remove child that does not match parent
     headlessPage <- htmlPage()
@@ -113,7 +113,7 @@ test_that("removeChild", {
     appendChild(headlessPage, "<p>test2<p>")
     result <- removeChild(headlessPage, "p", parentRef="p",
                           tag="removeNotChildOfParent")
-    expect_equal(result, "Request removeNotChildOfParent failed")
+    expect_equal(unclass(result), "Request removeNotChildOfParent failed")
     pageContent <- closePage(headlessPage)
     # Remove children from filePage
     headlessFile <- filePage(fileURL)
@@ -143,7 +143,7 @@ test_that("replaceChild", {
     appendChild(headlessPage, "<p>test<p>")
     replaceChild(headlessPage, "<p>test2</p>", oldChildRef="p")
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test2</p></body></html>")
 })
     
@@ -152,7 +152,7 @@ test_that("setAttribute", {
     appendChild(headlessPage, "<p>test<p>")
     setAttribute(headlessPage, "p", "onclick", 'alert("test")')
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  '<html><head></head><body><p onclick="alert(&quot;test&quot;)">test</p></body></html>')
 })
 
@@ -164,9 +164,9 @@ test_that("getElementById", {
     # id does not exist
     missing <- getElementById(headlessPage, "y")
     closePage(headlessPage)
-    expect_equal(elt, '<p id="x">test</p>')
-    expect_equal(css, '#x')
-    expect_equal(missing, NA_character_)
+    expect_equal(unclass(elt), '<p id="x">test</p>')
+    expect_equal(unclass(css), '#x')
+    expect_equal(unclass(missing), character())
 })
 
 test_that("getElementsByTagName", {
@@ -180,15 +180,16 @@ test_that("getElementsByTagName", {
     ## tag does not exist
     missing <- getElementsByTagName(headlessPage, "table")
     closePage(headlessPage)
-    expect_equal(elts, c("<p>p1</p>", "<p>p2</p>"))
-    expect_equal(css, c("body > :nth-child(1)", "body > :nth-child(2)"))
-    expect_equal(all,
+    expect_equal(unclass(elts), c("<p>p1</p>", "<p>p2</p>"))
+    expect_equal(unclass(css),
+                 c("body > :nth-child(1)", "body > :nth-child(2)"))
+    expect_equal(unclass(all),
                  c("<html><head></head><body><p>p1</p><p>p2</p></body></html>",
                    "<head></head>",
                    "<body><p>p1</p><p>p2</p></body>",
                    "<p>p1</p>",
                    "<p>p2</p>"))
-    expect_equal(missing, NA_character_)
+    expect_equal(unclass(missing), character())
 })
 
 test_that("getElementsByClassName", {
@@ -205,11 +206,12 @@ test_that("getElementsByClassName", {
     ## tag does not exist
     missing <- getElementsByClassName(headlessPage, "c3")
     closePage(headlessPage)
-    expect_equal(elts, c("<p class=\"c1\">p1</p>", "<p class=\"c1 c2\">p2</p>"))
-    expect_equal(css, c("body > :nth-child(1)", "div > .c1"))
-    expect_equal(elt, "<p class=\"c1 c2\">p2</p>")
-    expect_equal(nrelt, "<p class=\"c1 c2\">p2</p>")
-    expect_equal(missing, NA_character_)
+    expect_equal(unclass(elts),
+                 c("<p class=\"c1\">p1</p>", "<p class=\"c1 c2\">p2</p>"))
+    expect_equal(unclass(css), c("body > :nth-child(1)", "div > .c1"))
+    expect_equal(unclass(elt), "<p class=\"c1 c2\">p2</p>")
+    expect_equal(unclass(nrelt), "<p class=\"c1 c2\">p2</p>")
+    expect_equal(unclass(missing), character())
 })
 
 test_that("click", {
@@ -221,7 +223,7 @@ test_that("click", {
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  '<html><head></head><body><p onclick="this.setAttribute(&quot;style&quot;, &quot;color: red&quot;)" style="color: red">test</p></body></html>')
 })
 

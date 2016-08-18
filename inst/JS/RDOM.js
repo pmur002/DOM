@@ -195,7 +195,7 @@ RDOM = (function(){
             case "setAttribute": // elt, attr, value, css
                 var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
                 element.setAttribute(msgBody.attr[0], msgBody.value[0]);
-                result = returnValue(msgJSON.tag, "");
+                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 break;
             case "getElementById": // id
                 var element = document.getElementById(msgBody.id[0]);
@@ -266,14 +266,14 @@ RDOM = (function(){
                 dblog("ADDING " + script.toString() + 
                       " TO " + parent.toString());
                 parent.appendChild(script);
-                result = returnValue(msgJSON.tag, msgBody.fun[0], "");
+                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 break;
             case "click":
                 var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
                 var event = document.createEvent( 'MouseEvents' );
                 event.initMouseEvent( 'click', true, true, window, 1, 0, 0 );
                 element.dispatchEvent( event );
-                result = returnValue(msgJSON.tag, msgBody.fun[0], "");
+                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 break;
             default:
                 throw new Error("Unsupported DOM request");

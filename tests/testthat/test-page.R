@@ -9,7 +9,7 @@ context("opening (and closing) web pages")
 test_that("page start (and stop) works", {    
     headlessPage <- htmlPage()
     pageContent <- closePage(headlessPage)
-    expect_equal(pageContent,
+    expect_equal(unclass(pageContent),
                  "<html><head></head><body></body></html>")
 
     fileURL <- system.file("HTML", "RDOM.html", package="DOM")

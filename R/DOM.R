@@ -145,7 +145,9 @@ getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
 
 DOMresponse <- function(x, type) {
-    class(x) <- c(paste0(type, "_DOMresponse"), "DOMresponse")
+    if (!is.null(x)) {
+        class(x) <- c(paste0(type, "_DOMresponse"), "DOMresponse")
+    }
     x
 }
 
@@ -173,10 +175,10 @@ handleMessage <- function(msgJSON, ws) {
         ## Get response value
         value <- DOMresponse(msg$body$value, getRequestResponseType(msg$tag))
         ## When this is a response to a getElement* request, 'null'
-        ## means no elements were found;  turn this into NA
+        ## means no elements were found;  turn this into character(0)
         if (grepl("getElement", msg$body$fn)) {
             if (is.null(value)) {
-                value <- DOMresponse(NA_character_,
+                value <- DOMresponse(character(),
                                      getRequestResponseType(msg$tag))
             }
         }
