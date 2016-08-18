@@ -275,7 +275,12 @@ appendChild <- function(pageID, child=NULL, childRef=NULL,
                 body=list(fun="appendChild",
                           child=childSpec$node, byRef=childSpec$byRef,
                           parent=parentRef, ns=ns, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "HTML")
+    if (is.null(ns)) {
+        responseType <- c("HTML", "XML")
+    } else {
+        responseType <- c(ns, "XML")
+    }
+    sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
 appendChildCSS <- function(pageID, child=NULL, childRef=NULL, 
@@ -296,7 +301,7 @@ removeChild <- function(pageID, childRef, parentRef=NULL, css=TRUE,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="removeChild", child=childRef, parent=parentRef,
                           css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "HTML")
+    sendRequest(pageID, msg, tag, async, callback, "XML")
 }
 
 removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
@@ -318,7 +323,12 @@ replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
                           newChild=newChildSpec$node, byRef=newChildSpec$byRef,
                           oldChild=oldChildRef, parent=parentRef,
                           ns=ns, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "HTML")
+    if (is.null(ns)) {
+        responseType <- c("HTML", "XML")
+    } else {
+        responseType <- c(ns, "XML")
+    }
+    sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
 replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
@@ -349,7 +359,7 @@ getElementById <- function(pageID, id,
                            callback=NULL, tag=getRequestID()) {
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementById", id=id, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "HTML")
+    sendRequest(pageID, msg, tag, async, callback, "XML")
 }
 
 getElementByIdCSS <- function(pageID, id,
@@ -366,7 +376,7 @@ getElementsByTagName <- function(pageID, name,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementsByTagName", name=name,
                           returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "HTML")
+    sendRequest(pageID, msg, tag, async, callback, "XML")
 }
 
 getElementsByTagNameCSS <- function(pageID, name,
@@ -384,7 +394,7 @@ getElementsByClassName <- function(pageID, name, rootRef=NULL, css=TRUE,
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getElementsByClassName", name=name,
                           root=rootRef, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "HTML")
+    sendRequest(pageID, msg, tag, async, callback, "XML")
 }
 
 getElementsByClassNameCSS <- function(pageID, name, rootRef=NULL, css=TRUE,
