@@ -18,6 +18,7 @@ page.open("{{{url}}}",
               if (status === "success") {
                   // Load css-selector-generator library
                   page.injectJs("{{{CSGjs}}}");
+                  page.injectJs("{{{bowserjs}}}");
                   page.injectJs("{{{RDOMjs}}}");
                   // dblog("opening socket")
                   page.evaluate(function(port, tag) { RDOM.init(port, tag) }, 

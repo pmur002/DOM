@@ -270,9 +270,14 @@ RDOM = (function(){
                 break;
             case "click":
                 var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
-                var event = document.createEvent( 'MouseEvents' );
-                event.initMouseEvent( 'click', true, true, window, 1, 0, 0 );
-                element.dispatchEvent( event );
+                var event;
+                if (bowser.phantom) {
+                    event = document.createEvent( 'MouseEvents' );
+                    event.initMouseEvent('click', true, true, window, 1, 0, 0);
+                } else {
+                    event = new MouseEvent('click');
+                }
+                element.dispatchEvent(event);
                 result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 break;
             default:

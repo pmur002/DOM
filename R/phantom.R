@@ -4,11 +4,14 @@
 phantomURL <- function(url, port, tag) {
     template <- readLines(system.file("templates", "phantom.js", package="DOM"))
     CSGjs <- system.file("JS", "css-selector-generator.min.js", package="DOM")
+    bowserjs <- system.file("JS", "bowser.min.js", package="DOM")
     RDOMjs <- system.file("JS", "RDOM.js", package="DOM")
     ## jsFile <- tempfile(fileext=".js")
     jsFile <- "phantom-test.js"
     writeLines(whisker.render(template,
-                              list(url=url, CSGjs=CSGjs, RDOMjs=RDOMjs,
+                              list(url=url,
+                                   CSGjs=CSGjs, bowserjs=bowserjs,
+                                   RDOMjs=RDOMjs, 
                                    port=port, tag=tag)),
                jsFile)
     phantom_run(jsFile)
