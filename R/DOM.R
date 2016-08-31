@@ -162,6 +162,8 @@ handleMessage <- function(msgJSON, ws) {
     } else if (msg$type == "DEAD") {
         ## Page is waiting for browser to die
         setRequestValue(msg$tag, DOMresponse(msg$body, "DEAD"))
+    } else if (msg$type == "PAGECONTENT") {
+        setRequestValue(msg$tag, DOMresponse(msg$body, "HTML"))
     } else if (msg$type == "ERROR") {
         ## A request has failed
         ## (so set the request value)
@@ -441,7 +443,13 @@ kill <- function(pageID) {
     sendRequest(pageID, msg, getRequestID(), TRUE, NULL, "NULL")
     result
 }
-    
+
+getPage <- function(pageID) {
+    tag <- getRequestID()
+    msg <- list(type="GETPAGE", tag=tag)
+    sendRequest(pageID, msg, tag, FALSE, NULL, "NULL")
+}
+
 ## Deliberately internal function, so have to call with DOM:::debug()
 debug <- function(pageID) {
     options(DOM.debug=TRUE)

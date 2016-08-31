@@ -76,6 +76,9 @@ RDOM = (function(){
                  body: err
                }    
     }
+    var pageContent = function() {
+        return document.documentElement.outerHTML
+    }
 
     // Main function for handling requests from R to JS
     var handleMessage = function(msg) {
@@ -291,10 +294,17 @@ RDOM = (function(){
         if (msgJSON.type[0] === "DEBUG") {
             debug = true;
 
+        } else if (msgJSON.type[0] === "GETPAGE") {
+	    var msg = JSON.stringify({ type: "PAGECONTENT",
+                                       tag: msgJSON.tag[0],
+                                       body: pageContent()
+                                     });
+            ws.send(msg);
+
         } else if (msgJSON.type[0] === "PREPARETODIE") {
 	    var msg = JSON.stringify({ type: "DEAD",
                                        tag: msgJSON.tag[0],
-                                       body: document.documentElement.outerHTML
+                                       body: pageContent()
                                      });
             ws.send(msg);
 	    
