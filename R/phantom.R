@@ -32,6 +32,10 @@ phantom_run <- function(args, wait = FALSE) {
 
 # Find PhantomJS from PATH, APPDATA, system.file('webshot'), ~/bin, etc
 find_phantom <- function() {
+    # Allow override of phantomjs executable
+    if ((cmd <- Sys.getenv("R_PHANTOMJSCMD")) != "") {
+        return(cmd)
+    }
     path <- Sys.which( "phantomjs" )
     if (path != "") return(path)
     for (d in phantom_paths()) {
