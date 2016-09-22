@@ -220,13 +220,15 @@ handleMessage <- function(msgJSON, ws) {
 
 ## Block until response with 'tag' is received
 ## (if 'limit' is exceeded, error out)
-waitForResponse <- function(tag, limit=5) {
+waitForResponse <- function(tag, limit=5, onTimeout=NULL) {
     ptm <- proc.time()
     while (requestPending(tag)) {
         Sys.sleep(.1)
         if ((proc.time() - ptm)[3] > limit) {
             ## Give up on this request
             removeRequest(tag)
+            if (!is.null(onTimeout))
+                onTimeout()
             stop("Exceeded wait time")
         }
     }

@@ -105,6 +105,7 @@ startServer <- function(pageID, app, port=NULL, body="",
         }
     }
     if (is.null(handle)) {
+        removeRequest(tag)
         stop("Failed to start page")
     }
     registerPage(pageID, handle, port, headless)
@@ -133,7 +134,7 @@ htmlPage <- function(html="", headless=getOption("DOM.headless")) {
     runBrowser(paste0("http://127.0.0.1:", port, "/"),
                port, headless, tag=tag)
     ## Block until web socket has been established by browser
-    waitForResponse(tag)
+    waitForResponse(tag, onTimeout=function() closePage(pageID))
     pageID
 }
 
@@ -150,7 +151,7 @@ filePage <- function(file, headless=getOption("DOM.headless")) {
     addRequest("-1", FALSE, NULL, "NULL")
     startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(file, 52000, headless, tag="-1")
-    waitForResponse("-1")
+    waitForResponse("-1", onTimeout=function() closePage(pageID))
     pageID
 }
 
@@ -166,7 +167,7 @@ urlPage <- function(url, headless=getOption("DOM.headless")) {
     addRequest("-1", FALSE, NULL, "NULL")
     startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(url, 52000, headless, tag="-1")
-    waitForResponse("-1")
+    waitForResponse("-1", onTimeout=function() closePage(pageID))
     pageID
 }
 
