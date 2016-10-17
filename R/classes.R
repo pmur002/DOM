@@ -54,3 +54,9 @@ DOMptr <- function(x="") {
     new("DOM_node_ptr", x)
 }
 
+# Need to allow for errors
+setClass("DOM_error",
+         contains="character")
+
+# Allow for a DOM node OR an error (for example)
+setClassUnion("DOM_node_OR_error", c("DOM_error", "DOM_node"))

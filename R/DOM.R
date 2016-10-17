@@ -172,7 +172,7 @@ handleMessage <- function(msgJSON, ws) {
         ## (so any code waiting for this request will terminate)
         result <- paste0("Request ", msg$tag, " failed")
         ## Warning message will be the result of the request
-        setRequestValue(msg$tag, result)
+        setRequestValue(msg$tag, new("DOM_error", result))
         ## Warning message will also print to screen
         message(result)
     } else if (msg$type == "RESPONSE") {
@@ -261,8 +261,8 @@ sendRequest <- function(pageID, msg, tag, async, callback, returnType) {
 ################################################################################
 ## The main API
 
-appendChildCore <- function(pageID, child, parent,
-                            ns, async, callback, tag, response) {
+appendChildCore <- function(pageID, child, parent, response,
+                            ns, async, callback, tag) {
     responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendChild",
@@ -279,7 +279,7 @@ setGeneric("appendChild",
            function(pageID, child, parent, ...) {
                standardGeneric("appendChild")
            },
-           valueClass="DOM_node")
+           valueClass="DOM_node_OR_error")
 
 setMethod("appendChild",
           signature(pageID="numeric",
@@ -287,8 +287,8 @@ setMethod("appendChild",
                     parent="missing"),
           function(pageID, child, parent, response=htmlNode(),
                    ns=FALSE, async=FALSE, callback=NULL, tag=getRequestID()) {
-              appendChildCore(pageID, child, parent=css("body"),
-                              ns, async, callback, tag, response)
+              appendChildCore(pageID, child, parent=css("body"), response,
+                              ns, async, callback, tag)
           })
                
 setMethod("appendChild",
@@ -297,27 +297,49 @@ setMethod("appendChild",
                     parent="DOM_node_ref"),
           function(pageID, child, parent, response=htmlNode(),
                    ns=FALSE, async=FALSE, callback=NULL, tag=getRequestID()) {
-              appendChildCore(pageID, child, parent,
-                              ns, async, callback, tag, response)
+              appendChildCore(pageID, child, parent, response,
+                              ns, async, callback, tag)
           })
-               
-removeChild <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
-                        async=!is.null(callback), callback=NULL,
-                        tag=getRequestID()) {
+
+removeChildCore <- function(pageID, child, parent, response,
+                            async, callback, tag) {
+    responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="removeChild", child=childRef, parent=parentRef,
-                          css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "XML")
+                body=list(fun="removeChild",
+                          child=as.character(child),
+                          childType=class(child),
+                          parent=as.character(parent),
+                          parentType=class(parent),
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
-removeChildCSS <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
-                           async=!is.null(callback), callback=NULL,
-                           tag=getRequestID()) {
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="removeChild", child=childRef, parent=parentRef,
-                          css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback, "CSS")
-}
+setGeneric("removeChild",
+           function(pageID, child, parent, ...) {
+               standardGeneric("removeChild")
+           },
+           valueClass="DOM_node_OR_error")
+
+setMethod("removeChild",
+          signature(pageID="numeric",
+                    child="DOM_node_ref",
+                    parent="missing"),
+          function(pageID, child, parent, response=htmlNode(),
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              removeChildCore(pageID, child, parent=NULL, response,
+                              async, callback, tag)
+          })
+               
+setMethod("removeChild",
+          signature(pageID="numeric",
+                    child="DOM_node_ref",
+                    parent="DOM_node_ref"),
+          function(pageID, child, parent, response=htmlNode(),
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              removeChildCore(pageID, child, parent, response,
+                              async, callback, tag)
+          })
+               
 
 replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
                          oldChildRef=NULL, parentRef=NULL, ns=NULL, css=TRUE, 

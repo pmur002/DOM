@@ -1,8 +1,10 @@
 \name{DOM interface}
 \alias{appendChild}
-\alias{appendChildCSS}
+\alias{appendChild,numeric,DOM_node,missing-method}
+\alias{appendChild,numeric,DOM_node,DOM_node_ref-method}
 \alias{removeChild}
-\alias{removeChildCSS}
+\alias{removeChild,numeric,DOM_node_ref,missing-method}
+\alias{removeChild,numeric,DOM_node_ref,DOM_node_ref-method}
 \alias{replaceChild}
 \alias{replaceChildCSS}
 \alias{setAttribute}
@@ -23,18 +25,14 @@
   access existing web page content.
 }
 \usage{
-appendChild(pageID, child = NULL, childRef = NULL, parentRef = "body",
-            ns = NULL, css = TRUE, async = !is.null(callback),
-            callback = NULL, tag = getRequestID())
-appendChildCSS(pageID, child = NULL, childRef = NULL, parentRef = "body",
-               ns = NULL, css = TRUE, async = !is.null(callback),
-               callback = NULL, tag = getRequestID())
-removeChild(pageID, childRef, parentRef = NULL,
-            css = TRUE, async = !is.null(callback),
-            callback = NULL, tag = getRequestID())
-removeChildCSS(pageID, childRef, parentRef = NULL,
-               css = TRUE, async = !is.null(callback),
-               callback = NULL, tag = getRequestID())
+\S4method{appendChild}{numeric,DOM_node,missing}(pageID, child, parent, response=htmlNode(),
+            ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{appendChild}{numeric,DOM_node,DOM_node_ref}(pageID, child, parent, response=htmlNode(),
+            ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{removeChild}{numeric,DOM_node_ref,missing}(pageID, child, parent, response=htmlNode(),
+            async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{removeChild}{numeric,DOM_node_ref,DOM_node_ref}(pageID, child, parent, response=htmlNode(),
+            async = FALSE, callback = NULL, tag = getRequestID())
 replaceChild(pageID, newChild = NULL, newChildRef = NULL,
              oldChildRef = NULL, parentRef = NULL,
              ns = NULL, css = TRUE, async = !is.null(callback),
@@ -74,12 +72,13 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     A page identifier, as returned by, e.g., \code{\link{htmlPage}}.
   }
   \item{child}{
-    A character value describing a valid HTML element.
+    A DOM node representation, e.g., the result from \code{htmlNode()}
+    (for a new node), or \code{css()} (for an existing node).
   }
-  \item{childRef}{
-    A character value describing an existing element in the page as a CSS
-    selector (or XPath, if \code{css=FALSE}).
-  }
+  \item{parent}{
+    A DOM node representation for an existing node (e.g., the result from 
+    \code{css()}).
+  }    
   \item{newChild}{
     A character value describing a valid HTML element.
   }
@@ -90,6 +89,11 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
   \item{oldChildRef}{
     A character value describing an existing element in the page as a CSS
     selector (or XPath, if \code{css=FALSE}).
+  }
+  \item{response}{
+    A DOM node representation that provides a template for the return
+    value, e.g., \code{htmlNode()} to return HTML or \code{css()} to
+    return CSS.
   }
   \item{id}{
     A character value specifying an element id attribute.
@@ -227,11 +231,11 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-  \code{\link{htmlPage}}
+  \code{\link{htmlPage}}, \code{\link{htmlNode}}
 }
 \examples{
 headlessPage <- htmlPage(headless=TRUE)
-appendChild(headlessPage, "<p>test</p>")   
+appendChild(headlessPage, htmlNode("<p>test</p>"))
 closePage(headlessPage)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

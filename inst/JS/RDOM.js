@@ -162,23 +162,55 @@ RDOM = (function(){
                 break;
             case "removeChild": // child, parent, css
                 var error = false;
-                var child = resolveTarget(msgBody.child[0], msgBody.css[0]);
+                var child;
+                switch (msgBody.childType[0]) {
+                case "DOM_node_CSS":
+                    child = resolveTarget(msgBody.child[0], true);
+                    break;
+                case "DOM_node_XPath":
+                    child = resolveTarget(msgBody.child[0], false);
+                    break;
+                case "DOM_node_ptr":
+                    throw new Error("DOM_node_ptr support not yet implemented");
+                    break;
+                }
                 var parent;
-                if (msgBody.parent === null) { 
+                switch (msgBody.parentType[0]) {
+                case "NULL":
                     parent = child.parentElement;
-                } else {
-                    parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
+                    break;
+                case "DOM_node_CSS":
+                    parent = resolveTarget(msgBody.parent[0], true);
+                    break;
+                case "DOM_node_XPath":
+                    parent = resolveTarget(msgBody.parent[0], false);
+                    break;
+                case "DOM_node_ptr":
+                    throw new Error("DOM_node_ptr support not yet implemented");
+                    break;
                 }
                 dblog("REMOVING " + child.toString() + 
                       " FROM " + parent.toString());
-                if (msgBody.returnRef[0]) {
+
+                switch (msgBody.responseType[0]) {
+                case "DOM_node_HTML":
+                case "DOM_node_SVG":
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         child.outerHTML);
+                    break;
+                case "DOM_node_CSS":
                     var selector = CSG.getSelector(child);
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          selector);
-                } else {
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         child.outerHTML);
+                    break;
+                case "DOM_node_XPath":
+                    throw new Error("DOM_node_XPath support not yet implemented");
+                    break;
+                case "DOM_node_ptr":
+                    throw new Error("DOM_node_ptr support not yet implemented");
+                    break;
                 }
+
                 // Remove child AFTER determining its CSS selector !
                 parent.removeChild(child);
                 break;

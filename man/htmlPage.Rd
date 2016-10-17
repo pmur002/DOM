@@ -60,7 +60,7 @@ urlPage(url, headless = getOption("DOM.headless"))
 }
 \examples{
 headlessPage <- htmlPage(headless=TRUE)
-appendChild(headlessPage, "<p>test</p>")   
+appendChild(headlessPage, htmlNode("<p>test</p>"))
 closePage(headlessPage)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

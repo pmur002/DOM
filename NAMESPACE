@@ -1,4 +1,6 @@
 
+import("methods")
+
 importFrom("utils",
            "browseURL",
            "capture.output",
@@ -27,12 +29,10 @@ export(
     "svgNode",
     "css",
     "xpath",
-    "DOMptr",
     
     ## Manipulate DOM
     "appendChild",
     "removeChild",
-    "removeChildCSS",
     "replaceChild",
     "replaceChildCSS",
     "setAttribute",
