@@ -211,8 +211,9 @@ RDOM = (function(){
                 parent.replaceChild(newChild, oldChild);
                 break;
             case "setAttribute": // elt, attr, value, css
-                var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
-                element.setAttribute(msgBody.attr[0], msgBody.value[0]);
+                var element = DOMnode(msgBody.elt[0], msgBody.eltType[0], 
+                                      false);
+                element.setAttribute(msgBody.attrName[0], msgBody.attrValue[0]);
                 result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 break;
             case "getElementById": // id

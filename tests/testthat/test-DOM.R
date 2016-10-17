@@ -150,8 +150,8 @@ test_that("replaceChild", {
     
 test_that("setAttribute", {
     headlessPage <- htmlPage()
-    appendChild(headlessPage, "<p>test<p>")
-    setAttribute(headlessPage, "p", "onclick", 'alert("test")')
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    setAttribute(headlessPage, css("p"), "onclick", 'alert("test")')
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  '<html><head></head><body><p onclick="alert(&quot;test&quot;)">test</p></body></html>')

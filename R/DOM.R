@@ -145,12 +145,16 @@ getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
 
 DOMresponse <- function(x, type) {
-    switch(type,
-           DOM_node_HTML=new("DOM_node_HTML", x),
-           DOM_node_SVG=new("DOM_node_SVG", x),
-           DOM_node_CSS=new("DOM_node_CSS", x),
-           DOM_node_XPath=new("DOM_node_XPath", x),
-           DOM_node_ptr=new("DOM_node_ptr", x))
+    if (type == "NULL") {
+        NULL
+    } else {
+        switch(type,
+               DOM_node_HTML=new("DOM_node_HTML", x),
+               DOM_node_SVG=new("DOM_node_SVG", x),
+               DOM_node_CSS=new("DOM_node_CSS", x),
+               DOM_node_XPath=new("DOM_node_XPath", x),
+               DOM_node_ptr=new("DOM_node_ptr", x))
+    }
 }
 
 # Handling messages
@@ -384,16 +388,34 @@ setMethod("replaceChild",
               replaceChildCore(pageID, newChild, oldChild, parent,
                                response, ns, async, callback, tag)
           })
-               
-setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
-                         async=!is.null(callback), callback=NULL,
-                         tag=getRequestID()) {
+
+setAttributeCore <- function(pageID, elt, attrName, attrValue,
+                             async, callback, tag) {
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="setAttribute", elt=eltRef,
-                          attr=attrName, value=as.character(attrValue),
-                          css=css))
+                body=list(fun="setAttribute",
+                          elt=as.character(elt),
+                          eltType=class(elt),
+                          attrName=attrName,
+                          attrValue=attrValue))
     sendRequest(pageID, msg, tag, async, callback, "NULL")
 }
+
+setGeneric("setAttribute",
+           function(pageID, elt, attrName, attrValue, ...) {
+               standardGeneric("setAttribute")
+           },
+           valueClass="NULL")
+
+setMethod("setAttribute",
+          signature(pageID="numeric",
+                    elt="DOM_node_ref",
+                    attrName="character",
+                    attrValue="character"),
+          function(pageID, elt, attrName, attrValue,
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              setAttributeCore(pageID, elt, attrName, attrValue,
+                               async, callback, tag)
+          })
 
 getElementById <- function(pageID, id,
                            async=!is.null(callback),

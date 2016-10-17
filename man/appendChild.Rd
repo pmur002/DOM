@@ -9,6 +9,7 @@
 \alias{replaceChild,numeric,DOM_node,DOM_node_ref,missing-method}
 \alias{replaceChild,numeric,DOM_node,DOM_node_ref,DOM_node_ref-method}
 \alias{setAttribute}
+\alias{setAttribute,numeric,DOM_node_ref,character,character-method}
 \alias{getElementById}
 \alias{getElementByIdCSS}
 \alias{getElementsByTagName}
@@ -38,9 +39,8 @@
             ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{replaceChild}{numeric,DOM_node,DOM_node_ref,DOM_node_ref}(pageID, newChild, oldChild, parent, response=htmlNode(),
             ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
-setAttribute(pageID, eltRef, attrName, attrValue,
-             css = TRUE, async = !is.null(callback),
-             callback = NULL, tag = getRequestID())
+\S4method{setAttribute}{numeric,DOM_node_ref,character,character}(pageID, elt, attrName, attrValue,
+             async = FALSE, callback = NULL, tag = getRequestID())
 getElementById(pageID, id,
                async = !is.null(callback),
                callback = NULL, tag = getRequestID())
@@ -84,6 +84,10 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     A DOM node representation for an existing node (e.g., the result from 
     \code{css()}).
   }
+  \item{elt}{
+    A DOM node representation for an existing node (e.g., the result from 
+    \code{css()}).
+  }
   \item{response}{
     A DOM node representation that provides a template for the return
     value, e.g., \code{htmlNode()} to return HTML or \code{css()} to
@@ -106,10 +110,6 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     enclosing <script> tags).
   }
   \item{parentRef}{
-    A character value describing an existing element in the page as a CSS
-    selector (or XPath, if \code{css=FALSE}).
-  }
-  \item{eltRef}{
     A character value describing an existing element in the page as a CSS
     selector (or XPath, if \code{css=FALSE}).
   }
@@ -189,21 +189,12 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
   For \code{appendChild}, the HTML code for the
   child element that was added.
 
-  For \code{appendChildCSS}, a CSS selector for the
-  child element that was added.
-
   For \code{removeChild}, the HTML code for the
   child element that was removed.
-
-  For \code{removeChildCSS}, a CSS selector for the
-  child element that was removed (\emph{before} the child was removed).
 
   For \code{replaceChild}, the HTML code the old child element that was
   replaced.
   
-  For \code{removeChildCSS}, a CSS selector for the
-  old child element that was replaced (\emph{before} it was replaced).
-
   For \code{getElementById}, \code{getElementsByTagName}, and
   \code{getElementsByClassName}, the HTML code for the matching elements
   (or a missing value if no match is found).
@@ -212,8 +203,7 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
   \code{getElementsByClassNameCSS}, CSS selectors for the matching elements
   (or a missing value if no match is found).
 
-  For \code{setAttribute}, \code{appendScript}, and \code{click},
-  an empty string.
+  For \code{setAttribute}, \code{appendScript}, and \code{click}, \code{NULL}.
 }
 \references{
   \url{https://www.w3.org/DOM/}
