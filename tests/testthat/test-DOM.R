@@ -141,8 +141,8 @@ test_that("removeChild", {
 test_that("replaceChild", {
     # Replace child that exists (parent implicit)
     headlessPage <- htmlPage()
-    appendChild(headlessPage, "<p>test<p>")
-    replaceChild(headlessPage, "<p>test2</p>", oldChildRef="p")
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    replaceChild(headlessPage, htmlNode("<p>test2</p>"), oldChild=css("p"))
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test2</p></body></html>")

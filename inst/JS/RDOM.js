@@ -6,13 +6,13 @@ RDOM = (function(){
     // Log for debugging
     var debug;
     var dblog = function(msg) {
-        if (debug)
+        if (debug) 
             console.log("++ RDOM JS: " + msg);
     }
-
+    
     // The websocket connection to R
     var ws;
-
+    
     var parser = new DOMParser();
     var serializer = new XMLSerializer;
 
@@ -80,180 +80,134 @@ RDOM = (function(){
         return document.documentElement.outerHTML
     }
 
+    var DOMnode = function(spec, type, ns) {
+        var node;
+        var container;
+        switch (type) {
+        case "DOM_node_HTML":
+            if (ns) {
+                // "text/xml" rather than "text/html" 
+                // to satisfy PhantomJS
+                container = parser.parseFromString(spec, "text/xml");
+            } else {
+                container = document.createElement("div");
+                container.innerHTML = spec;
+            }        
+            node = container.firstChild;
+            break;
+        case "DOM_node_SVG":
+            container = parser.parseFromString(spec, "image/svg+xml");
+            node = container.firstChild;
+            break;
+        case "DOM_node_CSS":
+            node = resolveTarget(spec, true);
+            break;
+        case "DOM_node_XPath":
+            node = resolveTarget(spec, false);
+        case "DOM_node_ptr":
+            throw new Error("DOM_node_ptr support not yet implemented");
+            break;
+        }
+        return node;
+    }
+
+    var DOMresponse = function(tag, fun, responseType, node, ns) {
+        var result;
+        switch (responseType) {
+        case "DOM_node_HTML":
+        case "DOM_node_SVG":
+            if (ns) {
+                result = returnValue(tag, fun,
+                                     serializer.serializeToString(node));
+            } else {
+                result = returnValue(tag, fun, node.outerHTML);
+            }                    
+            break;
+        case "DOM_node_CSS":
+            var selector = CSG.getSelector(node);
+            result = returnValue(tag, fun, selector);
+            break;
+        case "DOM_node_XPath":
+            throw new Error("DOM_node_XPath support not yet implemented");
+            break;
+        case "DOM_node_ptr":
+            throw new Error("DOM_node_ptr support not yet implemented");
+            break;
+        }
+        return result;
+    }
+    
     // Main function for handling requests from R to JS
     var handleMessage = function(msg) {
         dblog("RECEIVING " + msg.data);
         var msgJSON = JSON.parse(msg.data);
-
+        
         handleRequest = function() {
             var result = "";
             var msgBody = msgJSON.body;
             switch(msgBody.fun[0]) {
             case "appendChild": // parent, child, css
-                var child;
-                var container;
-                switch (msgBody.childType[0]) {
-                case "DOM_node_HTML":
-                    if (msgBody.ns[0]) {
-                        // "text/xml" rather than "text/html" 
-                        // to satisfy PhantomJS
-                        container = parser.parseFromString(msgBody.child[0],
-                                                           "text/xml");
-                    } else {
-                        container = document.createElement("div");
-                        container.innerHTML = msgBody.child[0];
-                    }        
-                    child = container.firstChild;
-                    break;
-                case "DOM_node_SVG":
-                    container = parser.parseFromString(msgBody.child[0],
-                                                       "image/svg+xml");
-                    child = container.firstChild;
-                    break;
-                case "DOM_node_CSS":
-                    child = resolveTarget(msgBody.child[0], true);
-                    break;
-                case "DOM_node_XPath":
-                    child = resolveTarget(msgBody.child[0], false);
-                case "DOM_node_ptr":
-                    throw new Error("DOM_node_ptr support not yet implemented");
-                    break;
-                }
+                var child = DOMnode(msgBody.child[0], msgBody.childType[0],
+                                    msgBody.ns[0]);
                 var parent;
-                switch (msgBody.parentType[0]) {
-                case "DOM_node_CSS":
-                    parent = resolveTarget(msgBody.parent[0], true);
-                    break;
-                case "DOM_node_XPath":
-                    parent = resolveTarget(msgBody.parent[0], false);
-                    break;
-                case "DOM_node_ptr":
-                    throw new Error("DOM_node_ptr support not yet implemented");
-                    break;
+                if (msgBody.parentType[0] === "NULL") {
+                    parent = child.parentElement;
+                } else {
+                    parent = DOMnode(msgBody.parent[0], msgBody.parentType[0],
+                                     false);
                 }
+                
                 dblog("ADDING " + child.toString() + 
                       " TO " + parent.toString());
-
                 parent.appendChild(child);
-
-                switch (msgBody.responseType[0]) {
-                case "DOM_node_HTML":
-                case "DOM_node_SVG":
-                    if (msgBody.ns[0]) {
-                        result = returnValue(msgJSON.tag, msgBody.fun[0],
-                                             serializer.serializeToString(child));
-                    } else {
-                        result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                             child.outerHTML);
-                    }                    
-                    break;
-                case "DOM_node_CSS":
-                    var selector = CSG.getSelector(child);
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         selector);
-                    break;
-                case "DOM_node_XPath":
-                    throw new Error("DOM_node_XPath support not yet implemented");
-                    break;
-                case "DOM_node_ptr":
-                    throw new Error("DOM_node_ptr support not yet implemented");
-                    break;
-                }
+                
+                result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
+                                     msgBody.responseType[0], 
+                                     child, msgBody.ns[0]);
                 break;
             case "removeChild": // child, parent, css
                 var error = false;
-                var child;
-                switch (msgBody.childType[0]) {
-                case "DOM_node_CSS":
-                    child = resolveTarget(msgBody.child[0], true);
-                    break;
-                case "DOM_node_XPath":
-                    child = resolveTarget(msgBody.child[0], false);
-                    break;
-                case "DOM_node_ptr":
-                    throw new Error("DOM_node_ptr support not yet implemented");
-                    break;
-                }
+                var child = DOMnode(msgBody.child[0], msgBody.childType[0],
+                                    false);
                 var parent;
-                switch (msgBody.parentType[0]) {
-                case "NULL":
+                if (msgBody.parentType[0] === "NULL") {
                     parent = child.parentElement;
-                    break;
-                case "DOM_node_CSS":
-                    parent = resolveTarget(msgBody.parent[0], true);
-                    break;
-                case "DOM_node_XPath":
-                    parent = resolveTarget(msgBody.parent[0], false);
-                    break;
-                case "DOM_node_ptr":
-                    throw new Error("DOM_node_ptr support not yet implemented");
-                    break;
+                } else {
+                    parent = DOMnode(msgBody.parent[0], msgBody.parentType[0],
+                                     false);
                 }
-                dblog("REMOVING " + child.toString() + 
-                      " FROM " + parent.toString());
 
-                switch (msgBody.responseType[0]) {
-                case "DOM_node_HTML":
-                case "DOM_node_SVG":
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         child.outerHTML);
-                    break;
-                case "DOM_node_CSS":
-                    var selector = CSG.getSelector(child);
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         selector);
-                    break;
-                case "DOM_node_XPath":
-                    throw new Error("DOM_node_XPath support not yet implemented");
-                    break;
-                case "DOM_node_ptr":
-                    throw new Error("DOM_node_ptr support not yet implemented");
-                    break;
-                }
+                result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
+                                     msgBody.responseType[0], 
+                                     child, false);
 
                 // Remove child AFTER determining its CSS selector !
+                dblog("REMOVING " + child.toString() + 
+                      " FROM " + parent.toString());
                 parent.removeChild(child);
                 break;
             case "replaceChild": // newchild, oldchild, parent, css
-                var newChild;
-                if (msgBody.byRef[0]) {
-                    newChild = resolveTarget(msgBody.newChild[0], 
-                                             msgBody.css[0]);
-                } else {
-                    var container;
-                    if (msgBody.ns != null) {
-                        if (msgBody.ns[0] === "HTML") {
-                            container = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
-                        } else if (msgBody.ns[0] === "SVG") {
-                            container = document.createElementNS("http://www.w3.org/2000/svg", "svg");                            
-                        } else {
-                            throw new Error("Unsupported namespace");
-                        }
-                    } else {
-                        container = document.createElement("div");
-                    }        
-                    container.innerHTML = msgBody.newChild[0];
-                    newChild = container.firstChild;
-                }
-                var oldChild = resolveTarget(msgBody.oldChild[0], 
-                                             msgBody.css[0]);
+                var newChild = DOMnode(msgBody.newChild[0], 
+                                       msgBody.newChildType[0],
+                                       msgBody.ns[0]);
+                var oldChild = DOMnode(msgBody.oldChild[0], 
+                                       msgBody.oldChildType[0],
+                                       false);
                 var parent;
-                if (msgBody.parent === null) { 
+                if (msgBody.parentType[0] === "NULL") {
                     parent = oldChild.parentElement;
                 } else {
-                    parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
+                    parent = DOMnode(msgBody.parent[0], msgBody.parentType[0],
+                                     false);
                 }
+
+                result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
+                                     msgBody.responseType[0], 
+                                     oldChild, msgBody.ns[0]);
+                
+                // Replace oldChild AFTER determining its CSS selector !
                 dblog("REPLACING " + oldChild.toString() + 
                       " WITH " + newChild.toString());
-                if (msgBody.returnRef[0]) {
-                    var selector = CSG.getSelector(oldChild);
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         selector);
-                } else {
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         oldChild.outerHTML);
-                }
-                // Replace oldChild AFTER determining its CSS selector !
                 parent.replaceChild(newChild, oldChild);
                 break;
             case "setAttribute": // elt, attr, value, css

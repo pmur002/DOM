@@ -6,7 +6,8 @@
 \alias{removeChild,numeric,DOM_node_ref,missing-method}
 \alias{removeChild,numeric,DOM_node_ref,DOM_node_ref-method}
 \alias{replaceChild}
-\alias{replaceChildCSS}
+\alias{replaceChild,numeric,DOM_node,DOM_node_ref,missing-method}
+\alias{replaceChild,numeric,DOM_node,DOM_node_ref,DOM_node_ref-method}
 \alias{setAttribute}
 \alias{getElementById}
 \alias{getElementByIdCSS}
@@ -33,14 +34,10 @@
             async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{removeChild}{numeric,DOM_node_ref,DOM_node_ref}(pageID, child, parent, response=htmlNode(),
             async = FALSE, callback = NULL, tag = getRequestID())
-replaceChild(pageID, newChild = NULL, newChildRef = NULL,
-             oldChildRef = NULL, parentRef = NULL,
-             ns = NULL, css = TRUE, async = !is.null(callback),
-             callback = NULL, tag = getRequestID())
-replaceChildCSS(pageID, newChild = NULL, newChildRef = NULL,
-                oldChildRef = NULL, parentRef = NULL,
-                ns = NULL, css = TRUE, async = !is.null(callback),
-                callback = NULL, tag = getRequestID())
+\S4method{replaceChild}{numeric,DOM_node,DOM_node_ref,missing}(pageID, newChild, oldChild, parent, response=htmlNode(),
+            ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{replaceChild}{numeric,DOM_node,DOM_node_ref,DOM_node_ref}(pageID, newChild, oldChild, parent, response=htmlNode(),
+            ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
 setAttribute(pageID, eltRef, attrName, attrValue,
              css = TRUE, async = !is.null(callback),
              callback = NULL, tag = getRequestID())
@@ -80,15 +77,12 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     \code{css()}).
   }    
   \item{newChild}{
-    A character value describing a valid HTML element.
+    A DOM node representation, e.g., the result from \code{htmlNode()}
+    (for a new node), or \code{css()} (for an existing node).
   }
-  \item{newChildRef}{
-    A character value describing an existing element in the page as a CSS
-    selector (or XPath, if \code{css=FALSE}).
-  }
-  \item{oldChildRef}{
-    A character value describing an existing element in the page as a CSS
-    selector (or XPath, if \code{css=FALSE}).
+  \item{oldChild}{
+    A DOM node representation for an existing node (e.g., the result from 
+    \code{css()}).
   }
   \item{response}{
     A DOM node representation that provides a template for the return

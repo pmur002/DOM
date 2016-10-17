@@ -341,37 +341,50 @@ setMethod("removeChild",
           })
                
 
-replaceChild <- function(pageID, newChild=NULL, newChildRef=NULL,
-                         oldChildRef=NULL, parentRef=NULL, ns=NULL, css=TRUE, 
-                         async=!is.null(callback), callback=NULL,
-                         tag=getRequestID()) {
-    newChildSpec <- nodeSpec(newChild, newChildRef)
+replaceChildCore <- function(pageID, newChild, oldChild, parent, response,
+                             ns, async, callback, tag) {
+    responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="replaceChild",
-                          newChild=newChildSpec$node, byRef=newChildSpec$byRef,
-                          oldChild=oldChildRef, parent=parentRef,
-                          ns=ns, css=css, returnRef=FALSE))
-    if (is.null(ns)) {
-        responseType <- c("HTML", "XML")
-    } else {
-        responseType <- c(ns, "XML")
-    }
+                          newChild=as.character(newChild),
+                          newChildType=class(newChild),
+                          oldChild=as.character(oldChild),
+                          oldChildType=class(oldChild),
+                          parent=as.character(parent),
+                          parentType=class(parent),
+                          ns=ns,
+                          responseType=responseType))
     sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
-replaceChildCSS <- function(pageID, newChild=NULL, newChildRef=NULL,
-                            oldChildRef=NULL, parentRef=NULL, ns=NULL, css=TRUE,
-                            async=!is.null(callback), callback=NULL,
-                            tag=getRequestID()) {
-    newChildSpec <- nodeSpec(newChild, newChildRef)
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="replaceChild",
-                          child=newChildSpec$node, byRef=newChildSpec$byRef,
-                          oldChild=oldChildRef, parent=parentRef,
-                          ns=ns, css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback, "CSS")
-}
+setGeneric("replaceChild",
+           function(pageID, newChild, oldChild, parent, ...) {
+               standardGeneric("replaceChild")
+           },
+           valueClass="DOM_node_OR_error")
 
+setMethod("replaceChild",
+          signature(pageID="numeric",
+                    newChild="DOM_node",
+                    oldChild="DOM_node_ref",
+                    parent="missing"),
+          function(pageID, newChild, oldChild, parent, response=htmlNode(),
+                   ns=FALSE, async=FALSE, callback=NULL, tag=getRequestID()) {
+              replaceChildCore(pageID, newChild, oldChild, parent=NULL,
+                               response, ns, async, callback, tag)
+          })
+               
+setMethod("replaceChild",
+          signature(pageID="numeric",
+                    newChild="DOM_node",
+                    oldChild="DOM_node_ref",
+                    parent="DOM_node_ref"),
+          function(pageID, newChild, oldChild, parent, response=htmlNode(),
+                   ns=FALSE, async=FALSE, callback=NULL, tag=getRequestID()) {
+              replaceChildCore(pageID, newChild, oldChild, parent,
+                               response, ns, async, callback, tag)
+          })
+               
 setAttribute <- function(pageID, eltRef, attrName, attrValue, css=TRUE,
                          async=!is.null(callback), callback=NULL,
                          tag=getRequestID()) {
