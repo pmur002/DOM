@@ -50,9 +50,6 @@
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{getElementsByClassName}{numeric,character,DOM_node_ref}(pageID, name, root, response=htmlNode(),
                        async = FALSE, callback = NULL, tag = getRequestID())
-appendScript(pageID, script, parentRef = "body",
-             css = TRUE, async = !is.null(callback),
-             callback = NULL, tag = getRequestID())
 click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
 }
 \arguments{
@@ -96,14 +93,6 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     A DOM node representation for an existing node (e.g., the result from 
     \code{css()}).
   }
-  \item{script}{
-    A character value containing JavaScript code (\emph{without}
-    enclosing <script> tags).
-  }
-  \item{parentRef}{
-    A character value describing an existing element in the page as a CSS
-    selector (or XPath, if \code{css=FALSE}).
-  }
   \item{attrName}{
     The attribute name.
   }
@@ -134,23 +123,23 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
 
   \itemize{
     \item \code{appendChild} adds a new element, \code{child}, to the
-    page as a child of an existing element, \code{parentRef}, \emph{or}
-    it adds an existing element, \code{childRef}, to \code{parentRef}.
+    page as a child of an existing element, \code{parent}, \emph{or}
+    it adds an existing element, \code{child}, to \code{parent}.
 
     \item \code{removeChild} removes an existing element.  If
-    \code{parentRef} is \code{NULL}, the parent is implicit, but it is
+    \code{parent} is \code{NULL}, the parent is implicit, but it is
     also possible to explicitly specify the parent.  In the latter case,
     it is possible for the request to fail (because the specified parent
     and child are not actually related in the page).
 
     \item \code{replaceChild} replaces an existing element.  The
     new element is a new element, \code{newChild}, or an existing
-    element, \code{newChildRef}.  In the latter case, the new element is
+    element, \code{newChild}.  In the latter case, the new element is
     moved from its old position to the new position.
-    If \code{parentRef} is \code{NULL}, the parent is implicit, but it is
+    If \code{parent} is \code{NULL}, the parent is implicit, but it is
     also possible to explicitly specify the parent.
 
-    \item \code{click} sends a click event to an element, \code{eltRef}.
+    \item \code{click} sends a click event to an element, \code{elt}.
   }
 
   For adding SVG content within HTML, you should

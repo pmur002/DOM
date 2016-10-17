@@ -508,16 +508,6 @@ setMethod("getElementsByClassName",
                                          async, callback, tag)
           })
 
-appendScript <- function(pageID, script, 
-                         parentRef="body", css=TRUE, async=!is.null(callback),
-                         callback=NULL, tag=getRequestID()) {
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="appendScript",
-                          script=script,
-                          parent=parentRef, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "NULL")
-}
-
 ## This request is ALWAYS asynchronous
 ## Mostly for headless browser testing (?)
 click <- function(pageID, eltRef, css=TRUE,

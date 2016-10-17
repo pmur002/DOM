@@ -59,6 +59,15 @@ test_that("appendChild", {
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"><p xmlns="http://www.w3.org/1999/xhtml">test</p></foreignObject></svg></body></html>')
+    # Append JavaScript
+    headlessPage <- htmlPage()
+    appendChild(headlessPage,
+                javascript('document.body.appendChild(document.createElement("p"));'))
+    pageContent <- closePage(headlessPage)
+    ## Not just the <script>, but also the <p> that the script creates
+    ## (to show that the script has been added AND run)
+    expect_equal(unclass(pageContent),
+                 '<html><head></head><body><script>document.body.appendChild(document.createElement("p"));</script><p></p></body></html>')    
 })
 
 test_that("appendChild with callback", {    

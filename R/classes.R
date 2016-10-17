@@ -19,6 +19,9 @@ setClass("DOM_node_HTML",
 # The representation is SVG
 setClass("DOM_node_SVG",
          contains="DOM_node_new")
+# The representation is JavaScript
+setClass("DOM_node_JS",
+         contains="DOM_node_new")
 
 # Representations that refers to an existing node
 setClass("DOM_node_ref",
@@ -40,6 +43,10 @@ htmlNode <- function(x="") {
 
 svgNode <- function(x="") {
     new("DOM_node_SVG", x)
+}
+
+javascript <- function(x="") {
+    new("DOM_node_JS", x)
 }
 
 css <- function(x="") {

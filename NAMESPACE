@@ -27,6 +27,7 @@ export(
     ## DOM nodes
     "htmlNode",
     "svgNode",
+    "javascript",
     "css",
     "xpath",
     
@@ -38,6 +39,5 @@ export(
     "getElementById",
     "getElementsByTagName",
     "getElementsByClassName",
-    "appendScript",
     "click"
 )

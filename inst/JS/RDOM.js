@@ -99,6 +99,11 @@ RDOM = (function(){
             container = parser.parseFromString(spec, "image/svg+xml");
             node = container.firstChild;
             break;
+        case "DOM_node_JS":
+            var script = document.createElement("script");
+            script.innerHTML = spec;
+            node = script;
+            break;
         case "DOM_node_CSS":
             node = resolveTarget(spec, true);
             break;
@@ -268,18 +273,6 @@ RDOM = (function(){
                                          msgBody.responseType[0], 
                                          elements, false);
                 }
-                break;
-            case "appendScript": // script, css
-                // Distinct from "appendChild" because of the way we need
-                // to build a script so that it not only gets ADDED, but
-                // also gets RUN
-                var script = document.createElement("script");
-                script.innerHTML = msgBody.script[0];
-                var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
-                dblog("ADDING " + script.toString() + 
-                      " TO " + parent.toString());
-                parent.appendChild(script);
-                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 break;
             case "click":
                 var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
