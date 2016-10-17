@@ -145,10 +145,12 @@ getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
 
 DOMresponse <- function(x, type) {
-    if (!is.null(x)) {
-        class(x) <- c(paste0(type, "_DOMresponse"), "DOMresponse")
-    }
-    x
+    switch(type,
+           DOM_node_HTML=new("DOM_node_HTML", x),
+           DOM_node_SVG=new("DOM_node_SVG", x),
+           DOM_node_CSS=new("DOM_node_CSS", x),
+           DOM_node_XPath=new("DOM_node_XPath", x),
+           DOM_node_ptr=new("DOM_node_ptr", x))
 }
 
 # Handling messages
@@ -158,19 +160,19 @@ handleMessage <- function(msgJSON, ws) {
     msg <- fromJSON(msgJSON)
     if (msg$type == "ALIVE") {
         ## Page is waiting for this to know that browser has opened web socket
-        setRequestValue(msg$tag, DOMresponse(TRUE, "ALIVE"))
+        setRequestValue(msg$tag, TRUE)
     } else if (msg$type == "DEAD") {
         ## Page is waiting for browser to die
-        setRequestValue(msg$tag, DOMresponse(msg$body, "DEAD"))
+        setRequestValue(msg$tag, msg$body)
     } else if (msg$type == "PAGECONTENT") {
-        setRequestValue(msg$tag, DOMresponse(msg$body, "HTML"))
+        setRequestValue(msg$tag, msg$body)
     } else if (msg$type == "ERROR") {
         ## A request has failed
         ## (so set the request value)
         ## (so any code waiting for this request will terminate)
         result <- paste0("Request ", msg$tag, " failed")
         ## Warning message will be the result of the request
-        setRequestValue(msg$tag, DOMresponse(result, "ERROR"))
+        setRequestValue(msg$tag, result)
         ## Warning message will also print to screen
         message(result)
     } else if (msg$type == "RESPONSE") {
@@ -256,51 +258,49 @@ sendRequest <- function(pageID, msg, tag, async, callback, returnType) {
     }
 }
 
-nodeSpec <- function(node, nodeRef) {
-    if (!xor(is.null(node), is.null(nodeRef))) {
-        stop("Specify exactly one of 'node' and 'nodeRef'")
-    }
-    if (is.null(node)) {
-        node <- nodeRef
-        byRef <- TRUE
-    } else {
-        byRef <- FALSE
-    }
-    list(node=node, byRef=byRef)
-}
-
 ################################################################################
 ## The main API
 
-appendChild <- function(pageID, child=NULL, childRef=NULL, 
-                        parentRef="body", ns=NULL,
-                        css=TRUE, async=!is.null(callback),
-                        callback=NULL, tag=getRequestID()) {
-    childSpec <- nodeSpec(child, childRef)
+appendChildCore <- function(pageID, child, parent,
+                            ns, async, callback, tag, response) {
+    responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendChild",
-                          child=childSpec$node, byRef=childSpec$byRef,
-                          parent=parentRef, ns=ns, css=css, returnRef=FALSE))
-    if (is.null(ns)) {
-        responseType <- c("HTML", "XML")
-    } else {
-        responseType <- c(ns, "XML")
-    }
+                          child=as.character(child),
+                          childType=class(child),
+                          parent=as.character(parent),
+                          parentType=class(parent),
+                          ns=ns,
+                          responseType=responseType))
     sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
-appendChildCSS <- function(pageID, child=NULL, childRef=NULL, 
-                           parentRef="body", ns=NULL,
-                           css=TRUE, async=!is.null(callback),
-                           callback=NULL, tag=getRequestID()) {
-    childSpec <- nodeSpec(child, childRef)
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="appendChild",
-                          child=childSpec$node, byRef=childSpec$byRef,
-                          parent=parentRef, ns=ns, css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback, "CSS")
-}
+setGeneric("appendChild",
+           function(pageID, child, parent, ...) {
+               standardGeneric("appendChild")
+           },
+           valueClass="DOM_node")
 
+setMethod("appendChild",
+          signature(pageID="numeric",
+                    child="DOM_node",
+                    parent="missing"),
+          function(pageID, child, parent, response=htmlNode(),
+                   ns=FALSE, async=FALSE, callback=NULL, tag=getRequestID()) {
+              appendChildCore(pageID, child, parent=css("body"),
+                              ns, async, callback, tag, response)
+          })
+               
+setMethod("appendChild",
+          signature(pageID="numeric",
+                    child="DOM_node",
+                    parent="DOM_node_ref"),
+          function(pageID, child, parent, response=htmlNode(),
+                   ns=FALSE, async=FALSE, callback=NULL, tag=getRequestID()) {
+              appendChildCore(pageID, child, parent,
+                              ns, async, callback, tag, response)
+          })
+               
 removeChild <- function(pageID, childRef, parentRef=NULL, css=TRUE, 
                         async=!is.null(callback), callback=NULL,
                         tag=getRequestID()) {

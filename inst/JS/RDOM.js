@@ -91,44 +91,73 @@ RDOM = (function(){
             switch(msgBody.fun[0]) {
             case "appendChild": // parent, child, css
                 var child;
-                if (msgBody.byRef[0]) {
-                    child = resolveTarget(msgBody.child[0], msgBody.css[0]);
-                } else {
-                    var container;
-                    if (msgBody.ns != null) {
-                        if (msgBody.ns[0] === "HTML") {
-                            // "text/xml" rather than "text/html" 
-                            // to satisfy PhantomJS
-                            container = parser.parseFromString(msgBody.child[0],
-                                                              "text/xml");
-                        } else if (msgBody.ns[0] === "SVG") {
-                            container = parser.parseFromString(msgBody.child[0],
-                                                              "image/svg+xml");
-                        } else {
-                            throw new Error("Unsupported namespace");
-                        }
+                var container;
+                switch (msgBody.childType[0]) {
+                case "DOM_node_HTML":
+                    if (msgBody.ns[0]) {
+                        // "text/xml" rather than "text/html" 
+                        // to satisfy PhantomJS
+                        container = parser.parseFromString(msgBody.child[0],
+                                                           "text/xml");
                     } else {
                         container = document.createElement("div");
                         container.innerHTML = msgBody.child[0];
                     }        
                     child = container.firstChild;
+                    break;
+                case "DOM_node_SVG":
+                    container = parser.parseFromString(msgBody.child[0],
+                                                       "image/svg+xml");
+                    child = container.firstChild;
+                    break;
+                case "DOM_node_CSS":
+                    child = resolveTarget(msgBody.child[0], true);
+                    break;
+                case "DOM_node_XPath":
+                    child = resolveTarget(msgBody.child[0], false);
+                case "DOM_node_ptr":
+                    throw new Error("DOM_node_ptr support not yet implemented");
+                    break;
                 }
-                var parent = resolveTarget(msgBody.parent[0], msgBody.css[0]);
+                var parent;
+                switch (msgBody.parentType[0]) {
+                case "DOM_node_CSS":
+                    parent = resolveTarget(msgBody.parent[0], true);
+                    break;
+                case "DOM_node_XPath":
+                    parent = resolveTarget(msgBody.parent[0], false);
+                    break;
+                case "DOM_node_ptr":
+                    throw new Error("DOM_node_ptr support not yet implemented");
+                    break;
+                }
                 dblog("ADDING " + child.toString() + 
                       " TO " + parent.toString());
+
                 parent.appendChild(child);
-                if (msgBody.returnRef[0]) {
-                    var selector = CSG.getSelector(child);
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         selector);
-                } else {
-                    if (msgBody.ns != null) {
+
+                switch (msgBody.responseType[0]) {
+                case "DOM_node_HTML":
+                case "DOM_node_SVG":
+                    if (msgBody.ns[0]) {
                         result = returnValue(msgJSON.tag, msgBody.fun[0],
                                              serializer.serializeToString(child));
                     } else {
                         result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                              child.outerHTML);
-                    }
+                    }                    
+                    break;
+                case "DOM_node_CSS":
+                    var selector = CSG.getSelector(child);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         selector);
+                    break;
+                case "DOM_node_XPath":
+                    throw new Error("DOM_node_XPath support not yet implemented");
+                    break;
+                case "DOM_node_ptr":
+                    throw new Error("DOM_node_ptr support not yet implemented");
+                    break;
                 }
                 break;
             case "removeChild": // child, parent, css

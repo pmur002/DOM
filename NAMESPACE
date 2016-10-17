@@ -22,9 +22,15 @@ export(
     "urlPage",
     "closePage",
 
+    ## DOM nodes
+    "htmlNode",
+    "svgNode",
+    "css",
+    "xpath",
+    "DOMptr",
+    
     ## Manipulate DOM
     "appendChild",
-    "appendChildCSS",
     "removeChild",
     "removeChildCSS",
     "replaceChild",

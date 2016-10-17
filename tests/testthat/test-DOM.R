@@ -10,52 +10,52 @@ url <- "http://pmur002.neocities.org/index.html"
 test_that("appendChild", {
     # Append HTML child
     headlessPage <- htmlPage()
-    appendChild(headlessPage, "<p>test<p>")
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test</p></body></html>")
     # Append CSS child
     headlessPage <- htmlPage()
-    appendChild(headlessPage, "<p>test<p>")
-    appendChild(headlessPage, "<p>test2<p>")
-    appendChild(headlessPage, childRef="p")
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    appendChild(headlessPage, htmlNode("<p>test2<p>"))
+    appendChild(headlessPage, css("p"))
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  "<html><head></head><body><p>test2</p><p>test</p></body></html>")
     # Append HTML child and return CSS
     headlessPage <- htmlPage()
-    result <- appendChildCSS(headlessPage, "<p>test<p>")
+    result <- appendChild(headlessPage, htmlNode("<p>test<p>"), response=css())
     closePage(headlessPage)
     expect_equal(unclass(result), "p")
     # Append HTML child in filePage()
     headlessFile <- filePage(fileURL)
-    appendChild(headlessFile, "<p>test<p>")
+    appendChild(headlessFile, htmlNode("<p>test<p>"))
     pageContent <- closePage(headlessFile)
     expect_match(minifyHTML(pageContent),
                  "<p>test</p></body></html>$")
     # Append HTML child in urlPage()
     headlessURL <- urlPage(url)
-    appendChild(headlessURL, "<p>test<p>")
+    appendChild(headlessURL, htmlNode("<p>test<p>"))
     pageContent <- closePage(headlessURL)
     expect_match(minifyHTML(pageContent),
                  "<p>test</p></body></html>$")
     # Append SVG within HTML
     headlessPage <- htmlPage()
     appendChild(headlessPage,
-                '<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>',
-                ns="SVG")
+                svgNode('<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>'),
+                ns=TRUE)
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><circle></circle></svg></body></html>')
     # Append HTML within SVG within HTML
     headlessPage <- htmlPage()
     appendChild(headlessPage,
-                '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"></foreignObject></svg>',
-                ns="SVG")
+                svgNode('<svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"></foreignObject></svg>'),
+                ns=TRUE)
     appendChild(headlessPage,
-                '<p xmlns="http://www.w3.org/1999/xhtml">test</p>',
-                ns="HTML",
-                parentRef="#fo")
+                htmlNode('<p xmlns="http://www.w3.org/1999/xhtml">test</p>'),
+                ns=TRUE,
+                parent=css("#fo"))
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"><p xmlns="http://www.w3.org/1999/xhtml">test</p></foreignObject></svg></body></html>')
@@ -64,7 +64,7 @@ test_that("appendChild", {
 test_that("appendChild with callback", {    
     headlessPage <- htmlPage()
     result <- NULL
-    appendChild(headlessPage, "<p>test</p>",
+    appendChild(headlessPage, htmlNode("<p>test</p>"),
                 callback=function(value) { result <<- value })
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.1)
@@ -74,9 +74,10 @@ test_that("appendChild with callback", {
 
 test_that("appendChild with callback with appendChild", {    
     headlessPage <- htmlPage()
-    appendChild(headlessPage, "<p>test</p>",
+    appendChild(headlessPage, htmlNode("<p>test</p>"),
                 callback=function(value) {
-                    appendChild(headlessPage, "<p>test2</p>", async=TRUE)
+                    appendChild(headlessPage, htmlNode("<p>test2</p>"),
+                                async=TRUE)
                 })
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
