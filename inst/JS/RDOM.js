@@ -116,16 +116,31 @@ RDOM = (function(){
         switch (responseType) {
         case "DOM_node_HTML":
         case "DOM_node_SVG":
+            // Treat single nodes and collections of nodes the same way
+            if (typeof node.length === "undefined") {
+                node = [ node ];
+            }
+            var html = [];
             if (ns) {
-                result = returnValue(tag, fun,
-                                     serializer.serializeToString(node));
+                for (i = 0; i < node.length; i++) {
+                    html.push(serializer.serializeToString(node[i]));
+                }
             } else {
-                result = returnValue(tag, fun, node.outerHTML);
-            }                    
+                for (i = 0; i < node.length; i++) {
+                    html.push(node[i].outerHTML);
+                }               
+            }     
+            result = returnValue(tag, fun, html);
             break;
         case "DOM_node_CSS":
-            var selector = CSG.getSelector(node);
-            result = returnValue(tag, fun, selector);
+            if (typeof node.length === "undefined") {
+                node = [ node ];
+            }
+            var css = [];
+            for (i = 0; i < node.length; i++) {
+                css.push(CSG.getSelector(node[i]));
+            }
+            result = returnValue(tag, fun, css);
             break;
         case "DOM_node_XPath":
             throw new Error("DOM_node_XPath support not yet implemented");
@@ -146,7 +161,7 @@ RDOM = (function(){
             var result = "";
             var msgBody = msgJSON.body;
             switch(msgBody.fun[0]) {
-            case "appendChild": // parent, child, css
+            case "appendChild": // parent, child
                 var child = DOMnode(msgBody.child[0], msgBody.childType[0],
                                     msgBody.ns[0]);
                 var parent;
@@ -165,7 +180,7 @@ RDOM = (function(){
                                      msgBody.responseType[0], 
                                      child, msgBody.ns[0]);
                 break;
-            case "removeChild": // child, parent, css
+            case "removeChild": // child, parent
                 var error = false;
                 var child = DOMnode(msgBody.child[0], msgBody.childType[0],
                                     false);
@@ -186,7 +201,7 @@ RDOM = (function(){
                       " FROM " + parent.toString());
                 parent.removeChild(child);
                 break;
-            case "replaceChild": // newchild, oldchild, parent, css
+            case "replaceChild": // newchild, oldchild, parent
                 var newChild = DOMnode(msgBody.newChild[0], 
                                        msgBody.newChildType[0],
                                        msgBody.ns[0]);
@@ -210,7 +225,7 @@ RDOM = (function(){
                       " WITH " + newChild.toString());
                 parent.replaceChild(newChild, oldChild);
                 break;
-            case "setAttribute": // elt, attr, value, css
+            case "setAttribute": // elt, attr, value
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0], 
                                       false);
                 element.setAttribute(msgBody.attrName[0], msgBody.attrValue[0]);
@@ -220,59 +235,38 @@ RDOM = (function(){
                 var element = document.getElementById(msgBody.id[0]);
                 if (element === null) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], null);
-                } else if (msgBody.returnRef[0]) {
-                    var selector = CSG.getSelector(element);
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         selector);
                 } else {
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         element.outerHTML);
+                    result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
+                                         msgBody.responseType[0], 
+                                         element, false);
                 }
                 break;
             case "getElementsByTagName": // name ('*' is special)
                 var elements = document.getElementsByTagName(msgBody.name[0]);
                 if (elements.length === 0) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], null);
-                } else if (msgBody.returnRef[0]) {
-                    var css = [];
-                    for (i = 0; i < elements.length; i++) {
-                        css.push(CSG.getSelector(elements[i]));
-                    }
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         css);
-                } else {                
-                    var html = [];
-                    for (i = 0; i < elements.length; i++) {
-                        html.push(elements[i].outerHTML);
-                    }
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         html);
+                } else {
+                    result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
+                                         msgBody.responseType[0], 
+                                         elements, false);
                 }
                 break;
-            case "getElementsByClassName": // name, rootRef
+            case "getElementsByClassName": // name, root
                 var elements;
-                if (msgBody.root === null) {
+                // root not specified
+                if (msgBody.rootType[0] === "NULL") {
                     elements = document.getElementsByClassName(msgBody.name[0]);
                 } else {
-                    var parent = resolveTarget(msgBody.root[0], msgBody.css[0]);
+                    var parent = DOMnode(msgBody.root[0], msgBody.rootType[0],
+                                         false);
                     elements = parent.getElementsByClassName(msgBody.name[0]);
                 }
                 if (elements.length === 0) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], null);
-                } else if (msgBody.returnRef[0]) {
-                    var css = [];
-                    for (i = 0; i < elements.length; i++) {
-                        css.push(CSG.getSelector(elements[i]));
-                    }
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         css);
-                } else {                
-                    var html = [];
-                    for (i = 0; i < elements.length; i++) {
-                        html.push(elements[i].outerHTML);
-                    }
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         html);
+                } else {
+                    result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
+                                         msgBody.responseType[0], 
+                                         elements, false);
                 }
                 break;
             case "appendScript": // script, css

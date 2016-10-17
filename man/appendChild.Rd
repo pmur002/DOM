@@ -11,11 +11,12 @@
 \alias{setAttribute}
 \alias{setAttribute,numeric,DOM_node_ref,character,character-method}
 \alias{getElementById}
-\alias{getElementByIdCSS}
+\alias{getElementById,numeric,character-method}
 \alias{getElementsByTagName}
-\alias{getElementsByTagNameCSS}
+\alias{getElementsByTagName,numeric,character-method}
 \alias{getElementsByClassName}
-\alias{getElementsByClassNameCSS}
+\alias{getElementsByClassName,numeric,character,missing-method}
+\alias{getElementsByClassName,numeric,character,DOM_node_ref-method}
 \alias{appendScript}
 \alias{click}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -41,24 +42,14 @@
             ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{setAttribute}{numeric,DOM_node_ref,character,character}(pageID, elt, attrName, attrValue,
              async = FALSE, callback = NULL, tag = getRequestID())
-getElementById(pageID, id,
-               async = !is.null(callback),
-               callback = NULL, tag = getRequestID())
-getElementByIdCSS(pageID, id,
-                  async = !is.null(callback),
-                  callback = NULL, tag = getRequestID())
-getElementsByTagName(pageID, name, 
-                     async = !is.null(callback),
-                     callback = NULL, tag = getRequestID())
-getElementsByTagNameCSS(pageID, name, 
-                        async = !is.null(callback),
-                        callback = NULL, tag = getRequestID())
-getElementsByClassName(pageID, name, rootRef = NULL, 
-                       css = TRUE, async = !is.null(callback),
-                       callback = NULL, tag = getRequestID())
-getElementsByClassNameCSS(pageID, name, rootRef = NULL, 
-                          css = TRUE, async = !is.null(callback),
-                          callback = NULL, tag = getRequestID())
+\S4method{getElementById}{numeric,character}(pageID, id, response=htmlNode(),
+               async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{getElementsByTagName}{numeric,character}(pageID, name, response=htmlNode(),
+                     async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{getElementsByClassName}{numeric,character,missing}(pageID, name, root, response=htmlNode(),
+                       async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{getElementsByClassName}{numeric,character,DOM_node_ref}(pageID, name, root, response=htmlNode(),
+                       async = FALSE, callback = NULL, tag = getRequestID())
 appendScript(pageID, script, parentRef = "body",
              css = TRUE, async = !is.null(callback),
              callback = NULL, tag = getRequestID())
@@ -101,9 +92,9 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
     or a class name (or 
     several class names separated by spaces).
   }
-  \item{rootRef}{
-    A character value describing an existing element in the page as a CSS
-    selector (or XPath, if \code{css=FALSE}).
+  \item{root}{
+    A DOM node representation for an existing node (e.g., the result from 
+    \code{css()}).
   }
   \item{script}{
     A character value containing JavaScript code (\emph{without}

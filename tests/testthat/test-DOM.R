@@ -159,9 +159,9 @@ test_that("setAttribute", {
 
 test_that("getElementById", {
     headlessPage <- htmlPage()
-    appendChild(headlessPage, '<p id="x">test</p>')
+    appendChild(headlessPage, htmlNode('<p id="x">test</p>'))
     elt <- getElementById(headlessPage, "x")
-    css <- getElementByIdCSS(headlessPage, "x")
+    css <- getElementById(headlessPage, "x", response=css())
     # id does not exist
     missing <- getElementById(headlessPage, "y")
     closePage(headlessPage)
@@ -172,10 +172,10 @@ test_that("getElementById", {
 
 test_that("getElementsByTagName", {
     headlessPage <- htmlPage()
-    appendChild(headlessPage, '<p>p1</p>')
-    appendChild(headlessPage, '<p>p2</p>')
+    appendChild(headlessPage, htmlNode('<p>p1</p>'))
+    appendChild(headlessPage, htmlNode('<p>p2</p>'))
     elts <- getElementsByTagName(headlessPage, "p")
-    css <- getElementsByTagNameCSS(headlessPage, "p")
+    css <- getElementsByTagName(headlessPage, "p", response=css())
     ## test '*' special
     all <- getElementsByTagName(headlessPage, "*")
     ## tag does not exist
@@ -196,14 +196,15 @@ test_that("getElementsByTagName", {
 test_that("getElementsByClassName", {
     ## test default document root
     headlessPage <- htmlPage()
-    appendChild(headlessPage, '<p class="c1">p1<p>')
-    appendChild(headlessPage, '<div></div>')
-    appendChild(headlessPage, '<p class="c1 c2">p2<p>', parentRef="div")
+    appendChild(headlessPage, htmlNode('<p class="c1">p1<p>'))
+    appendChild(headlessPage, htmlNode('<div></div>'))
+    appendChild(headlessPage, htmlNode('<p class="c1 c2">p2<p>'),
+                parent=css("div"))
     elts <- getElementsByClassName(headlessPage, "c1")
-    css <- getElementsByClassNameCSS(headlessPage, "c1")
+    css <- getElementsByClassName(headlessPage, "c1", response=css())
     elt <- getElementsByClassName(headlessPage, "c1 c2")
     ## test non-document root
-    nrelt <- getElementsByClassName(headlessPage, "c1", rootRef="div")
+    nrelt <- getElementsByClassName(headlessPage, "c1", root=css("div"))
     ## tag does not exist
     missing <- getElementsByClassName(headlessPage, "c3")
     closePage(headlessPage)

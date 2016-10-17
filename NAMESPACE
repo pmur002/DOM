@@ -36,11 +36,8 @@ export(
     "replaceChild",
     "setAttribute",
     "getElementById",
-    "getElementByIdCSS",
     "getElementsByTagName",
-    "getElementsByTagNameCSS",
     "getElementsByClassName",
-    "getElementsByClassNameCSS",
     "appendScript",
     "click"
 )

@@ -145,16 +145,19 @@ getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
 
 DOMresponse <- function(x, type) {
-    if (type == "NULL") {
-        NULL
-    } else {
-        switch(type,
-               DOM_node_HTML=new("DOM_node_HTML", x),
-               DOM_node_SVG=new("DOM_node_SVG", x),
-               DOM_node_CSS=new("DOM_node_CSS", x),
-               DOM_node_XPath=new("DOM_node_XPath", x),
-               DOM_node_ptr=new("DOM_node_ptr", x))
-    }
+    # When a request is expected to return a DOM node, but returns null
+    # (e.g., getElementById() finds no match)
+    if (is.null(x) && type != "NULL")
+        x <- character()
+    switch(type,
+           # Requests that have no return value
+           "NULL"=NULL,
+           # Requests that return a DOM node of some sort
+           DOM_node_HTML=new("DOM_node_HTML", x),
+           DOM_node_SVG=new("DOM_node_SVG", x),
+           DOM_node_CSS=new("DOM_node_CSS", x),
+           DOM_node_XPath=new("DOM_node_XPath", x),
+           DOM_node_ptr=new("DOM_node_ptr", x))
 }
 
 # Handling messages
@@ -417,57 +420,93 @@ setMethod("setAttribute",
                                async, callback, tag)
           })
 
-getElementById <- function(pageID, id,
-                           async=!is.null(callback),
-                           callback=NULL, tag=getRequestID()) {
+getElementByIdCore <- function(pageID, id, response,
+                               async, callback, tag) {
+    responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="getElementById", id=id, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "XML")
+                body=list(fun="getElementById",
+                          id=id,
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
-getElementByIdCSS <- function(pageID, id,
-                              async=!is.null(callback),
-                              callback=NULL, tag=getRequestID()) {
+setGeneric("getElementById",
+           function(pageID, id, ...) {
+               standardGeneric("getElementById")
+           },
+           valueClass="DOM_node_OR_error")
+
+setMethod("getElementById",
+          signature(pageID="numeric",
+                    id="character"),
+          function(pageID, id, response=htmlNode(),
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              getElementByIdCore(pageID, id, response,
+                                 async, callback, tag)
+          })
+
+getElementsByTagNameCore <- function(pageID, name, response,
+                                     async, callback, tag) {
+    responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="getElementById", id=id, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback, "CSS")
+                body=list(fun="getElementsByTagName",
+                          name=name,
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
-getElementsByTagName <- function(pageID, name,
-                                 async=!is.null(callback),
-                                 callback=NULL, tag=getRequestID()) {
+setGeneric("getElementsByTagName",
+           function(pageID, name, ...) {
+               standardGeneric("getElementsByTagName")
+           },
+           valueClass="DOM_node_OR_error")
+
+setMethod("getElementsByTagName",
+          signature(pageID="numeric",
+                    name="character"),
+          function(pageID, name, response=htmlNode(),
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              getElementsByTagNameCore(pageID, name, response,
+                                       async, callback, tag)
+          })
+
+getElementsByClassNameCore <- function(pageID, name, root, response,
+                                       async, callback, tag) {
+    responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="getElementsByTagName", name=name,
-                          returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "XML")
+                body=list(fun="getElementsByClassName",
+                          name=name,
+                          root=as.character(root),
+                          rootType=class(root),
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
-getElementsByTagNameCSS <- function(pageID, name,
-                                    async=!is.null(callback),
-                                    callback=NULL, tag=getRequestID()) {
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="getElementsByTagName", name=name,
-                          returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback, "CSS")
-}
+setGeneric("getElementsByClassName",
+           function(pageID, name, root, ...) {
+               standardGeneric("getElementsByClassName")
+           },
+           valueClass="DOM_node_OR_error")
 
-getElementsByClassName <- function(pageID, name, rootRef=NULL, css=TRUE,
-                                   async=!is.null(callback),
-                                   callback=NULL, tag=getRequestID()) {
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="getElementsByClassName", name=name,
-                          root=rootRef, css=css, returnRef=FALSE))
-    sendRequest(pageID, msg, tag, async, callback, "XML")
-}
+setMethod("getElementsByClassName",
+          signature(pageID="numeric",
+                    name="character",
+                    root="missing"),
+          function(pageID, name, root, response=htmlNode(),
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              getElementsByClassNameCore(pageID, name, root=NULL, response,
+                                         async, callback, tag)
+          })
 
-getElementsByClassNameCSS <- function(pageID, name, rootRef=NULL, css=TRUE,
-                                      async=!is.null(callback),
-                                      callback=NULL, tag=getRequestID()) {
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="getElementsByClassName", name=name,
-                          root=rootRef, css=css, returnRef=TRUE))
-    sendRequest(pageID, msg, tag, async, callback, "CSS")
-}
+setMethod("getElementsByClassName",
+          signature(pageID="numeric",
+                    name="character",
+                    root="DOM_node_ref"),
+          function(pageID, name, root, response=htmlNode(),
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              getElementsByClassNameCore(pageID, name, root, response,
+                                         async, callback, tag)
+          })
 
 appendScript <- function(pageID, script, 
                          parentRef="body", css=TRUE, async=!is.null(callback),
