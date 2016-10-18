@@ -215,8 +215,9 @@ handleMessage <- function(msgJSON, ws) {
         }
     } else if (msg$type == "REQUEST") {
         dblog(capture.output(msg$body), sep="\n")
-        result <- do.call(msg$body$fn,
-                          list(msg$body$target, msg$body$targetRef))
+        args <- mapply(DOMresponse, msg$body$args, msg$body$argsType,
+                       SIMPLIFY=FALSE, USE.NAMES=FALSE)
+        result <- do.call(msg$body$fn, args)
         msg <- list(type="RESPONSE",
                     tag=msg$tag,
                     body=result)
@@ -248,9 +249,9 @@ waitForResponse <- function(tag, limit=5, onTimeout=NULL) {
 }
 
 # SEND either REQUEST or RESPONSE
-# IF 'callback' is non-NULL, the request is asynchronous and the callback
+# IF 'async' is TRUE, the request is asynchronous and the callback
 # will be called when a response with 'tag' is received
-# IF 'callback' is NULL, the request is synchronous and R will block until
+# IF 'async' is FALSE, the request is synchronous and R will block until
 # a response with 'tag' is received AND the response value will be returned
 sendRequest <- function(pageID, msg, tag, async, callback, returnType) {
     sock <- pageInfo(pageID)$socket
@@ -286,7 +287,7 @@ setGeneric("appendChild",
            function(pageID, child, parent, ...) {
                standardGeneric("appendChild")
            },
-           valueClass="DOM_node_OR_error")
+           valueClass="DOM_node_OR_error_OR_NULL")
 
 setMethod("appendChild",
           signature(pageID="numeric",
@@ -325,7 +326,7 @@ setGeneric("removeChild",
            function(pageID, child, parent, ...) {
                standardGeneric("removeChild")
            },
-           valueClass="DOM_node_OR_error")
+           valueClass="DOM_node_OR_error_OR_NULL")
 
 setMethod("removeChild",
           signature(pageID="numeric",
@@ -368,7 +369,7 @@ setGeneric("replaceChild",
            function(pageID, newChild, oldChild, parent, ...) {
                standardGeneric("replaceChild")
            },
-           valueClass="DOM_node_OR_error")
+           valueClass="DOM_node_OR_error_OR_NULL")
 
 setMethod("replaceChild",
           signature(pageID="numeric",
@@ -434,7 +435,7 @@ setGeneric("getElementById",
            function(pageID, id, ...) {
                standardGeneric("getElementById")
            },
-           valueClass="DOM_node_OR_error")
+           valueClass="DOM_node_OR_error_OR_NULL")
 
 setMethod("getElementById",
           signature(pageID="numeric",
@@ -459,7 +460,7 @@ setGeneric("getElementsByTagName",
            function(pageID, name, ...) {
                standardGeneric("getElementsByTagName")
            },
-           valueClass="DOM_node_OR_error")
+           valueClass="DOM_node_OR_error_OR_NULL")
 
 setMethod("getElementsByTagName",
           signature(pageID="numeric",
@@ -486,7 +487,7 @@ setGeneric("getElementsByClassName",
            function(pageID, name, root, ...) {
                standardGeneric("getElementsByClassName")
            },
-           valueClass="DOM_node_OR_error")
+           valueClass="DOM_node_OR_error_OR_NULL")
 
 setMethod("getElementsByClassName",
           signature(pageID="numeric",

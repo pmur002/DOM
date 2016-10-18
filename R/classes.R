@@ -67,3 +67,6 @@ setClass("DOM_error",
 
 # Allow for a DOM node OR an error (for example)
 setClassUnion("DOM_node_OR_error", c("DOM_error", "DOM_node"))
+
+# Allow for a DOM node OR an error OR NULL (for asynchronous requests)
+setClassUnion("DOM_node_OR_error_OR_NULL", c("DOM_node_OR_error", "NULL"))

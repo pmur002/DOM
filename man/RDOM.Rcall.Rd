@@ -14,28 +14,28 @@
   event, and optionally run a callback function in the web page
   when the R function returns a result.
 
-  The \code{RDOM.Rcall} function takes three arguments:
+  The \code{RDOM.Rcall} function takes four arguments:
   \itemize{
     \item The name of the R function to call (as a string).
-    \item A reference to an HTML element.
+    \item A reference to a DOM node (or a collection of DOM nodes).
+    \item An array of types that determine how the nodes will be
+    represented in R (one or more of \code{"HTML"}, \code{"SVG"},
+    \code{"CSS"}, \code{"XPath"}).
     \item A callback function (or \code{null}).
   }
   
   A typical usage might look like this (to call an R function
   when a button is clicked on the web page):
   
-  \preformatted{<button onclick='RDOM.Rcall("fnname", this, null)'>}
+  \preformatted{<button onclick='RDOM.Rcall("fnname", this, [ "HTML" ], null)'>}
 
   The R function that is called by \code{RDOM.Rcall} is provided with
-  two arguments:
-  \itemize{
-    \item An HTML representation of the element passed to
-    \code{RDOM.Rcall}
-    \item A CSS selector for the element passed to \code{RDOM.Rcall}
-  }
+  a variable number of arguments equal to the number of DOM nodes times
+  the number of node types (with the number of types changing fastest).
+  In the example above, the R function would receive only one argument.
 
-  The return value of the R function (if any) should be a single
-  character value (which is passed to the callback function specified
+  The return value of the R function (if any) is converted to a JSON
+  object and passed to the callback function specified
   in the call to \code{RDOM.Rcall}).
 }
 \author{

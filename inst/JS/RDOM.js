@@ -51,13 +51,13 @@ RDOM = (function(){
     }
 
     // Utils for generating requests from JS to R
-    var requestValue = function(fn, element, selector, tag) {
+    var requestValue = function(tag, fn, args, argsType) {
         return { type: "REQUEST",
                  tag: tag,
                  body: {
                      fn: fn,
-                     target: element.outerHTML,
-                     targetRef: selector
+                     args: args,
+                     argsType: argsType
                  }
                }
     }
@@ -116,8 +116,9 @@ RDOM = (function(){
         return node;
     }
 
-    var DOMresponse = function(tag, fun, responseType, node, ns) {
-        var result;
+    var DOMresponse = function(node, responseType, ns) {
+        var i;
+        var result = [];
         switch (responseType) {
         case "DOM_node_HTML":
         case "DOM_node_SVG":
@@ -125,27 +126,23 @@ RDOM = (function(){
             if (typeof node.length === "undefined") {
                 node = [ node ];
             }
-            var html = [];
             if (ns) {
                 for (i = 0; i < node.length; i++) {
-                    html.push(serializer.serializeToString(node[i]));
+                    result.push(serializer.serializeToString(node[i]));
                 }
             } else {
                 for (i = 0; i < node.length; i++) {
-                    html.push(node[i].outerHTML);
+                    result.push(node[i].outerHTML);
                 }               
             }     
-            result = returnValue(tag, fun, html);
             break;
         case "DOM_node_CSS":
             if (typeof node.length === "undefined") {
                 node = [ node ];
             }
-            var css = [];
             for (i = 0; i < node.length; i++) {
-                css.push(CSG.getSelector(node[i]));
+                result.push(CSG.getSelector(node[i]));
             }
-            result = returnValue(tag, fun, css);
             break;
         case "DOM_node_XPath":
             throw new Error("DOM_node_XPath support not yet implemented");
@@ -181,9 +178,10 @@ RDOM = (function(){
                       " TO " + parent.toString());
                 parent.appendChild(child);
                 
-                result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
-                                     msgBody.responseType[0], 
-                                     child, msgBody.ns[0]);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     DOMresponse(child, 
+                                                 msgBody.responseType[0], 
+                                                 msgBody.ns[0]));
                 break;
             case "removeChild": // child, parent
                 var error = false;
@@ -197,9 +195,10 @@ RDOM = (function(){
                                      false);
                 }
 
-                result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
-                                     msgBody.responseType[0], 
-                                     child, false);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     DOMresponse(child, 
+                                                 msgBody.responseType[0], 
+                                                 false));
 
                 // Remove child AFTER determining its CSS selector !
                 dblog("REMOVING " + child.toString() + 
@@ -221,9 +220,10 @@ RDOM = (function(){
                                      false);
                 }
 
-                result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
-                                     msgBody.responseType[0], 
-                                     oldChild, msgBody.ns[0]);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     DOMresponse(oldChild,
+                                                 msgBody.responseType[0], 
+                                                 msgBody.ns[0]));
                 
                 // Replace oldChild AFTER determining its CSS selector !
                 dblog("REPLACING " + oldChild.toString() + 
@@ -241,9 +241,10 @@ RDOM = (function(){
                 if (element === null) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 } else {
-                    result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
-                                         msgBody.responseType[0], 
-                                         element, false);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         DOMresponse(element,
+                                                     msgBody.responseType[0], 
+                                                     false));
                 }
                 break;
             case "getElementsByTagName": // name ('*' is special)
@@ -251,9 +252,10 @@ RDOM = (function(){
                 if (elements.length === 0) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 } else {
-                    result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
-                                         msgBody.responseType[0], 
-                                         elements, false);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         DOMresponse(elements,
+                                                     msgBody.responseType[0], 
+                                                     false));
                 }
                 break;
             case "getElementsByClassName": // name, root
@@ -269,9 +271,10 @@ RDOM = (function(){
                 if (elements.length === 0) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], null);
                 } else {
-                    result = DOMresponse(msgJSON.tag, msgBody.fun[0], 
-                                         msgBody.responseType[0], 
-                                         elements, false);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         DOMresponse(elements,
+                                                     msgBody.responseType[0], 
+                                                     false));
                 }
                 break;
             case "click":
@@ -370,12 +373,29 @@ RDOM = (function(){
     }
     
     // 'fn' is name of R function (string)
-    // 'args' is JSON object
-    Rcall = function(fn, element, callback) {
+    // 'target' is a DOM node
+    // 'targetType' is an array containing one or more of:
+    //     "HTML", "SVG", "CSS", "XPath"
+    // 'callback' is a JS function
+    Rcall = function(fn, target, targetType, callback) {
+        var i;
         var tag = getRequestID();
         addRequest(tag, callback);
-        var selector = CSG.getSelector(element);
-        var request = requestValue(fn, element, selector, tag);
+        // Turn target into array even if length 1
+        if (typeof target.length === "undefined") {
+            target = [ target ];
+        }
+        var args = [];
+        var argsType = [];
+        for (i = 0; i < target.length; i++) {
+            for (j = 0; j < targetType.length; j++) {
+                args.push(DOMresponse(target[i], 
+                                      'DOM_node_' + targetType[j],
+                                      false)[0]);
+                argsType.push('DOM_node_' + targetType[j]);
+            }
+        }
+        var request = requestValue(tag, fn, args, argsType);
         var msgJSON = JSON.stringify(request);
         dblog("SENDING " + msgJSON);
         ws.send(msgJSON); 

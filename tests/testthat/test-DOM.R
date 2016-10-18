@@ -242,27 +242,27 @@ test_that("Rcall", {
     # Call R from browser
     headlessPage <- htmlPage()
     element <- ""
-    elementRef <- ""
+    elementCSS <- ""
     assign("recordRequest",
-           function(target, targetRef) {
+           function(target, targetCSS) {
                element <<- target
-               elementRef <<- targetRef
+               elementCSS <<- targetCSS
            },
            envir=.GlobalEnv)
-    appendChild(headlessPage, "<p>test<p>")
-    setAttribute(headlessPage, "p", "onclick",
-                 'RDOM.Rcall("recordRequest", this, null)')
-    click(headlessPage, "p")
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    setAttribute(headlessPage, css("p"), "onclick",
+                 'RDOM.Rcall("recordRequest", this, [ "HTML", "CSS" ], null)')
+    click(headlessPage, css("p"))
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     closePage(headlessPage)
-    expect_equal(element,
-                 '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, null)">test</p>')
-    expect_equal(elementRef, "p")
+    expect_equal(unclass(element),
+                 '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, [ &quot;HTML&quot;, &quot;CSS&quot; ], null)">test</p>')
+    expect_equal(unclass(elementCSS), "p")
     # Call R from browser, then call browser from R
     headlessPage <- htmlPage()
     callbackGen <- function(page) {
-        function(target, targetRef) {
+        function(target, targetCSS) {
             require(xtable)
             require(XML)
             text <- xmlValue(xmlRoot(xmlParse(target)))
@@ -270,15 +270,17 @@ test_that("Rcall", {
                                         " ")[[1]])
             wordTab <- print(xtable(wordCount), type="html",
                              print.results=FALSE, comment=FALSE)
-            replaceChild(page, newChild=wordTab, oldChildRef=targetRef,
+            replaceChild(page,
+                         newChild=htmlNode(wordTab),
+                         oldChild=css(targetCSS),
                          async=TRUE)
         }
     }
     assign("replaceWithTable", callbackGen(headlessPage), envir=.GlobalEnv)
-    appendChild(headlessPage, "<p>test<p>")
-    setAttribute(headlessPage, "p", "onclick",
-                 'RDOM.Rcall("replaceWithTable", this, null)')
-    click(headlessPage, "p")
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    setAttribute(headlessPage, css("p"), "onclick",
+                 'RDOM.Rcall("replaceWithTable", this, [ "HTML", "CSS" ], null)')
+    click(headlessPage, css("p"))
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.5)
     pageContent <- closePage(headlessPage)
