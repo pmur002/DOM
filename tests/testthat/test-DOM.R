@@ -300,3 +300,15 @@ test_that("DOMptr", {
                  '<html><head></head><body><p style="color: red">test</p></body></html>')
 })
 
+test_that("XPath", {
+    headlessPage <- htmlPage()
+    # Create new node and get DOM_node_ptr to it
+    xpath <- appendChild(headlessPage, htmlNode("<p>test<p>"),
+                         response=xpath())
+    # Use DOM_node_ptr to specify a node 
+    setAttribute(headlessPage, xpath, "style", "color: red")
+    pageContent <- closePage(headlessPage)
+    expect_equal(unclass(pageContent),
+                 '<html><head></head><body><p style="color: red">test</p></body></html>')
+})
+
