@@ -510,12 +510,23 @@ setMethod("getElementsByClassName",
 
 ## This request is ALWAYS asynchronous
 ## Mostly for headless browser testing (?)
-click <- function(pageID, eltRef, css=TRUE,
-                  callback=NULL, tag=getRequestID()) {
-    msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="click", elt=eltRef, css=css))
-    sendRequest(pageID, msg, tag, TRUE, callback, "NULL")
-}
+setGeneric("click",
+           function(pageID, elt, ...) {
+               standardGeneric("click")
+           },
+           valueClass="NULL")
+
+setMethod("click",
+          signature(pageID="numeric",
+                    elt="DOM_node_ref"),
+          function(pageID, elt, 
+                   callback=NULL, tag=getRequestID()) {
+              msg <- list(type="REQUEST", tag=tag,
+                          body=list(fun="click",
+                                    elt=as.character(elt),
+                                    eltType=class(elt)))
+              sendRequest(pageID, msg, tag, TRUE, callback, "NULL")
+          })
 
 ################################################################################
 ## Some extra utilities

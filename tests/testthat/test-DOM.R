@@ -227,10 +227,10 @@ test_that("getElementsByClassName", {
 
 test_that("click", {
     headlessPage <- htmlPage()
-    appendChild(headlessPage, "<p>test<p>")
-    setAttribute(headlessPage, "p", "onclick",
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    setAttribute(headlessPage, css("p"), "onclick",
                  'this.setAttribute("style", "color: red")')
-    click(headlessPage, "p")
+    click(headlessPage, css("p"))
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     pageContent <- closePage(headlessPage)

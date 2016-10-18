@@ -275,7 +275,8 @@ RDOM = (function(){
                 }
                 break;
             case "click":
-                var element = resolveTarget(msgBody.elt[0], msgBody.css[0]);
+                var element = DOMnode(msgBody.elt[0], msgBody.eltType[0],
+                                      false);
                 var event;
                 if (bowser.phantom) {
                     event = document.createEvent( 'MouseEvents' );

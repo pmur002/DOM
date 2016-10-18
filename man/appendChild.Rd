@@ -19,6 +19,7 @@
 \alias{getElementsByClassName,numeric,character,DOM_node_ref-method}
 \alias{appendScript}
 \alias{click}
+\alias{click,numeric,DOM_node_ref-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Send DOM requests to a web page
@@ -50,7 +51,7 @@
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{getElementsByClassName}{numeric,character,DOM_node_ref}(pageID, name, root, response=htmlNode(),
                        async = FALSE, callback = NULL, tag = getRequestID())
-click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
+\S4method{click}{numeric,DOM_node_ref}(pageID, elt, callback = NULL, tag = getRequestID())
 }
 \arguments{
   \item{pageID}{
@@ -102,10 +103,6 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
   \item{ns}{
     A namespace for the child element that is to be created.
     Valid values are \code{"HTML"} or \code{"SVG"} (or \code{NULL}).
-  }
-  \item{css}{
-    A logical indicating whether the \code{parent} is a CSS selector
-    (otherwise, it is an XPath).
   }
   \item{async}{
     A logical indicating whether the request is asynchronous.
@@ -164,26 +161,21 @@ click(pageID, eltRef, css = TRUE, callback = NULL, tag = getRequestID())
   event); this function is aimed at debugging with a headless browser.
 }
 \value{
-  All functions return a character vector.
+  Most functions return a DOM node, 
+  which could be, e.g., HTML or CSS, depending on the \code{response}
+  argument.
   
-  For \code{appendChild}, the HTML code for the
-  child element that was added.
+  For \code{appendChild}, the child element that was added.
 
-  For \code{removeChild}, the HTML code for the
-  child element that was removed.
+  For \code{removeChild}, the child element that was removed.
 
-  For \code{replaceChild}, the HTML code the old child element that was
+  For \code{replaceChild}, the old child element that was
   replaced.
   
   For \code{getElementById}, \code{getElementsByTagName}, and
-  \code{getElementsByClassName}, the HTML code for the matching elements
-  (or a missing value if no match is found).
+  \code{getElementsByClassName}, the matching elements.
 
-  For \code{getElementByIdCSS}, \code{getElementsByTagNameCSS}, and
-  \code{getElementsByClassNameCSS}, CSS selectors for the matching elements
-  (or a missing value if no match is found).
-
-  For \code{setAttribute}, \code{appendScript}, and \code{click}, \code{NULL}.
+  Both \code{setAttribute} and \code{click} return \code{NULL}.
 }
 \references{
   \url{https://www.w3.org/DOM/}
