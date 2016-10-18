@@ -288,3 +288,15 @@ test_that("Rcall", {
                  '<html><head></head><body><tableborder="1"><tbody><tr><th></th><th>V1</th></tr><tr><tdalign="right">test</td><tdalign="right">1</td></tr></tbody></table></body></html>')
 })
     
+test_that("DOMptr", {
+    headlessPage <- htmlPage()
+    # Create new node and get DOM_node_ptr to it
+    ptr <- appendChild(headlessPage, htmlNode("<p>test<p>"),
+                       response=DOMptr())
+    # Use DOM_node_ptr to specify a node 
+    setAttribute(headlessPage, ptr, "style", "color: red")
+    pageContent <- closePage(headlessPage)
+    expect_equal(unclass(pageContent),
+                 '<html><head></head><body><p style="color: red">test</p></body></html>')
+})
+

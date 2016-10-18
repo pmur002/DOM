@@ -30,6 +30,7 @@ export(
     "javascript",
     "css",
     "xpath",
+    "DOMptr",
     
     ## Manipulate DOM
     "appendChild",

@@ -19,6 +19,17 @@ RDOM = (function(){
     // CSS selector generator object
     var CSG = new CssSelectorGenerator();
 
+    // Utils for tracking DOM_node_ptr objects
+    var DOMnodes = [];
+    var DOMindex = 0;
+    var setDOMnode = function(node) {
+        DOMnodes[DOMindex] = node;
+        return DOMindex++;
+    }
+    var getDOMnode = function(index) {
+        return DOMnodes[index];
+    }
+
     // Utils for tracking requests from JS to R
     var requestID = 0;
     var getRequestID = function() {
@@ -110,7 +121,7 @@ RDOM = (function(){
         case "DOM_node_XPath":
             node = resolveTarget(spec, false);
         case "DOM_node_ptr":
-            throw new Error("DOM_node_ptr support not yet implemented");
+            node = getDOMnode(spec);
             break;
         }
         return node;
@@ -148,7 +159,12 @@ RDOM = (function(){
             throw new Error("DOM_node_XPath support not yet implemented");
             break;
         case "DOM_node_ptr":
-            throw new Error("DOM_node_ptr support not yet implemented");
+            if (typeof node.length === "undefined") {
+                node = [ node ];
+            }
+            for (i = 0; i < node.length; i++) {
+                result.push(setDOMnode(node[i]));
+            }
             break;
         }
         return result;
