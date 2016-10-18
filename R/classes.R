@@ -57,7 +57,7 @@ xpath <- function(x="") {
     new("DOM_node_XPath", x)
 }
 
-DOMptr <- function(x="") {
+nodePtr <- function(x="") {
     new("DOM_node_ptr", x)
 }
 

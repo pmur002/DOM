@@ -4,7 +4,7 @@
 \alias{javascript}
 \alias{css}
 \alias{xpath}
-\alias{DOMptr}
+\alias{nodePtr}
 \title{
   Create a DOM node representation.
 }
@@ -18,7 +18,7 @@ svgNode(x="")
 javascript(x="")
 css(x="")
 xpath(x="")
-DOMptr(x="")
+nodePtr(x="")
 }
 \arguments{
   \item{x}{ A character value consisting of HTML, SVG, JavaScript,
