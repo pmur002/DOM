@@ -188,7 +188,11 @@ RDOM = (function(){
                 node = [ node ];
             }
             for (i = 0; i < node.length; i++) {
-                result.push(CSG.getSelector(node[i]));
+                if (node[i].parentNode === null) {
+                    result.push(null);
+                } else {
+                    result.push(CSG.getSelector(node[i]));
+                }
             }
             break;
         case "DOM_node_XPath":
@@ -196,7 +200,11 @@ RDOM = (function(){
                 node = [ node ];
             }
             for (i = 0; i < node.length; i++) {
-                result.push(createXPathFromElement(node[i]));
+                if (node[i].parentNode === null) {
+                    result.push(null);
+                } else {
+                    result.push(createXPathFromElement(node[i]));
+                }
             }
             break;
         case "DOM_node_ptr":
@@ -220,6 +228,22 @@ RDOM = (function(){
             var result = "";
             var msgBody = msgJSON.body;
             switch(msgBody.fun[0]) {
+            case "createElement":
+                var node = document.createElement(msgBody.tagName[0]);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     DOMresponse(node, 
+                                                 msgBody.responseType[0], 
+                                                 false));
+                break;
+            case "createElementNS":
+                var node = document.createElementNS(msgBody.namespace[0],
+                                                    msgBody.tagName[0]);
+                node.setAttribute("xmlns", msgBody.namespace[0]);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     DOMresponse(node, 
+                                                 msgBody.responseType[0], 
+                                                 true));
+                break;
             case "appendChild": // parent, child
                 var child = DOMnode(msgBody.child[0], msgBody.childType[0],
                                     msgBody.ns[0]);

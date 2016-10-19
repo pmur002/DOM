@@ -7,6 +7,39 @@ source("utils.R")
 fileURL <- system.file("HTML", "RDOM.html", package="DOM")
 url <- "http://pmur002.neocities.org/index.html"
 
+test_that("createElement", {
+    # Create HTML
+    page <- htmlPage()
+    html <- createElement(page, "p", htmlNode())
+    closePage(page)
+    expect_equal(unclass(html),
+                 "<p></p>")
+    # Create nodePtr and build "off-screen"
+    page <- htmlPage()
+    ptr <- createElement(page, "div")
+    appendChild(page, htmlNode("<p>test</p>"), ptr)
+    appendChild(page, ptr)
+    pageContent <- closePage(page)
+    expect_equal(unclass(pageContent),
+                 "<html><head></head><body><div><p>test</p></div></body></html>")
+    # Check that asking (stupidly) for CSS or XPath result does not
+    # fail messily
+    page <- htmlPage()
+    createElement(page, "p", css())
+    createElement(page, "p", xpath())
+    closePage(page)
+    # createElementNS
+    page <- htmlPage()
+    ptr <- createElementNS(page, "http://www.w3.org/2000/svg", "svg")
+    setAttribute(page, ptr, "width", "100")
+    setAttribute(page, ptr, "height", "100")
+    appendChild(page, svgNode('<circle xmlns="http://www.w3.org/2000/svg" cx="50" cy="50" r="50"/>'), parent=ptr, ns=TRUE, response=svgNode())
+    appendChild(page, ptr, ns=TRUE, response=svgNode())
+    pageContent <- closePage(page)
+    expect_equal(unclass(pageContent),
+                 '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle xmlns="http://www.w3.org/2000/svg" cx="50" cy="50" r="50"></circle></svg></body></html>')
+})
+    
 test_that("appendChild", {
     # Append HTML child
     headlessPage <- htmlPage()
@@ -288,11 +321,11 @@ test_that("Rcall", {
                  '<html><head></head><body><tableborder="1"><tbody><tr><th></th><th>V1</th></tr><tr><tdalign="right">test</td><tdalign="right">1</td></tr></tbody></table></body></html>')
 })
     
-test_that("DOMptr", {
+test_that("nodePtr", {
     headlessPage <- htmlPage()
     # Create new node and get DOM_node_ptr to it
     ptr <- appendChild(headlessPage, htmlNode("<p>test<p>"),
-                       response=DOMptr())
+                       response=nodePtr())
     # Use DOM_node_ptr to specify a node 
     setAttribute(headlessPage, ptr, "style", "color: red")
     pageContent <- closePage(headlessPage)

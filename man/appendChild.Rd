@@ -1,4 +1,6 @@
 \name{DOM interface}
+\alias{createElement}
+\alias{createElementNS}
 \alias{appendChild}
 \alias{appendChild,numeric,DOM_node,missing-method}
 \alias{appendChild,numeric,DOM_node,DOM_node_ref-method}
@@ -29,6 +31,10 @@
   access existing web page content.
 }
 \usage{
+createElement(pageID, tagName, response=nodePtr(),
+              async = FALSE, callback = NULL, tag = getRequestID())
+createElementNS(pageID, namespace, tagName, response=nodePtr(),
+                async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{appendChild}{numeric,DOM_node,missing}(pageID, child, parent, response=htmlNode(),
             ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{appendChild}{numeric,DOM_node,DOM_node_ref}(pageID, child, parent, response=htmlNode(),
@@ -56,6 +62,14 @@
 \arguments{
   \item{pageID}{
     A page identifier, as returned by, e.g., \code{\link{htmlPage}}.
+  }
+  \item{tagName}{
+    A character value describing an HTML (or SVG) tag name.
+  }
+  \item{namespace}{
+    A character value describing a valid namespace
+    (e.g., \code{"http://www.w3.org/1999/xml"} or
+    \code{"http://www.w3.org/2000/svg"})
   }
   \item{child}{
     A DOM node representation, e.g., the result from \code{htmlNode()}
@@ -164,6 +178,10 @@
   Most functions return a DOM node, 
   which could be, e.g., HTML or CSS, depending on the \code{response}
   argument.
+
+  For \code{createElement}, the default is to return a
+  \code{DOM_note_ptr} object (because the element created is not
+  part of the document, so cannot be identified from R any other way).
   
   For \code{appendChild}, the child element that was added.
 

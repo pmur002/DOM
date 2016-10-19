@@ -269,6 +269,27 @@ sendRequest <- function(pageID, msg, tag, async, callback, returnType) {
 ################################################################################
 ## The main API
 
+createElement <- function(pageID, tagName, response=nodePtr(),
+                          async=FALSE, callback=NULL, tag=getRequestID()) {
+    responseType <- class(response)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="createElement",
+                          tagName=as.character(tagName),
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
+}
+
+createElementNS <- function(pageID, namespace, tagName, response=nodePtr(),
+                            async=FALSE, callback=NULL, tag=getRequestID()) {
+    responseType <- class(response)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="createElementNS",
+                          namespace=as.character(namespace),
+                          tagName=as.character(tagName),
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
+}
+
 appendChildCore <- function(pageID, child, parent, response,
                             ns, async, callback, tag) {
     responseType <- class(response)

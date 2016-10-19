@@ -33,6 +33,8 @@ export(
     "nodePtr",
     
     ## Manipulate DOM
+    "createElement",
+    "createElementNS",
     "appendChild",
     "removeChild",
     "replaceChild",
