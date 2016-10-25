@@ -86,6 +86,7 @@ startServer <- function(pageID, app, port=NULL, body="",
         if (port == 52000) {
             msg <- paste0(msg, "; close existing filePage/urlPage.")
         }
+        removeRequest(tag)
         stop(msg)
     }
     pageStarted <- FALSE
