@@ -70,3 +70,11 @@ setClassUnion("DOM_node_OR_error", c("DOM_error", "DOM_node"))
 
 # Allow for a DOM node OR an error OR NULL (for asynchronous requests)
 setClassUnion("DOM_node_OR_error_OR_NULL", c("DOM_node_OR_error", "NULL"))
+
+# Subsetting DOM nodes should return DOM nodes ...
+setMethod("[",
+          signature(x="DOM_node", i="ANY", j="missing", drop="missing"),
+          function(x, i, j, ..., drop) {
+              new(class(x), unclass(x)[i])
+          })
+

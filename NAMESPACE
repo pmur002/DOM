@@ -44,3 +44,5 @@ export(
     "getElementsByClassName",
     "click"
 )
+
+exportMethods("[")
