@@ -468,12 +468,14 @@ RDOM = (function(){
         }
         var args = [];
         var argsType = [];
-        for (i = 0; i < target.length; i++) {
-            for (j = 0; j < targetType.length; j++) {
-                args.push(DOMresponse(target[i], 
-                                      'DOM_node_' + targetType[j],
-                                      false)[0]);
-                argsType.push('DOM_node_' + targetType[j]);
+        if (targetType != null) {
+            for (i = 0; i < target.length; i++) {
+                for (j = 0; j < targetType.length; j++) {
+                    args.push(DOMresponse(target[i], 
+                                          'DOM_node_' + targetType[j],
+                                          false)[0]);
+                    argsType.push('DOM_node_' + targetType[j]);
+                }
             }
         }
         var request = requestValue(tag, fn, args, argsType);

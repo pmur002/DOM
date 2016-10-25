@@ -292,6 +292,35 @@ test_that("Rcall", {
     expect_equal(unclass(element),
                  '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, [ &quot;HTML&quot;, &quot;CSS&quot; ], null)">test</p>')
     expect_equal(unclass(elementCSS), "p")
+    # Call R from browser (no arguments)
+    headlessPage <- htmlPage()
+    testResult <- FALSE
+    assign("noArgs", function() { testResult <<- TRUE }, envir=.GlobalEnv)
+    noArgs <- 
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    setAttribute(headlessPage, css("p"), "onclick",
+                 'RDOM.Rcall("noArgs", this, null, null)')
+    click(headlessPage, css("p"))
+    Sys.sleep(.2)
+    closePage(headlessPage)
+    expect_true(testResult)
+    # Call R from browser (multiple objects, multiple formats)
+    headlessPage <- htmlPage()
+    testResult <- FALSE
+    assign("manyArgs", function(...) { testResult <<- list(...) },
+           envir=.GlobalEnv)
+    appendChild(headlessPage, htmlNode("<p>test<p>"))
+    setAttribute(headlessPage, css("p"), "onclick",
+                 'RDOM.Rcall("manyArgs", [ this, this.parentNode ],
+                             [ "HTML", "CSS" ], null)')
+    click(headlessPage, css("p"))
+    Sys.sleep(.2)
+    closePage(headlessPage)
+    expect_length(testResult, 4)
+    expect_s4_class(testResult[[1]], "DOM_node_HTML")
+    expect_s4_class(testResult[[2]], "DOM_node_CSS")
+    expect_s4_class(testResult[[3]], "DOM_node_HTML")
+    expect_s4_class(testResult[[4]], "DOM_node_CSS")
     # Call R from browser, then call browser from R
     headlessPage <- htmlPage()
     callbackGen <- function(page) {
@@ -314,7 +343,6 @@ test_that("Rcall", {
     setAttribute(headlessPage, css("p"), "onclick",
                  'RDOM.Rcall("replaceWithTable", this, [ "HTML", "CSS" ], null)')
     click(headlessPage, css("p"))
-    # Call is asynchronous, so pause for it to finish
     Sys.sleep(.5)
     pageContent <- closePage(headlessPage)
     expect_equal(minifyHTML(pageContent),

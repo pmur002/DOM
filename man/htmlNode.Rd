@@ -5,6 +5,7 @@
 \alias{css}
 \alias{xpath}
 \alias{nodePtr}
+\alias{[,DOM_node,ANY,missing,missing-method}
 \title{
   Create a DOM node representation.
 }
@@ -19,11 +20,13 @@ javascript(x="")
 css(x="")
 xpath(x="")
 nodePtr(x="")
+\S4method{[}{DOM_node,ANY,missing,missing}(x, i, j, \dots, drop)
 }
 \arguments{
   \item{x}{ A character value consisting of HTML, SVG, JavaScript,
     CSS, or XPath code, as appropriate.
   }
+\item{i,j,\dots,drop}{ Arguments for subset method for DOM nodes.}
 }
 \value{
   An S4 object of class \code{DOM_node_HTML}, \code{DOM_node_SVG},
