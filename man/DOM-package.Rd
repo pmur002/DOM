@@ -1,6 +1,9 @@
 \docType{package}
 \name{DOM-package}
 \alias{DOM-package}
+\alias{debug}
+\alias{getPage}
+\alias{R_PHANTOMJSCMD}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Drive web browser content from R.
@@ -36,7 +39,17 @@
   on the web page to (asynchronously) make a request to R from the
   browser (e.g., in response to a user event such as a mouse click).
 
-  The connection to the browser should be closed with \code{\link{closePage}}.
+  The connection to the browser should be closed with
+  \code{\link{closePage}}.
+
+  The hidden function \code{DOM:::debug} can be used to turn on
+  debugging output in both R and the browser.
+
+  The hidden function \code{DOM:::getPage} can be used to obtain
+  the current page content.
+
+  The environment variable \code{R_PHANTOMJSCMD} can be used to
+  specify the path to the phantomJS executable (for the headless browser).
 }
 \author{
   Paul Murrell
