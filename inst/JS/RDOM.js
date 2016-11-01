@@ -108,12 +108,13 @@ RDOM = (function(){
                  pageID: pageID
                }
     }
-    var returnValue = function(tag, fn, value) {
+    var returnValue = function(tag, fn, value, type) {
         return { type: "RESPONSE",
                  tag: tag,
                  body: {
                      fn: fn,
-                     value: value
+                     value: value,
+                     type: type
                  }
                }    
     }   
@@ -264,7 +265,8 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(node, 
                                                  msgBody.responseType[0], 
-                                                 false));
+                                                 false),
+                                     msgBody.responseType[0]);
                 break;
             case "createElementNS":
                 var node = document.createElementNS(msgBody.namespace[0],
@@ -273,7 +275,8 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(node, 
                                                  msgBody.responseType[0], 
-                                                 true));
+                                                 true),
+                                     msgBody.responseType[0]);
                 break;
             case "appendChild": // parent, child
                 var child = DOMnode(msgBody.child[0], msgBody.childType[0],
@@ -293,7 +296,8 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(child, 
                                                  msgBody.responseType[0], 
-                                                 msgBody.ns[0]));
+                                                 msgBody.ns[0]),
+                                     msgBody.responseType[0]);
                 break;
             case "removeChild": // child, parent
                 var error = false;
@@ -310,7 +314,8 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(child, 
                                                  msgBody.responseType[0], 
-                                                 false));
+                                                 false),
+                                     msgBody.responseType[0]);
 
                 // Remove child AFTER determining its CSS selector !
                 dblog("REMOVING " + child.toString() + 
@@ -335,7 +340,8 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(oldChild,
                                                  msgBody.responseType[0], 
-                                                 msgBody.ns[0]));
+                                                 msgBody.ns[0]),
+                                     msgBody.responseType[0]);
                 
                 // Replace oldChild AFTER determining its CSS selector !
                 dblog("REPLACING " + oldChild.toString() + 
@@ -346,28 +352,32 @@ RDOM = (function(){
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0], 
                                       false);
                 element.setAttribute(msgBody.attrName[0], msgBody.attrValue[0]);
-                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], null, "NULL");
                 break;
             case "getElementById": // id
                 var element = document.getElementById(msgBody.id[0]);
                 if (element === null) {
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         null, "NULL");
                 } else {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          DOMresponse(element,
                                                      msgBody.responseType[0], 
-                                                     false));
+                                                     false),
+                                         msgBody.responseType[0]);
                 }
                 break;
             case "getElementsByTagName": // name ('*' is special)
                 var elements = document.getElementsByTagName(msgBody.name[0]);
                 if (elements.length === 0) {
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         null, "NULL");
                 } else {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          DOMresponse(elements,
                                                      msgBody.responseType[0], 
-                                                     false));
+                                                     false),
+                                         msgBody.responseType[0]);
                 }
                 break;
             case "getElementsByClassName": // name, root
@@ -381,12 +391,14 @@ RDOM = (function(){
                     elements = parent.getElementsByClassName(msgBody.name[0]);
                 }
                 if (elements.length === 0) {
-                    result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                    result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                         null, "NULL");
                 } else {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          DOMresponse(elements,
                                                      msgBody.responseType[0], 
-                                                     false));
+                                                     false),
+                                         msgBody.responseType[0]);
                 }
                 break;
             case "getProp":
@@ -394,10 +406,29 @@ RDOM = (function(){
                                       false);
                 var name = msgBody.propName[0];
                 var value = element[name];
+                var responseType = msgBody.responseType[0];
+                if (responseType === "NULL") {
+                    // Select appropriate response type based on value
+                    switch (typeof value) {
+                    case "numeric":
+                        responseType = "DOM_numeric";
+                        break;
+                    case "string":
+                        responseType = "DOM_string";
+                        break;
+                    case "boolean":
+                        responseType = "DOM_boolean";
+                        break;
+                    default:
+                        responseType = "DOM_obj_ptr";
+                        break;
+                    }
+                } 
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(value,
-                                                 msgBody.responseType[0],
-                                                 false));
+                                                 responseType,
+                                                 false),
+                                     responseType);
                 break;
             case "setProp":
                 var element = DOMnode(msgBody.object[0], msgBody.objectType[0],
@@ -405,7 +436,8 @@ RDOM = (function(){
                 var name = msgBody.propName[0];
                 var value = DOMnode(msgBody.value[0], msgBody.valueType[0]);
                 element[name] = value;
-                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     null, "NULL");
                 break;
             case "click":
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0],
@@ -418,7 +450,8 @@ RDOM = (function(){
                     event = new MouseEvent('click');
                 }
                 element.dispatchEvent(event);
-                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     null, "NULL");
                 break;
             default:
                 throw new Error("Unsupported DOM request");

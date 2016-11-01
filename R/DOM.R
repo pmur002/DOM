@@ -201,14 +201,22 @@ handleMessage <- function(msgJSON, ws) {
         message(result)
     } else if (msg$type == "RESPONSE") {
         ## Get response value
-        value <- DOMresponse(msg$body$value, getRequestResponseType(msg$tag),
+        ## If request response type is "NULL", but message body type is not
+        ## then the browser has determined the type of response, so use that
+        if (getRequestResponseType(msg$tag) == "NULL" &&
+            msg$body$type != "NULL") {
+            responseType <- msg$body$type
+        } else {
+            responseType <- getRequestResponseType(msg$tag)
+        }
+        value <- DOMresponse(msg$body$value, responseType,
                              getRequestPageID(msg$tag))
         ## When this is a response to a getElement* request, 'null'
         ## means no elements were found;  turn this into character(0)
         if (grepl("getElement", msg$body$fn)) {
             if (is.null(value)) {
                 value <- DOMresponse(character(),
-                                     getRequestResponseType(msg$tag),
+                                     responseType,
                                      getRequestPageID(msg$tag))
             }
         }
@@ -596,7 +604,7 @@ setMethod("getProp",
           signature(pageID="numeric",
                     object="DOM_obj_ref",
                     propName="character"),
-          function(pageID, object, propName, response=objPtr(),
+          function(pageID, object, propName, response=NULL,
                    async=FALSE, callback=NULL, tag=getRequestID()) {
               getPropCore(pageID, object, propName, response,
                        async, callback, tag)
@@ -645,6 +653,24 @@ setMethod("setProp",
                    async=FALSE, callback=NULL, tag=getRequestID()) {
               setPropCore(pageID, object, propName, value,
                           async, callback, tag)
+          })
+
+# Some convenient syntactic sugar
+setMethod("$",
+          signature(x="DOM_obj_ptr"),
+          function(x, name) {
+              getProp(x@pageID, x, name)
+          })
+
+setMethod("$<-",
+          signature(x="DOM_obj_ptr"),
+          function(x, name, value) {
+              ## This allows us to cope with syntax of the form a$b$c <- value
+              if (is.null(value)) {
+                  ; # do nothing
+              } else {
+                  setProp(x@pageID, x, name, value)
+              }
           })
 
 ## This request is ALWAYS asynchronous

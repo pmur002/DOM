@@ -31,6 +31,9 @@
     and setting properties on DOM objects.  These only work with
     \code{DOM_obj_ref} objects.
 
+    By default, \code{getProp()} selects an appropriate class for
+    the response value.
+    
     NOTE that DOM object properties are different from DOM node
     attributes (\code{setProp()} is different from
     \code{setAttribute}).  Attributes refer to the attributes of HTML
@@ -41,7 +44,13 @@
     property of a DOM object (which only affects that single property).  
 
     \item
+    Some syntactic sugar is provided so that we can get and set
+    properties for \code{DOM_obj_ptr} objects using syntax like
+    \code{x$y} and \code{x$y <- value}.
+    
+    \item
     DOM error messages now contain more information.
+
   }
 }
 \section{Changes in version 0.3-1}{

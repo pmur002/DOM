@@ -52,3 +52,5 @@ export(
 )
 
 exportMethods("[")
+exportMethods("$")
+exportMethods("$<-")
