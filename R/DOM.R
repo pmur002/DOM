@@ -649,7 +649,7 @@ setMethod("setProp",
                     object="DOM_obj_ref",
                     propName="character",
                     value="DOM_value"),
-          function(pageID, object, propName, value, ...,
+          function(pageID, object, propName, value, 
                    async=FALSE, callback=NULL, tag=getRequestID()) {
               setPropCore(pageID, object, propName, value,
                           async, callback, tag)

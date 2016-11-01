@@ -19,7 +19,13 @@
 \alias{getElementsByClassName}
 \alias{getElementsByClassName,numeric,character,missing-method}
 \alias{getElementsByClassName,numeric,character,DOM_node_ref-method}
-\alias{appendScript}
+\alias{getProp}
+\alias{getProp,numeric,DOM_obj_ref,character-method}
+\alias{setProp}
+\alias{setProp,numeric,DOM_obj_ref,character,DOM_obj_ref-method}
+\alias{setProp,numeric,DOM_obj_ref,character,DOM_value-method}
+\alias{$,DOM_obj_ptr-method}
+\alias{$<-,DOM_obj_ptr-method}
 \alias{click}
 \alias{click,numeric,DOM_node_ref-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -57,7 +63,17 @@ createElementNS(pageID, namespace, tagName, response=nodePtr(),
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{getElementsByClassName}{numeric,character,DOM_node_ref}(pageID, name, root, response=htmlNode(),
                        async = FALSE, callback = NULL, tag = getRequestID())
-\S4method{click}{numeric,DOM_node_ref}(pageID, elt, callback = NULL, tag = getRequestID())
+\S4method{click}{numeric,DOM_node_ref}(pageID, elt, callback = NULL, tag
+= getRequestID())
+\S4method{getProp}{numeric,DOM_obj_ref,character}(pageID, object,
+propName, response = NULL,
+                       async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{setProp}{numeric,DOM_obj_ref,character,DOM_obj_ref}(pageID, object,
+propName, value,
+                       async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{setProp}{numeric,DOM_obj_ref,character,DOM_value}(pageID, object,
+propName, value,
+                       async = FALSE, callback = NULL, tag = getRequestID())
 }
 \arguments{
   \item{pageID}{
@@ -90,6 +106,17 @@ createElementNS(pageID, namespace, tagName, response=nodePtr(),
   \item{elt}{
     A DOM node representation for an existing node (e.g., the result from 
     \code{css()}).
+  }
+  \item{object}{
+    A DOM object representation for an existing node (e.g., the result
+    from \code{objPtr()}).
+  }
+  \item{propName}{
+    A character value specifying a DOM object property name.
+  }
+  \item{value}{
+    A DOM object representation for an existing node (or a simple
+    numeric, character, or logical value.
   }
   \item{response}{
     A DOM node representation that provides a template for the return

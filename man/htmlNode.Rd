@@ -5,6 +5,10 @@
 \alias{css}
 \alias{xpath}
 \alias{nodePtr}
+\alias{objPtr}
+\alias{Numeric}
+\alias{String}
+\alias{Boolean}
 \alias{[,DOM_node,ANY,missing,missing-method}
 \title{
   Create a DOM node representation.
@@ -19,19 +23,24 @@ svgNode(x="")
 javascript(x="")
 css(x="")
 xpath(x="")
-nodePtr(x="")
-\S4method{[}{DOM_node,ANY,missing,missing}(x, i, j, \dots, drop)
+nodePtr(x="", pageID=numeric())
+objPtr(x="", pageID=numeric())
+Numeric(x="")
+String(x="")
+Boolean(x="")
 }
 \arguments{
   \item{x}{ A character value consisting of HTML, SVG, JavaScript,
-    CSS, or XPath code, as appropriate.
-  }
-\item{i,j,\dots,drop}{ Arguments for subset method for DOM nodes.}
+    CSS, or XPath code, as appropriate. }
+  \item{pageID}{ A numeric value identifying a web page connection; see
+    \code{\link{htmlPage}}.}
 }
 \value{
   An S4 object of class \code{DOM_node_HTML}, \code{DOM_node_SVG},
   \code{DOM_node_JS},
-  \code{DOM_node_CSS}, or \code{DOM_node_XPath}, respectively.
+  \code{DOM_node_CSS}, \code{DOM_node_XPath},
+  \code{DOM_node_ptr}, \code{DOM_obj_ptr}, \code{DOM_numeric},
+  \code{DOM_character}, or \code{DOM_boolean}, respectively.
 }
 \examples{
 htmlNode("<p>test</p>")
