@@ -2,6 +2,48 @@
 \title{NEWS file for the DOM package}
 \encoding{UTF-8}
 
+\section{Changes in version 0.4}{
+  \itemize{
+    \item New classes: \code{DOM_obj} (new root of class hierarchy,
+    to handle wider range of objects than just DOM nodes, e.g., CSS
+    stylesheets); \code{DOM_obj_ref} (umbrella for references to nodes
+    and to other objects); \code{DOM_obj_ptr} (pointer to general
+    object); \code{DOM_numeric}, \code{DOM_string}, and
+    \code{DOM_boolean} (to represent basic javascript types).
+
+    The existing \code{DOM_node} class extends \code{DOM_obj}.
+    The existing \code{DOM_node_ref} class extends \code{DOM_obj_ref}.
+    The existing \code{DOM_node_ptr} class extends \code{DOM_obj_ptr}.
+
+    The \code{DOM_obj_ptr} class adds a \code{pageID} slot so that we
+    can check that a pointer is being sent to the page that created it.
+
+    \item
+    New functions \code{objPtr()}, \code{Numeric()}, \code{String()},
+    and \code{Boolean()} for specifying request response type.
+
+    \item
+    \code{RDOM.Rcall()} gains \code{pageID} argument (to allow it to
+    return valid \code{DOM_obj_ptr} objects).
+
+    \item
+    New functions \code{getProp()} and \code{setProp()} to allow getting
+    and setting properties on DOM objects.  These only work with
+    \code{DOM_obj_ref} objects.
+
+    NOTE that DOM object properties are different from DOM node
+    attributes (\code{setProp()} is different from
+    \code{setAttribute}).  Attributes refer to the attributes of HTML
+    elements, whereas properties refer to the components of DOM
+    objects. A good example of the difference is setting the
+    \code{style} attribute of an element (which replaces the entire
+    style attribute) versus setting a property of the \code{style}
+    property of a DOM object (which only affects that single property).  
+
+    \item
+    DOM error messages now contain more information.
+  }
+}
 \section{Changes in version 0.3-1}{
   \itemize{
     \item Better recovery from failed startServer() when port already in

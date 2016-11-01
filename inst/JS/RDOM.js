@@ -97,14 +97,15 @@ RDOM = (function(){
     }
 
     // Utils for generating requests from JS to R
-    var requestValue = function(tag, fn, args, argsType) {
+    var requestValue = function(tag, fn, args, argsType, pageID) {
         return { type: "REQUEST",
                  tag: tag,
                  body: {
                      fn: fn,
                      args: args,
                      argsType: argsType
-                 }
+                 },
+                 pageID: pageID
                }
     }
     var returnValue = function(tag, fn, value) {
@@ -119,11 +120,16 @@ RDOM = (function(){
     var errorValue = function(tag, err) {
         return { type: "ERROR",
                  tag: tag,
-                 body: err
+                 body: err.message
                }    
     }
     var pageContent = function() {
         return document.documentElement.outerHTML
+    }
+
+    // http://stackoverflow.com/questions/8511281/check-if-a-value-is-an-object-in-javascript
+    function isObject(obj) {
+        return obj === Object(obj);
     }
 
     var DOMnode = function(spec, type, ns) {
@@ -156,8 +162,19 @@ RDOM = (function(){
         case "DOM_node_XPath":
             node = resolveTarget(spec, false);
             break;
+        case "DOM_obj_ptr":
         case "DOM_node_ptr":
             node = getDOMnode(spec);
+            break;
+        // Variations on DOM_value
+        case "numeric":
+            node = Numeric(spec);
+            break;
+        case "character":
+            node = String(spec);
+            break;
+        case "logical":
+            node = Boolean(spec);
             break;
         }
         return node;
@@ -170,7 +187,9 @@ RDOM = (function(){
         case "DOM_node_HTML":
         case "DOM_node_SVG":
             // Treat single nodes and collections of nodes the same way
-            if (typeof node.length === "undefined") {
+            // NodeList to accommodate phantomJS
+            if (!(node.constructor.name === "HTMLCollection" ||
+                  node instanceof NodeList)) {
                 node = [ node ];
             }
             if (ns) {
@@ -184,7 +203,8 @@ RDOM = (function(){
             }     
             break;
         case "DOM_node_CSS":
-            if (typeof node.length === "undefined") {
+            if (!(node.constructor.name === "HTMLCollection" ||
+                  node instanceof NodeList)) {
                 node = [ node ];
             }
             for (i = 0; i < node.length; i++) {
@@ -196,7 +216,8 @@ RDOM = (function(){
             }
             break;
         case "DOM_node_XPath":
-            if (typeof node.length === "undefined") {
+            if (!(node.constructor.name === "HTMLCollection" ||
+                  node instanceof NodeList)) {
                 node = [ node ];
             }
             for (i = 0; i < node.length; i++) {
@@ -207,13 +228,23 @@ RDOM = (function(){
                 }
             }
             break;
+        case "DOM_obj_ptr":
         case "DOM_node_ptr":
-            if (typeof node.length === "undefined") {
+            if (!(node.constructor.name === "HTMLCollection" ||
+                  node instanceof NodeList)) {
                 node = [ node ];
             }
             for (i = 0; i < node.length; i++) {
                 result.push(setDOMnode(node[i]));
             }
+            break;
+        case "DOM_numeric":
+        case "DOM_string":
+        case "DOM_boolean":
+            if (typeof node != "string") {
+                throw new Error("Invalid DOM response");
+            }
+            result.push(node);
             break;
         }
         return result;
@@ -358,6 +389,24 @@ RDOM = (function(){
                                                      false));
                 }
                 break;
+            case "getProp":
+                var element = DOMnode(msgBody.object[0], msgBody.objectType[0],
+                                      false);
+                var name = msgBody.propName[0];
+                var value = element[name];
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     DOMresponse(value,
+                                                 msgBody.responseType[0],
+                                                 false));
+                break;
+            case "setProp":
+                var element = DOMnode(msgBody.object[0], msgBody.objectType[0],
+                                      false);
+                var name = msgBody.propName[0];
+                var value = DOMnode(msgBody.value[0], msgBody.valueType[0]);
+                element[name] = value;
+                result = returnValue(msgJSON.tag, msgBody.fun[0], null);
+                break;
             case "click":
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0],
                                       false);
@@ -454,11 +503,12 @@ RDOM = (function(){
     }
     
     // 'fn' is name of R function (string)
-    // 'target' is a DOM node
+    // 'target' is a DOM node or an array of DOM nodes
     // 'targetType' is an array containing one or more of:
     //     "HTML", "SVG", "CSS", "XPath"
     // 'callback' is a JS function
-    Rcall = function(fn, target, targetType, callback) {
+    // 'pageID' is a Numeric
+    Rcall = function(fn, target, targetType, callback, pageID) {
         var i;
         var tag = getRequestID();
         addRequest(tag, callback);
@@ -478,7 +528,7 @@ RDOM = (function(){
                 }
             }
         }
-        var request = requestValue(tag, fn, args, argsType);
+        var request = requestValue(tag, fn, args, argsType, pageID);
         var msgJSON = JSON.stringify(request);
         dblog("SENDING " + msgJSON);
         ws.send(msgJSON); 

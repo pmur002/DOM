@@ -29,7 +29,7 @@ DOMclosure <- function() {
     ls <- function() {
         requests
     }
-    add <- function(tag, async, callback, returnType) {
+    add <- function(tag, async, callback, returnType, pageID) {
         req <- requests[[tag]]
         if (!is.null(req)) {
             stop(paste0("Request ", tag, " already registered",
@@ -38,6 +38,7 @@ DOMclosure <- function() {
             requests[[tag]] <<- list(async=async,
                                      callback=callback,
                                      returnType=returnType,
+                                     pageID=pageID,
                                      state="pending")
             dblog("Adding request", tag, "\n")
         }
@@ -88,6 +89,15 @@ DOMclosure <- function() {
             req$returnType
         }        
     }
+    pageID <- function(tag) {
+        req <- requests[[tag]]
+        if (is.null(req)) {
+            stop(paste0("Request ", tag, " not registered",
+                        " (get responseType failed)"))
+        } else {
+            req$pageID
+        }        
+    }
     setValue <- function(tag, value) {
         req <- requests[[tag]]
         if (is.null(req)) {
@@ -126,6 +136,7 @@ DOMclosure <- function() {
          async=async,
          callback=callback,
          type=type,
+         pageID=pageID,
          setValue=setValue,
          getValue=getValue,
          pending=pending)
@@ -140,11 +151,12 @@ getRequestState <- DOMfunctions$state
 getRequestAsync <- DOMfunctions$async
 getRequestCallback <- DOMfunctions$callback
 getRequestResponseType <- DOMfunctions$type
+getRequestPageID <- DOMfunctions$pageID
 setRequestValue <- DOMfunctions$setValue
 getRequestValue <- DOMfunctions$getValue
 requestPending <- DOMfunctions$pending
 
-DOMresponse <- function(x, type) {
+DOMresponse <- function(x, type, pageID) {
     # When a request is expected to return a DOM node, but returns null
     # (e.g., getElementById() finds no match)
     if (is.null(x) && type != "NULL")
@@ -153,11 +165,16 @@ DOMresponse <- function(x, type) {
            # Requests that have no return value
            "NULL"=NULL,
            # Requests that return a DOM node of some sort
-           DOM_node_HTML=new("DOM_node_HTML", x),
-           DOM_node_SVG=new("DOM_node_SVG", x),
-           DOM_node_CSS=new("DOM_node_CSS", x),
-           DOM_node_XPath=new("DOM_node_XPath", x),
-           DOM_node_ptr=new("DOM_node_ptr", x))
+           DOM_node_HTML=new("DOM_node_HTML", as.character(x)),
+           DOM_node_SVG=new("DOM_node_SVG", as.character(x)),
+           DOM_node_CSS=new("DOM_node_CSS", as.character(x)),
+           DOM_node_XPath=new("DOM_node_XPath", as.character(x)),
+           DOM_node_ptr=new("DOM_node_ptr", as.character(x), pageID=pageID),
+           DOM_obj_ptr=new("DOM_obj_ptr", as.character(x), pageID=pageID),
+           # Requests that return a basic value
+           DOM_numeric=as.numeric(x),
+           DOM_string=as.character(x),
+           DOM_boolean=as.logical(x))
 }
 
 # Handling messages
@@ -177,20 +194,22 @@ handleMessage <- function(msgJSON, ws) {
         ## A request has failed
         ## (so set the request value)
         ## (so any code waiting for this request will terminate)
-        result <- paste0("Request ", msg$tag, " failed")
+        result <- paste0("Request ", msg$tag, " failed: ", msg$body)
         ## Warning message will be the result of the request
         setRequestValue(msg$tag, new("DOM_error", result))
         ## Warning message will also print to screen
         message(result)
     } else if (msg$type == "RESPONSE") {
         ## Get response value
-        value <- DOMresponse(msg$body$value, getRequestResponseType(msg$tag))
+        value <- DOMresponse(msg$body$value, getRequestResponseType(msg$tag),
+                             getRequestPageID(msg$tag))
         ## When this is a response to a getElement* request, 'null'
         ## means no elements were found;  turn this into character(0)
         if (grepl("getElement", msg$body$fn)) {
             if (is.null(value)) {
                 value <- DOMresponse(character(),
-                                     getRequestResponseType(msg$tag))
+                                     getRequestResponseType(msg$tag),
+                                     getRequestPageID(msg$tag))
             }
         }
         ## Find the request that generated this response
@@ -216,6 +235,7 @@ handleMessage <- function(msgJSON, ws) {
     } else if (msg$type == "REQUEST") {
         dblog(capture.output(msg$body), sep="\n")
         args <- mapply(DOMresponse, msg$body$args, msg$body$argsType,
+                       MoreArgs=msg$pageID,
                        SIMPLIFY=FALSE, USE.NAMES=FALSE)
         result <- do.call(msg$body$fn, args)
         msg <- list(type="RESPONSE",
@@ -259,12 +279,27 @@ sendRequest <- function(pageID, msg, tag, async, callback, returnType) {
         stop("No socket open")
     msgJSON <- toJSON(msg, null="null")
     ## Register request (do it before send in case send returns instantly)
-    addRequest(tag, async, callback, returnType)
+    addRequest(tag, async, callback, returnType, pageID)
     sock$send(msgJSON)
     if (!async) {
         return(waitForResponse(tag))
     }
 }
+
+# Function to check validity of DOM objects passed to API functions
+# Default is to do nothing
+setGeneric("checkDOMobj",
+           function(object, ...) {})
+
+# For _ptr objects, check that the pageID matches
+setMethod("checkDOMobj",
+          signature(object="DOM_obj_ptr"),
+          function(object, pageID, ...) {
+              if (object@pageID != pageID) {
+                  stop("Invalid object pointer")
+              }
+          })
+        
 
 ################################################################################
 ## The main API
@@ -292,6 +327,8 @@ createElementNS <- function(pageID, namespace, tagName, response=nodePtr(),
 
 appendChildCore <- function(pageID, child, parent, response,
                             ns, async, callback, tag) {
+    checkDOMobj(child, pageID)
+    checkDOMobj(parent, pageID)
     responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="appendChild",
@@ -332,6 +369,8 @@ setMethod("appendChild",
 
 removeChildCore <- function(pageID, child, parent, response,
                             async, callback, tag) {
+    checkDOMobj(child, pageID)
+    checkDOMobj(parent, pageID)
     responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="removeChild",
@@ -372,6 +411,9 @@ setMethod("removeChild",
 
 replaceChildCore <- function(pageID, newChild, oldChild, parent, response,
                              ns, async, callback, tag) {
+    checkDOMobj(newChild, pageID)
+    checkDOMobj(oldChild, pageID)
+    checkDOMobj(parent, pageID)
     responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="replaceChild",
@@ -416,6 +458,7 @@ setMethod("replaceChild",
 
 setAttributeCore <- function(pageID, elt, attrName, attrValue,
                              async, callback, tag) {
+    checkDOMobj(elt, pageID)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="setAttribute",
                           elt=as.character(elt),
@@ -530,6 +573,80 @@ setMethod("getElementsByClassName",
                                          async, callback, tag)
           })
 
+getPropCore <- function(pageID, object, propName, response,
+                        async, callback, tag) {
+    checkDOMobj(object, pageID)
+    responseType <- class(response)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getProp",
+                          object=as.character(object),
+                          objectType=class(object),                          
+                          propName=propName,
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
+}
+
+setGeneric("getProp",
+           function(pageID, object, propName, ...) {
+               standardGeneric("getProp")
+           },
+           valueClass="DOM_obj_response_OR_error_OR_NULL")
+
+setMethod("getProp",
+          signature(pageID="numeric",
+                    object="DOM_obj_ref",
+                    propName="character"),
+          function(pageID, object, propName, response=objPtr(),
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              getPropCore(pageID, object, propName, response,
+                       async, callback, tag)
+          })
+
+setPropCore <- function(pageID, object, propName, value,
+                        async, callback, tag) {
+    checkDOMobj(object, pageID)
+    checkDOMobj(value, pageID)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="setProp",
+                          object=as.character(object),
+                          objectType=class(object),
+                          propName=propName,
+                          value=as.character(value),
+                          valueType=class(value)))
+    sendRequest(pageID, msg, tag, async, callback, "NULL")
+}
+
+setGeneric("setProp",
+           function(pageID, object, propName, value, ...) {
+               standardGeneric("setProp")
+           },
+           valueClass="NULL")
+
+# In general, the value of the property should be an
+# existing DOM object (because it can be a complex object)
+setMethod("setProp",
+          signature(pageID="numeric",
+                    object="DOM_obj_ref",
+                    propName="character",
+                    value="DOM_obj_ref"),
+          function(pageID, object, propName, value, 
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              setPropCore(pageID, object, propName, value,
+                          async, callback, tag)
+          })
+
+# Also allow for simple values (numbers, strings, booleans)
+setMethod("setProp",
+          signature(pageID="numeric",
+                    object="DOM_obj_ref",
+                    propName="character",
+                    value="DOM_value"),
+          function(pageID, object, propName, value, ...,
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              setPropCore(pageID, object, propName, value,
+                          async, callback, tag)
+          })
+
 ## This request is ALWAYS asynchronous
 ## Mostly for headless browser testing (?)
 setGeneric("click",
@@ -543,6 +660,7 @@ setMethod("click",
                     elt="DOM_node_ref"),
           function(pageID, elt, 
                    callback=NULL, tag=getRequestID()) {
+              checkDOMobj(elt, pageID)
               msg <- list(type="REQUEST", tag=tag,
                           body=list(fun="click",
                                     elt=as.character(elt),

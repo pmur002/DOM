@@ -148,7 +148,7 @@ test_that("removeChild", {
     headlessPage <- htmlPage()
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     result <- removeChild(headlessPage, css("h1"), tag="removeNonExistentChild")
-    expect_equal(unclass(result), "Request removeNonExistentChild failed")
+    expect_match(unclass(result), "Request removeNonExistentChild failed:")
     pageContent <- closePage(headlessPage)
     # Remove child that does not match parent
     headlessPage <- htmlPage()
@@ -156,7 +156,7 @@ test_that("removeChild", {
     appendChild(headlessPage, htmlNode("<p>test2<p>"))
     result <- removeChild(headlessPage, css("p"), parent=css("p"),
                           tag="removeNotChildOfParent")
-    expect_equal(unclass(result), "Request removeNotChildOfParent failed")
+    expect_match(unclass(result), "Request removeNotChildOfParent failed:")
     pageContent <- closePage(headlessPage)
     # Remove children from filePage
     headlessFile <- filePage(fileURL)
