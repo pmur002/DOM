@@ -19,11 +19,11 @@
 \alias{getElementsByClassName}
 \alias{getElementsByClassName,numeric,character,missing-method}
 \alias{getElementsByClassName,numeric,character,DOM_node_ref-method}
-\alias{getProp}
-\alias{getProp,numeric,DOM_obj_ref,character-method}
-\alias{setProp}
-\alias{setProp,numeric,DOM_obj_ref,character,DOM_obj_ref-method}
-\alias{setProp,numeric,DOM_obj_ref,character,DOM_value-method}
+\alias{getProperty}
+\alias{getProperty,numeric,DOM_obj_ref,character-method}
+\alias{setProperty}
+\alias{setProperty,numeric,DOM_obj_ref,character,DOM_obj_ref-method}
+\alias{setProperty,numeric,DOM_obj_ref,character,DOM_value-method}
 \alias{$,DOM_obj_ptr-method}
 \alias{$<-,DOM_obj_ptr-method}
 \alias{click}
@@ -65,13 +65,13 @@ createElementNS(pageID, namespace, tagName, response=nodePtr(),
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{click}{numeric,DOM_node_ref}(pageID, elt, callback = NULL, tag
 = getRequestID())
-\S4method{getProp}{numeric,DOM_obj_ref,character}(pageID, object,
+\S4method{getProperty}{numeric,DOM_obj_ref,character}(pageID, object,
 propName, response = NULL,
                        async = FALSE, callback = NULL, tag = getRequestID())
-\S4method{setProp}{numeric,DOM_obj_ref,character,DOM_obj_ref}(pageID, object,
+\S4method{setProperty}{numeric,DOM_obj_ref,character,DOM_obj_ref}(pageID, object,
 propName, value,
                        async = FALSE, callback = NULL, tag = getRequestID())
-\S4method{setProp}{numeric,DOM_obj_ref,character,DOM_value}(pageID, object,
+\S4method{setProperty}{numeric,DOM_obj_ref,character,DOM_value}(pageID, object,
 propName, value,
                        async = FALSE, callback = NULL, tag = getRequestID())
 }

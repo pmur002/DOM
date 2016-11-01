@@ -401,7 +401,7 @@ RDOM = (function(){
                                          msgBody.responseType[0]);
                 }
                 break;
-            case "getProp":
+            case "getProperty":
                 var element = DOMnode(msgBody.object[0], msgBody.objectType[0],
                                       false);
                 var name = msgBody.propName[0];
@@ -430,7 +430,7 @@ RDOM = (function(){
                                                  false),
                                      responseType);
                 break;
-            case "setProp":
+            case "setProperty":
                 var element = DOMnode(msgBody.object[0], msgBody.objectType[0],
                                       false);
                 var name = msgBody.propName[0];

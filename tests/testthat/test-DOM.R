@@ -373,3 +373,38 @@ test_that("XPath", {
                  '<html><head></head><body><p style="color: red">test</p></body></html>')
 })
 
+test_that("properties", {
+    page <- htmlPage()
+    p <- createElement(page, "p")
+    # Get DOM_obj_ptr using DOM_node_ptr
+    style <- getProperty(page, p, "style")
+    # Set property using DOM_obj_ptr, with DOM_value 
+    setProperty(page, style, "color", "red")
+    # Get property using DOM_obj_ptr, as R vector
+    colour <- getProperty(page, style, "color")
+    # Syntactic sugar short-hand
+    p$style$color <- "green"
+    sugarColour <- p$style$color
+    expect_equal(colour, "red")
+    expect_equal(sugarColour, "green")
+    closePage(page)
+    
+    # Show difference between setAttribute() and setProperty()
+    page <- htmlPage('<p style="color: red; font-style: italic">test</p>')
+    # Change colour property
+    style <- getProperty(page, css("p"), "style")
+    style$color <- "green"
+    # Should only affect colour NOT font
+    newPropCol <- style$color
+    newPropFontStyle <- style$"font-style"
+    expect_equal(newPropCol, "green")
+    expect_equal(newPropFontStyle, "italic")    
+    # Change style attribute
+    setAttribute(page, css("p"), "style", "color: green")
+    # Should affect BOTH colour and font
+    style <- getProperty(page, css("p"), "style")
+    newAttrCol <- style$color
+    newAttrFontStyle <- style$"font-style"
+    expect_equal(newAttrCol, "green")
+    expect_equal(newAttrFontStyle, "")
+})

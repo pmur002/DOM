@@ -46,8 +46,8 @@ export(
     "getElementById",
     "getElementsByTagName",
     "getElementsByClassName",
-    "getProp",
-    "setProp",
+    "getProperty",
+    "setProperty",
     "click"
 )
 

@@ -18,24 +18,22 @@
     The \code{DOM_obj_ptr} class adds a \code{pageID} slot so that we
     can check that a pointer is being sent to the page that created it.
 
-    \item
-    New functions \code{objPtr()}, \code{Numeric()}, \code{String()},
-    and \code{Boolean()} for specifying request response type.
+    \item New functions \code{objPtr()}, \code{Numeric()},
+    \code{String()}, and \code{Boolean()} for specifying request
+    response type.
 
-    \item
-    \code{RDOM.Rcall()} gains \code{pageID} argument (to allow it to
-    return valid \code{DOM_obj_ptr} objects).
+    \item \code{RDOM.Rcall()} gains \code{pageID} argument (to allow it
+    to return valid \code{DOM_obj_ptr} objects).
 
-    \item
-    New functions \code{getProp()} and \code{setProp()} to allow getting
-    and setting properties on DOM objects.  These only work with
-    \code{DOM_obj_ref} objects.
+    \item New functions \code{getProperty()} and \code{setProperty()} to
+    allow getting and setting properties on DOM objects.  These only
+    work with \code{DOM_obj_ref} objects.
 
-    By default, \code{getProp()} selects an appropriate class for
+    By default, \code{getProperty()} selects an appropriate class for
     the response value.
     
     NOTE that DOM object properties are different from DOM node
-    attributes (\code{setProp()} is different from
+    attributes (\code{setProperty()} is different from
     \code{setAttribute}).  Attributes refer to the attributes of HTML
     elements, whereas properties refer to the components of DOM
     objects. A good example of the difference is setting the
@@ -43,13 +41,11 @@
     style attribute) versus setting a property of the \code{style}
     property of a DOM object (which only affects that single property).  
 
-    \item
-    Some syntactic sugar is provided so that we can get and set
+    \item Some syntactic sugar is provided so that we can get and set
     properties for \code{DOM_obj_ptr} objects using syntax like
     \code{x$y} and \code{x$y <- value}.
     
-    \item
-    DOM error messages now contain more information.
+    \item DOM error messages now contain more information.
 
   }
 }

@@ -581,12 +581,12 @@ setMethod("getElementsByClassName",
                                          async, callback, tag)
           })
 
-getPropCore <- function(pageID, object, propName, response,
+getPropertyCore <- function(pageID, object, propName, response,
                         async, callback, tag) {
     checkDOMobj(object, pageID)
     responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="getProp",
+                body=list(fun="getProperty",
                           object=as.character(object),
                           objectType=class(object),                          
                           propName=propName,
@@ -594,28 +594,28 @@ getPropCore <- function(pageID, object, propName, response,
     sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
-setGeneric("getProp",
+setGeneric("getProperty",
            function(pageID, object, propName, ...) {
-               standardGeneric("getProp")
+               standardGeneric("getProperty")
            },
            valueClass="DOM_obj_response_OR_error_OR_NULL")
 
-setMethod("getProp",
+setMethod("getProperty",
           signature(pageID="numeric",
                     object="DOM_obj_ref",
                     propName="character"),
           function(pageID, object, propName, response=NULL,
                    async=FALSE, callback=NULL, tag=getRequestID()) {
-              getPropCore(pageID, object, propName, response,
-                       async, callback, tag)
+              getPropertyCore(pageID, object, propName, response,
+                              async, callback, tag)
           })
 
-setPropCore <- function(pageID, object, propName, value,
+setPropertyCore <- function(pageID, object, propName, value,
                         async, callback, tag) {
     checkDOMobj(object, pageID)
     checkDOMobj(value, pageID)
     msg <- list(type="REQUEST", tag=tag,
-                body=list(fun="setProp",
+                body=list(fun="setProperty",
                           object=as.character(object),
                           objectType=class(object),
                           propName=propName,
@@ -624,53 +624,58 @@ setPropCore <- function(pageID, object, propName, value,
     sendRequest(pageID, msg, tag, async, callback, "NULL")
 }
 
-setGeneric("setProp",
+setGeneric("setProperty",
            function(pageID, object, propName, value, ...) {
-               standardGeneric("setProp")
+               standardGeneric("setProperty")
            },
            valueClass="NULL")
 
 # In general, the value of the property should be an
 # existing DOM object (because it can be a complex object)
-setMethod("setProp",
+setMethod("setProperty",
           signature(pageID="numeric",
                     object="DOM_obj_ref",
                     propName="character",
                     value="DOM_obj_ref"),
           function(pageID, object, propName, value, 
                    async=FALSE, callback=NULL, tag=getRequestID()) {
-              setPropCore(pageID, object, propName, value,
-                          async, callback, tag)
+              ## Cannot set style property on an element
+              ## (silently do nothing because you can set specific style
+              ##  properties and we want elt$style$color = "blue" to work)
+              ## https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Using_dynamic_styling_information
+              if (propName != "style") {
+                  setPropertyCore(pageID, object, propName, value,
+                                  async, callback, tag)
+              }
           })
 
 # Also allow for simple values (numbers, strings, booleans)
-setMethod("setProp",
+setMethod("setProperty",
           signature(pageID="numeric",
                     object="DOM_obj_ref",
                     propName="character",
                     value="DOM_value"),
           function(pageID, object, propName, value, 
                    async=FALSE, callback=NULL, tag=getRequestID()) {
-              setPropCore(pageID, object, propName, value,
-                          async, callback, tag)
+              setPropertyCore(pageID, object, propName, value,
+                              async, callback, tag)
           })
 
 # Some convenient syntactic sugar
 setMethod("$",
           signature(x="DOM_obj_ptr"),
           function(x, name) {
-              getProp(x@pageID, x, name)
+              getProperty(x@pageID, x, name)
           })
 
 setMethod("$<-",
           signature(x="DOM_obj_ptr"),
           function(x, name, value) {
-              ## This allows us to cope with syntax of the form a$b$c <- value
-              if (is.null(value)) {
-                  ; # do nothing
-              } else {
-                  setProp(x@pageID, x, name, value)
-              }
+              setProperty(x@pageID, x, name, value)
+              ## The main purpose of this call is for its side-effect
+              ## but return the object being modified because that
+              ## retains the pointer to the real browser object
+              x
           })
 
 ## This request is ALWAYS asynchronous
