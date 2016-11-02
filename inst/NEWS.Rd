@@ -15,7 +15,7 @@
     The existing \code{DOM_node_ref} class extends \code{DOM_obj_ref}.
     The existing \code{DOM_node_ptr} class extends \code{DOM_obj_ptr}.
 
-    The \code{DOM_obj_ptr} class adds a \code{pageID} slot so that we
+    The \code{DOM_obj_ref} class adds a \code{pageID} slot so that we
     can check that a pointer is being sent to the page that created it.
 
     \item New functions \code{objPtr()}, \code{Numeric()},
@@ -23,7 +23,7 @@
     response type.
 
     \item \code{RDOM.Rcall()} gains \code{pageID} argument (to allow it
-    to return valid \code{DOM_obj_ptr} objects).
+    to return valid \code{DOM_obj_ref} objects).
 
     \item New functions \code{getProperty()} and \code{setProperty()} to
     allow getting and setting properties on DOM objects.  These only
