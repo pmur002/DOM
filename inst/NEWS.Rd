@@ -41,9 +41,12 @@
     \item Some syntactic sugar is provided so that we can get and set
     properties for \code{DOM_obj_ref} objects using syntax like
     \code{x$y} and \code{x$y <- value}.
+
+    \item New \code{styleSheets()} function to get stylesheets from
+    a page.  Represented by new \code{DOM_CSSStyleSheet_ptr} class
+    in R.
     
     \item DOM error messages now contain more information.
-
   }
 }
 \section{Changes in version 0.3-1}{

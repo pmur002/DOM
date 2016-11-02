@@ -181,6 +181,7 @@ RDOM = (function(){
             break;
         case "DOM_obj_ptr":
         case "DOM_node_ptr":
+        case "DOM_CSSStyleSheet_ptr":
             node = getDOMnode(spec);
             break;
         // Variations on DOM_value
@@ -198,7 +199,7 @@ RDOM = (function(){
     }
 
     // Try to determine a 'DOM' package S4 class for a response value
-    var DOMclasses = [ CSSRule ];
+    var DOMclasses = [ StyleSheetList, CSSStyleSheet, CSSRule ];
 
     var DOMresponseType = function(object) {
         var responseType;
@@ -231,6 +232,10 @@ RDOM = (function(){
         return responseType;
     }
 
+    // Returns both a response value AND a response type
+    // (and the latter may differ from the responseType passed in)
+    // (the latter is used in getProperty() [at least] to consolidate
+    //  "array-of-class" and "class" to just "class")
     var DOMresponse = function(node, responseType, ns) {
         var i;
         var result = [];
@@ -289,6 +294,15 @@ RDOM = (function(){
                 result.push(setDOMnode(node[i]));
             }
             break;
+        case "DOM_CSSStyleSheet_ptr":
+            result.push(setDOMnode(node));
+            break;
+        case "DOM_StyleSheetList_ptr":
+            for (i = 0; i < node.length; i++) {
+                result.push(setDOMnode(node[i]));
+            }
+            responseType = "DOM_CSSStyleSheet_ptr";
+            break;
         case "DOM_numeric":
         case "DOM_string":
         case "DOM_boolean":
@@ -298,7 +312,7 @@ RDOM = (function(){
             result.push(node);
             break;
         }
-        return result;
+        return { response: result, responseType: responseType };
     }
     
     // Main function for handling requests from R to JS
@@ -315,7 +329,7 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(node, 
                                                  msgBody.responseType[0], 
-                                                 false),
+                                                 false).response,
                                      msgBody.responseType[0]);
                 break;
             case "createElementNS":
@@ -325,7 +339,7 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(node, 
                                                  msgBody.responseType[0], 
-                                                 true),
+                                                 true).response,
                                      msgBody.responseType[0]);
                 break;
             case "appendChild": // parent, child
@@ -346,7 +360,7 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(child, 
                                                  msgBody.responseType[0], 
-                                                 msgBody.ns[0]),
+                                                 msgBody.ns[0]).response,
                                      msgBody.responseType[0]);
                 break;
             case "removeChild": // child, parent
@@ -364,7 +378,7 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(child, 
                                                  msgBody.responseType[0], 
-                                                 false),
+                                                 false).response,
                                      msgBody.responseType[0]);
 
                 // Remove child AFTER determining its CSS selector !
@@ -390,7 +404,7 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(oldChild,
                                                  msgBody.responseType[0], 
-                                                 msgBody.ns[0]),
+                                                 msgBody.ns[0]).response,
                                      msgBody.responseType[0]);
                 
                 // Replace oldChild AFTER determining its CSS selector !
@@ -408,12 +422,12 @@ RDOM = (function(){
                 var element = document.getElementById(msgBody.id[0]);
                 if (element === null) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         null, "NULL");
+                                         null, msgBody.responseType[0]);
                 } else {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          DOMresponse(element,
                                                      msgBody.responseType[0], 
-                                                     false),
+                                                     false).response,
                                          msgBody.responseType[0]);
                 }
                 break;
@@ -421,12 +435,12 @@ RDOM = (function(){
                 var elements = document.getElementsByTagName(msgBody.name[0]);
                 if (elements.length === 0) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         null, "NULL");
+                                         null, msgBody.responseType[0]);
                 } else {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          DOMresponse(elements,
                                                      msgBody.responseType[0], 
-                                                     false),
+                                                     false).response,
                                          msgBody.responseType[0]);
                 }
                 break;
@@ -442,12 +456,12 @@ RDOM = (function(){
                 }
                 if (elements.length === 0) {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                         null, "NULL");
+                                         null, msgBody.responseType[0]);
                 } else {
                     result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                          DOMresponse(elements,
                                                      msgBody.responseType[0], 
-                                                     false),
+                                                     false).response,
                                          msgBody.responseType[0]);
                 }
                 break;
@@ -456,15 +470,18 @@ RDOM = (function(){
                                       false);
                 var name = msgBody.propName[0];
                 var value = element[name];
+                // May have asked for property that does not exist
+                if (typeof value === "undefined") {
+                    throw new Error("Property " + name + " does not exist");
+                }
                 var responseType = msgBody.responseType[0];
                 if (responseType === "NULL") {
                     responseType = DOMresponseType(value);
                 } 
+                var response = DOMresponse(value, responseType, false);
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
-                                     DOMresponse(value,
-                                                 responseType,
-                                                 false),
-                                     responseType);
+                                     response.response,
+                                     response.responseType);
                 break;
             case "setProperty":
                 var element = DOMnode(msgBody.object[0], msgBody.objectType[0],
@@ -474,6 +491,16 @@ RDOM = (function(){
                 element[name] = value;
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      null, "NULL");
+                break;
+            case "styleSheets":
+                // Incoming responseType is DOM_StyleSheetList_ptr
+                // Outgoing responseType is DOM_CSSStyleSheet_ptr
+                var value = document.styleSheets;
+                var responseType = msgBody.responseType[0];
+                var response = DOMresponse(value, responseType, false);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     response.response,
+                                     response.responseType);
                 break;
             case "click":
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0],
@@ -598,7 +625,7 @@ RDOM = (function(){
                 for (j = 0; j < targetType.length; j++) {
                     args.push(DOMresponse(target[i], 
                                           'DOM_node_' + targetType[j],
-                                          false)[0]);
+                                          false).response[0]);
                     argsType.push('DOM_node_' + targetType[j]);
                 }
             }

@@ -9,7 +9,8 @@
 \alias{Numeric}
 \alias{String}
 \alias{Boolean}
-\alias{[,DOM_node,ANY,missing,missing-method}
+\alias{[,DOM_obj,ANY,missing,missing-method}
+\alias{[,DOM_obj_ref,ANY,missing,missing-method}
 \title{
   Create a DOM node representation.
 }

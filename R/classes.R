@@ -63,6 +63,8 @@ setClass("DOM_node_ptr",
          contains=c("DOM_node_ref", "DOM_obj_ptr"))
 
 # CSS objects
+setClass("DOM_StyleSheetList_ptr",
+         contains="DOM_obj_ptr")
 setClass("DOM_CSSStyleSheet_ptr",
          contains="DOM_obj_ptr")
 setClass("DOM_CSSRule_ptr",
@@ -127,8 +129,15 @@ allowErrorOrNull("DOM_obj_response")
 
 # Subsetting DOM nodes should return DOM nodes ...
 setMethod("[",
-          signature(x="DOM_node", i="ANY", j="missing", drop="missing"),
+          signature(x="DOM_obj", i="ANY", j="missing", drop="missing"),
           function(x, i, j, ..., drop) {
               new(class(x), unclass(x)[i])
+          })
+
+setMethod("[",
+          signature(x="DOM_obj_ref", i="ANY", j="missing", drop="missing"),
+          function(x, i, j, ..., drop) {
+              pageID <- x@pageID
+              new(class(x), unclass(x)[i], pageID=pageID)
           })
 

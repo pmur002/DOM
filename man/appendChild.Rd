@@ -24,6 +24,7 @@
 \alias{setProperty}
 \alias{setProperty,numeric,DOM_obj_ref,character,DOM_obj_ref-method}
 \alias{setProperty,numeric,DOM_obj_ref,character,DOM_value-method}
+\alias{styleSheets}
 \alias{$,DOM_obj_ref-method}
 \alias{$<-,DOM_obj_ref-method}
 \alias{click}
@@ -74,6 +75,7 @@ propName, value, warn = TRUE,
 \S4method{setProperty}{numeric,DOM_obj_ref,character,DOM_value}(pageID, object,
 propName, value, warn = TRUE,
                        async = FALSE, callback = NULL, tag = getRequestID())
+styleSheets(pageID, async=FALSE, callback=NULL, tag=getRequestID())
 }
 \arguments{
   \item{pageID}{

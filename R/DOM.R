@@ -170,6 +170,8 @@ DOMresponse <- function(x, type, pageID) {
            DOM_node_CSS=new("DOM_node_CSS", as.character(x), pageID=pageID),
            DOM_node_XPath=new("DOM_node_XPath", as.character(x), pageID=pageID),
            DOM_node_ptr=new("DOM_node_ptr", as.character(x), pageID=pageID),
+           DOM_CSSStyleSheet_ptr=new("DOM_CSSStyleSheet_ptr",
+                                     as.character(x), pageID=pageID),
            DOM_obj_ptr=new("DOM_obj_ptr", as.character(x), pageID=pageID),
            # Requests that return a basic value
            DOM_numeric=as.numeric(x),
@@ -201,10 +203,9 @@ handleMessage <- function(msgJSON, ws) {
         message(result)
     } else if (msg$type == "RESPONSE") {
         ## Get response value
-        ## If request response type is "NULL", but message body type is not
+        ## If request response type differs from message body type 
         ## then the browser has determined the type of response, so use that
-        if (getRequestResponseType(msg$tag) == "NULL" &&
-            msg$body$type != "NULL") {
+        if (getRequestResponseType(msg$tag) != msg$body$type) {
             responseType <- msg$body$type
         } else {
             responseType <- getRequestResponseType(msg$tag)
