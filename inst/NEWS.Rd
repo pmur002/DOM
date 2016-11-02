@@ -22,9 +22,6 @@
     \code{String()}, and \code{Boolean()} for specifying request
     response type.
 
-    \item \code{RDOM.Rcall()} gains \code{pageID} argument (to allow it
-    to return valid \code{DOM_obj_ref} objects).
-
     \item New functions \code{getProperty()} and \code{setProperty()} to
     allow getting and setting properties on DOM objects.  These only
     work with \code{DOM_obj_ref} objects.

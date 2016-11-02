@@ -12,7 +12,10 @@ RDOM = (function(){
     
     // The websocket connection to R
     var ws;
-    
+
+    // The page number that R knows this connection by
+    var pageID;
+
     var parser = new DOMParser();
     var serializer = new XMLSerializer;
 
@@ -463,6 +466,13 @@ RDOM = (function(){
         
         if (msgJSON.type[0] === "DEBUG") {
             debug = true;
+            
+        } else if (msgJSON.type[0] === "PAGEID") {
+            pageID = msgJSON.body[0];
+	    var msg = JSON.stringify({ type: "ALIVE",
+                                       tag: msgJSON.tag[0]
+                                     });
+            ws.send(msg);
 
         } else if (msgJSON.type[0] === "GETPAGE") {
 	    var msg = JSON.stringify({ type: "PAGECONTENT",
@@ -540,8 +550,7 @@ RDOM = (function(){
     // 'targetType' is an array containing one or more of:
     //     "HTML", "SVG", "CSS", "XPath"
     // 'callback' is a JS function
-    // 'pageID' is a Numeric
-    Rcall = function(fn, target, targetType, callback, pageID) {
+    Rcall = function(fn, target, targetType, callback) {
         var i;
         var tag = getRequestID();
         addRequest(tag, callback);

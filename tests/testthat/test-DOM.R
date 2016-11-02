@@ -283,15 +283,13 @@ test_that("Rcall", {
            },
            envir=.GlobalEnv)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
-    call <- sprintf('RDOM.Rcall("recordRequest", this, [ "HTML", "CSS" ], null, %d)',
-                    headlessPage)
+    call <- 'RDOM.Rcall("recordRequest", this, [ "HTML", "CSS" ], null)'
     setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     closePage(headlessPage)
-    model <- sprintf('<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, [ &quot;HTML&quot;, &quot;CSS&quot; ], null, %d)">test</p>',
-                     headlessPage)
+    model <- '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, [ &quot;HTML&quot;, &quot;CSS&quot; ], null)">test</p>'
     expect_equal(unclass(element), model) 
     expect_equal(as.character(elementCSS), "p")
     # Call R from browser (no arguments)
@@ -301,8 +299,7 @@ test_that("Rcall", {
     noArgs <- 
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     setAttribute(headlessPage, css("p"), "onclick",
-                 sprintf('RDOM.Rcall("noArgs", this, null, null, %d)',
-                         headlessPage))
+                 'RDOM.Rcall("noArgs", this, null, null)')
     click(headlessPage, css("p"))
     Sys.sleep(.2)
     closePage(headlessPage)
@@ -313,9 +310,8 @@ test_that("Rcall", {
     assign("manyArgs", function(...) { testResult <<- list(...) },
            envir=.GlobalEnv)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
-    call <- sprintf('RDOM.Rcall("manyArgs", [ this, this.parentNode ],
-                                [ "HTML", "CSS" ], null, %d)',
-                    headlessPage)
+    call <- 'RDOM.Rcall("manyArgs", [ this, this.parentNode ],
+                         [ "HTML", "CSS" ], null)'
     setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
     Sys.sleep(.2)
@@ -344,9 +340,7 @@ test_that("Rcall", {
     }
     assign("replaceWithTable", callbackGen(headlessPage), envir=.GlobalEnv)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
-    call <- sprintf('RDOM.Rcall("replaceWithTable", this,
-                                [ "HTML", "CSS" ], null, %d)',
-                    headlessPage)
+    call <- 'RDOM.Rcall("replaceWithTable", this, [ "HTML", "CSS" ], null)'
     setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
     Sys.sleep(.5)

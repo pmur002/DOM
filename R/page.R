@@ -136,6 +136,10 @@ htmlPage <- function(html="", headless=getOption("DOM.headless")) {
                port, headless, tag=tag)
     ## Block until web socket has been established by browser
     waitForResponse(tag, onTimeout=function() closePage(pageID))
+    ## Register pageID with browser
+    tag <- getRequestID()
+    msg <- list(type="PAGEID", tag=tag, body=pageID)
+    sendRequest(pageID, msg, tag, FALSE, NULL, "NULL")
     pageID
 }
 
@@ -153,6 +157,10 @@ filePage <- function(file, headless=getOption("DOM.headless")) {
     startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(file, 52000, headless, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
+    ## Register pageID with browser
+    tag <- getRequestID()
+    msg <- list(type="PAGEID", tag=tag, body=pageID)
+    sendRequest(pageID, msg, tag, FALSE, NULL, "NULL")
     pageID
 }
 
@@ -169,6 +177,10 @@ urlPage <- function(url, headless=getOption("DOM.headless")) {
     startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
     runBrowser(url, 52000, headless, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
+    ## Register pageID with browser
+    tag <- getRequestID()
+    msg <- list(type="PAGEID", tag=tag, body=pageID)
+    sendRequest(pageID, msg, tag, FALSE, NULL, "NULL")
     pageID
 }
 
