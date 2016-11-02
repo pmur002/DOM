@@ -69,10 +69,10 @@ createElementNS(pageID, namespace, tagName, response=nodePtr(),
 propName, response = NULL,
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{setProperty}{numeric,DOM_obj_ref,character,DOM_obj_ref}(pageID, object,
-propName, value,
+propName, value, warn = TRUE,
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{setProperty}{numeric,DOM_obj_ref,character,DOM_value}(pageID, object,
-propName, value,
+propName, value, warn = TRUE,
                        async = FALSE, callback = NULL, tag = getRequestID())
 }
 \arguments{
@@ -144,6 +144,10 @@ propName, value,
   \item{ns}{
     A namespace for the child element that is to be created.
     Valid values are \code{"HTML"} or \code{"SVG"} (or \code{NULL}).
+  }
+  \item{warn}{
+    A logical indicating whether to emit warning messages if we try
+    to set a read-only property.
   }
   \item{async}{
     A logical indicating whether the request is asynchronous.

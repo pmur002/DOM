@@ -25,11 +25,9 @@ setClass("DOM_boolean",
 setClass("DOM_obj_ref",
          contains="DOM_obj",
          slots=list(pageID="numeric"))
-
 # A useful combination
 setClassUnion("DOM_obj_response",
               c("DOM_obj_ref", "DOM_value"))
-
 # A pointer to an existing DOM object
 setClass("DOM_obj_ptr",
          contains="DOM_obj_ref")
@@ -39,17 +37,17 @@ setClass("DOM_node",
          contains="DOM_obj")
 
 # Representations that describe a new node
-setClass("DOM_node_new",
+setClass("DOM_node_literal",
          contains="DOM_node")
 # The representation is HTML
 setClass("DOM_node_HTML",
-         contains="DOM_node_new")
+         contains="DOM_node_literal")
 # The representation is SVG
 setClass("DOM_node_SVG",
-         contains="DOM_node_new")
+         contains="DOM_node_literal")
 # The representation is JavaScript
 setClass("DOM_node_JS",
-         contains="DOM_node_new")
+         contains="DOM_node_literal")
 
 # Representations that refers to an existing node
 setClass("DOM_node_ref",
@@ -64,6 +62,12 @@ setClass("DOM_node_XPath",
 setClass("DOM_node_ptr",
          contains=c("DOM_node_ref", "DOM_obj_ptr"))
 
+# CSS objects
+setClass("DOM_CSSStyleSheet_ptr",
+         contains="DOM_obj_ptr")
+setClass("DOM_CSSRule_ptr",
+         contains="DOM_obj_ptr")
+    
 # Constructors
 htmlNode <- function(x="") {
     new("DOM_node_HTML", x)

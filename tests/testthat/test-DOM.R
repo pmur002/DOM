@@ -422,4 +422,11 @@ test_that("properties", {
     col <- p$style$color
     expect_equal(col, "red")
     closePage(page)
+
+    ## Test warning from trying to set readonly property
+    page <- htmlPage('<p id="p1" style="color: red; font-style: italic">test</p>')
+    p <- getElementById(page, "p1", response=css())
+    style <- getProperty(page, p, "style")
+    expect_warning(setProperty(page, p, "style", style), "Read-only property")
+    closePage(page)
 })

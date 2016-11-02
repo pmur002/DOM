@@ -7,5 +7,5 @@ Description: Functions to connect to a web browser and manipulate the DOM
              for the page loaded in the browser.
 Imports: methods, httpuv, jsonlite, utils, whisker
 Suggests: covr, testthat, xtable, XML
-Collate: classes.R page.R DOM.R app.R phantom.R zzz.R
+Collate: classes.R page.R DOM.R property.R app.R phantom.R zzz.R
 License: file LICENSE

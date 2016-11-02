@@ -197,6 +197,40 @@ RDOM = (function(){
         return node;
     }
 
+    // Try to determine a 'DOM' package S4 class for a response value
+    var DOMclasses = [ CSSRule ];
+
+    var DOMresponseType = function(object) {
+        var responseType;
+        switch (typeof object) {
+        case "numeric":
+            responseType = "DOM_numeric";
+            break;
+        case "string":
+            responseType = "DOM_string";
+            break;
+        case "boolean":
+            responseType = "DOM_boolean";
+            break;
+        case "object":
+            // NOTE that PhantomJS does not support object.constructor.name
+            // Fallback
+            responseType = "DOM_obj_ptr";
+            var i = 0;
+            while (i < DOMclasses.length && responseType === "DOM_obj_ptr") {
+                var constructor = DOMclasses[i];
+                if (object instanceof constructor) {
+                    responseType = "DOM_" + constructor.name + "_ptr";
+                }
+                i++;
+            }
+            break;
+        default:
+            responseType = "DOM_obj_ptr";
+        }        
+        return responseType;
+    }
+
     var DOMresponse = function(node, responseType, ns) {
         var i;
         var result = [];
@@ -424,21 +458,7 @@ RDOM = (function(){
                 var value = element[name];
                 var responseType = msgBody.responseType[0];
                 if (responseType === "NULL") {
-                    // Select appropriate response type based on value
-                    switch (typeof value) {
-                    case "numeric":
-                        responseType = "DOM_numeric";
-                        break;
-                    case "string":
-                        responseType = "DOM_string";
-                        break;
-                    case "boolean":
-                        responseType = "DOM_boolean";
-                        break;
-                    default:
-                        responseType = "DOM_obj_ptr";
-                        break;
-                    }
+                    responseType = DOMresponseType(value);
                 } 
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      DOMresponse(value,
