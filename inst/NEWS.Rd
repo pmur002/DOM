@@ -43,8 +43,10 @@
     \code{x$y} and \code{x$y <- value}.
 
     \item New \code{styleSheets()} function to get stylesheets from
-    a page.  Represented by new \code{DOM_CSSStyleSheet_ptr} class
-    in R.
+    a page.  Represented by new \code{DOM_CSSStyleSheet_ptr} class.
+
+    \item Support for modifying CSS rule style within stylesheet via new
+    \code{DOM_CSSRule_ptr} class.
     
     \item DOM error messages now contain more information.
   }

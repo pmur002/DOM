@@ -165,14 +165,14 @@ DOMresponse <- function(x, type, pageID) {
            # Requests that have no return value
            "NULL"=NULL,
            # Requests that return a DOM node of some sort
-           DOM_node_HTML=new("DOM_node_HTML", as.character(x)),
-           DOM_node_SVG=new("DOM_node_SVG", as.character(x)),
-           DOM_node_CSS=new("DOM_node_CSS", as.character(x), pageID=pageID),
-           DOM_node_XPath=new("DOM_node_XPath", as.character(x), pageID=pageID),
-           DOM_node_ptr=new("DOM_node_ptr", as.character(x), pageID=pageID),
-           DOM_CSSStyleSheet_ptr=new("DOM_CSSStyleSheet_ptr",
-                                     as.character(x), pageID=pageID),
-           DOM_obj_ptr=new("DOM_obj_ptr", as.character(x), pageID=pageID),
+           DOM_node_HTML=,
+           DOM_node_SVG=new(type, as.character(x)),
+           DOM_node_CSS=,
+           DOM_node_XPath=,
+           DOM_node_ptr=,
+           DOM_CSSStyleSheet_ptr=,
+           DOM_CSSRule_ptr=,
+           DOM_obj_ptr=new(type, as.character(x), pageID=pageID),
            # Requests that return a basic value
            DOM_numeric=as.numeric(x),
            DOM_string=as.character(x),

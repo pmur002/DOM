@@ -182,6 +182,7 @@ RDOM = (function(){
         case "DOM_obj_ptr":
         case "DOM_node_ptr":
         case "DOM_CSSStyleSheet_ptr":
+        case "DOM_CSSRule_ptr":
             node = getDOMnode(spec);
             break;
         // Variations on DOM_value
@@ -199,7 +200,8 @@ RDOM = (function(){
     }
 
     // Try to determine a 'DOM' package S4 class for a response value
-    var DOMclasses = [ StyleSheetList, CSSStyleSheet, CSSRule ];
+    var DOMclasses = [ StyleSheetList, CSSStyleSheet, 
+                       CSSRuleList, CSSRule ];
 
     var DOMresponseType = function(object) {
         var responseType;
@@ -295,6 +297,7 @@ RDOM = (function(){
             }
             break;
         case "DOM_CSSStyleSheet_ptr":
+        case "DOM_CSSRule_ptr":
             result.push(setDOMnode(node));
             break;
         case "DOM_StyleSheetList_ptr":
@@ -302,6 +305,12 @@ RDOM = (function(){
                 result.push(setDOMnode(node[i]));
             }
             responseType = "DOM_CSSStyleSheet_ptr";
+            break;
+        case "DOM_CSSRuleList_ptr":
+            for (i = 0; i < node.length; i++) {
+                result.push(setDOMnode(node[i]));
+            }
+            responseType = "DOM_CSSRule_ptr";
             break;
         case "DOM_numeric":
         case "DOM_string":

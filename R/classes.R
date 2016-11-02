@@ -67,6 +67,8 @@ setClass("DOM_StyleSheetList_ptr",
          contains="DOM_obj_ptr")
 setClass("DOM_CSSStyleSheet_ptr",
          contains="DOM_obj_ptr")
+setClass("DOM_CSSRuleList_ptr",
+         contains="DOM_obj_ptr")
 setClass("DOM_CSSRule_ptr",
          contains="DOM_obj_ptr")
     

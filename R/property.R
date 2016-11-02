@@ -58,6 +58,16 @@ setMethod("readonlyProperty",
               propName %in% "style"
           })
 
+setMethod("readonlyProperty",
+          signature(object="DOM_CSSRule_ptr",
+                    propName="character"),
+          function(object, propName) {
+              propName %in% c("cssText", "parentRule",
+                              "parentStyleSheet", "type",
+                              # For CSSStyleRule
+                              "selectorText", "style")
+          })
+
 ################################################################################
 ## setProperty()
 setPropertyCore <- function(pageID, object, propName, value, warn,
