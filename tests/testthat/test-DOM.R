@@ -359,6 +359,13 @@ test_that("nodePtr", {
     pageContent <- closePage(headlessPage)
     expect_equal(unclass(pageContent),
                  '<html><head></head><body><p style="color: red">test</p></body></html>')
+    
+    ## Check that DOM_node_ptr does not change on reuse
+    page <- htmlPage('<p id="p1">test</p>')
+    p1 <- getElementById(page, "p1", response=nodePtr())
+    p2 <- getElementById(page, "p1", response=nodePtr())
+    expect_equal(p1, p2)
+    closePage(page)
 })
 
 test_that("XPath", {

@@ -61,8 +61,21 @@ RDOM = (function(){
     var DOMnodes = [];
     var DOMindex = 0;
     var setDOMnode = function(node) {
-        DOMnodes[DOMindex] = node;
-        return DOMindex++;
+        // Check that this node has not already been recorded
+        var index = -1;
+        var i = 0;
+        while (index < 0 && i < DOMnodes.length) {
+            if (node === DOMnodes[i]) {
+                index = i;
+            }
+            i++;
+        }
+        // If the node is new, record it
+        if (index < 0) {
+            DOMnodes[DOMindex] = node;
+            index = DOMindex++;
+        }
+        return index;
     }
     var getDOMnode = function(index) {
         return DOMnodes[index];
