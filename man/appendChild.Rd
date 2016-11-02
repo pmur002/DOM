@@ -24,8 +24,8 @@
 \alias{setProperty}
 \alias{setProperty,numeric,DOM_obj_ref,character,DOM_obj_ref-method}
 \alias{setProperty,numeric,DOM_obj_ref,character,DOM_value-method}
-\alias{$,DOM_obj_ptr-method}
-\alias{$<-,DOM_obj_ptr-method}
+\alias{$,DOM_obj_ref-method}
+\alias{$<-,DOM_obj_ref-method}
 \alias{click}
 \alias{click,numeric,DOM_node_ref-method}
 %- Also NEED an '\alias' for EACH other topic documented here.

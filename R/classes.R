@@ -23,7 +23,8 @@ setClass("DOM_boolean",
 
 # A reference to an existing DOM object
 setClass("DOM_obj_ref",
-         contains="DOM_obj")
+         contains="DOM_obj",
+         slots=list(pageID="numeric"))
 
 # A useful combination
 setClassUnion("DOM_obj_response",
@@ -31,8 +32,7 @@ setClassUnion("DOM_obj_response",
 
 # A pointer to an existing DOM object
 setClass("DOM_obj_ptr",
-         contains="DOM_obj_ref",
-         slots=list(pageID="numeric"))
+         contains="DOM_obj_ref")
 
 # A DOM node
 setClass("DOM_node",
@@ -77,12 +77,12 @@ javascript <- function(x="") {
     new("DOM_node_JS", x)
 }
 
-css <- function(x="") {
-     new("DOM_node_CSS", x)
+css <- function(x="", pageID=numeric()) {
+     new("DOM_node_CSS", x, pageID=pageID)
 }
 
-xpath <- function(x="") {
-    new("DOM_node_XPath", x)
+xpath <- function(x="", pageID=numeric()) {
+    new("DOM_node_XPath", x, pageID=pageID)
 }
 
 nodePtr <- function(x="", pageID=numeric()) {

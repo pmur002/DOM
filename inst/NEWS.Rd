@@ -42,7 +42,7 @@
     property of a DOM object (which only affects that single property).  
 
     \item Some syntactic sugar is provided so that we can get and set
-    properties for \code{DOM_obj_ptr} objects using syntax like
+    properties for \code{DOM_obj_ref} objects using syntax like
     \code{x$y} and \code{x$y <- value}.
     
     \item DOM error messages now contain more information.

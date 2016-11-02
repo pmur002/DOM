@@ -167,8 +167,8 @@ DOMresponse <- function(x, type, pageID) {
            # Requests that return a DOM node of some sort
            DOM_node_HTML=new("DOM_node_HTML", as.character(x)),
            DOM_node_SVG=new("DOM_node_SVG", as.character(x)),
-           DOM_node_CSS=new("DOM_node_CSS", as.character(x)),
-           DOM_node_XPath=new("DOM_node_XPath", as.character(x)),
+           DOM_node_CSS=new("DOM_node_CSS", as.character(x), pageID=pageID),
+           DOM_node_XPath=new("DOM_node_XPath", as.character(x), pageID=pageID),
            DOM_node_ptr=new("DOM_node_ptr", as.character(x), pageID=pageID),
            DOM_obj_ptr=new("DOM_obj_ptr", as.character(x), pageID=pageID),
            # Requests that return a basic value
@@ -243,7 +243,7 @@ handleMessage <- function(msgJSON, ws) {
     } else if (msg$type == "REQUEST") {
         dblog(capture.output(msg$body), sep="\n")
         args <- mapply(DOMresponse, msg$body$args, msg$body$argsType,
-                       MoreArgs=msg$pageID,
+                       MoreArgs=list(pageID=msg$pageID),
                        SIMPLIFY=FALSE, USE.NAMES=FALSE)
         result <- do.call(msg$body$fn, args)
         msg <- list(type="RESPONSE",
@@ -663,13 +663,13 @@ setMethod("setProperty",
 
 # Some convenient syntactic sugar
 setMethod("$",
-          signature(x="DOM_obj_ptr"),
+          signature(x="DOM_obj_ref"),
           function(x, name) {
               getProperty(x@pageID, x, name)
           })
 
 setMethod("$<-",
-          signature(x="DOM_obj_ptr"),
+          signature(x="DOM_obj_ref"),
           function(x, name, value) {
               setProperty(x@pageID, x, name, value)
               ## The main purpose of this call is for its side-effect

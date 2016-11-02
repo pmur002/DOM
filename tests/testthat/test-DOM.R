@@ -59,7 +59,7 @@ test_that("appendChild", {
     headlessPage <- htmlPage()
     result <- appendChild(headlessPage, htmlNode("<p>test<p>"), response=css())
     closePage(headlessPage)
-    expect_equal(unclass(result), "p")
+    expect_equal(as.character(result), "p")
     # Append HTML child in filePage()
     headlessFile <- filePage(fileURL)
     appendChild(headlessFile, htmlNode("<p>test<p>"))
@@ -143,7 +143,7 @@ test_that("removeChild", {
     appendChild(headlessPage, htmlNode("<p>test2<p>"))
     result <- removeChild(headlessPage, css("p"), response=css())
     closePage(headlessPage)
-    expect_equal(unclass(result), "body > :nth-child(1)")
+    expect_equal(as.character(result), "body > :nth-child(1)")
     # Remove child that does not exist
     headlessPage <- htmlPage()
     appendChild(headlessPage, htmlNode("<p>test<p>"))
@@ -208,7 +208,7 @@ test_that("getElementById", {
     missing <- getElementById(headlessPage, "y")
     closePage(headlessPage)
     expect_equal(unclass(elt), '<p id="x">test</p>')
-    expect_equal(unclass(css), '#x')
+    expect_equal(as.character(css), '#x')
     expect_equal(unclass(missing), character())
 })
 
@@ -224,7 +224,7 @@ test_that("getElementsByTagName", {
     missing <- getElementsByTagName(headlessPage, "table")
     closePage(headlessPage)
     expect_equal(unclass(elts), c("<p>p1</p>", "<p>p2</p>"))
-    expect_equal(unclass(css),
+    expect_equal(as.character(css),
                  c("body > :nth-child(1)", "body > :nth-child(2)"))
     expect_equal(unclass(all),
                  c("<html><head></head><body><p>p1</p><p>p2</p></body></html>",
@@ -252,7 +252,7 @@ test_that("getElementsByClassName", {
     closePage(headlessPage)
     expect_equal(unclass(elts),
                  c("<p class=\"c1\">p1</p>", "<p class=\"c1 c2\">p2</p>"))
-    expect_equal(unclass(css), c("body > :nth-child(1)", "div > .c1"))
+    expect_equal(as.character(css), c("body > :nth-child(1)", "div > .c1"))
     expect_equal(unclass(elt), "<p class=\"c1 c2\">p2</p>")
     expect_equal(unclass(nrelt), "<p class=\"c1 c2\">p2</p>")
     expect_equal(unclass(missing), character())
@@ -283,15 +283,17 @@ test_that("Rcall", {
            },
            envir=.GlobalEnv)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
-    setAttribute(headlessPage, css("p"), "onclick",
-                 'RDOM.Rcall("recordRequest", this, [ "HTML", "CSS" ], null)')
+    call <- sprintf('RDOM.Rcall("recordRequest", this, [ "HTML", "CSS" ], null, %d)',
+                    headlessPage)
+    setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     closePage(headlessPage)
-    expect_equal(unclass(element),
-                 '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, [ &quot;HTML&quot;, &quot;CSS&quot; ], null)">test</p>')
-    expect_equal(unclass(elementCSS), "p")
+    model <- sprintf('<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, [ &quot;HTML&quot;, &quot;CSS&quot; ], null, %d)">test</p>',
+                     headlessPage)
+    expect_equal(unclass(element), model) 
+    expect_equal(as.character(elementCSS), "p")
     # Call R from browser (no arguments)
     headlessPage <- htmlPage()
     testResult <- FALSE
@@ -299,7 +301,8 @@ test_that("Rcall", {
     noArgs <- 
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     setAttribute(headlessPage, css("p"), "onclick",
-                 'RDOM.Rcall("noArgs", this, null, null)')
+                 sprintf('RDOM.Rcall("noArgs", this, null, null, %d)',
+                         headlessPage))
     click(headlessPage, css("p"))
     Sys.sleep(.2)
     closePage(headlessPage)
@@ -310,9 +313,10 @@ test_that("Rcall", {
     assign("manyArgs", function(...) { testResult <<- list(...) },
            envir=.GlobalEnv)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
-    setAttribute(headlessPage, css("p"), "onclick",
-                 'RDOM.Rcall("manyArgs", [ this, this.parentNode ],
-                             [ "HTML", "CSS" ], null)')
+    call <- sprintf('RDOM.Rcall("manyArgs", [ this, this.parentNode ],
+                                [ "HTML", "CSS" ], null, %d)',
+                    headlessPage)
+    setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
     Sys.sleep(.2)
     closePage(headlessPage)
@@ -340,8 +344,10 @@ test_that("Rcall", {
     }
     assign("replaceWithTable", callbackGen(headlessPage), envir=.GlobalEnv)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
-    setAttribute(headlessPage, css("p"), "onclick",
-                 'RDOM.Rcall("replaceWithTable", this, [ "HTML", "CSS" ], null)')
+    call <- sprintf('RDOM.Rcall("replaceWithTable", this,
+                                [ "HTML", "CSS" ], null, %d)',
+                    headlessPage)
+    setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
     Sys.sleep(.5)
     pageContent <- closePage(headlessPage)
@@ -407,4 +413,12 @@ test_that("properties", {
     newAttrFontStyle <- style$"font-style"
     expect_equal(newAttrCol, "green")
     expect_equal(newAttrFontStyle, "")
+    closePage(page)
+
+    # Use DOM_node_CSS as the element in short-hand
+    page <- htmlPage('<p id="p1" style="color: red; font-style: italic">test</p>')
+    p <- getElementById(page, "p1", response=css())
+    col <- p$style$color
+    expect_equal(col, "red")
+    closePage(page)
 })
