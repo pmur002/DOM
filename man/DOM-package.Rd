@@ -49,7 +49,13 @@
   the current page content.
 
   The environment variable \code{R_PHANTOMJSCMD} can be used to
-  specify the path to the phantomJS executable (for the headless browser).
+  specify the path to the phantomJS executable (for the headless
+  browser).
+
+  The timeout for requests sent to the browser is controlled by
+  \code{options("DOM.limit")} (default 5 [seconds]).  Setting this
+  larger can be useful to stop R timing out while debugging in the
+  browser.
 }
 \author{
   Paul Murrell

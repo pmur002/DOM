@@ -259,7 +259,7 @@ handleMessage <- function(msgJSON, ws) {
 
 ## Block until response with 'tag' is received
 ## (if 'limit' is exceeded, error out)
-waitForResponse <- function(tag, limit=5, onTimeout=NULL) {
+waitForResponse <- function(tag, limit=getOption("DOM.limit"), onTimeout=NULL) {
     ptm <- proc.time()
     while (requestPending(tag)) {
         Sys.sleep(.1)
