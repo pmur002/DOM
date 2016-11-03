@@ -461,6 +461,19 @@ test_that("styleSheets", {
     rule$style$color <- "blue"
     color <- rule$style$color
     expect_equal(color, "blue")
+    ## insertRule()
+    insertRule(page, ss, "p { font-style: italic; }", 1)
+    rules <- ss$cssRules
+    expect_equal(length(rules), 2)    
+    fontstyle <- rules[2]$style$fontStyle
+    expect_equal(fontstyle, "italic")
+    fontstyle <- rules[2]$style$"font-style"
+    expect_equal(fontstyle, "italic")
+    deleteRule(page, ss, 0)
+    rule <- ss$cssRules
+    expect_equal(length(rule), 1)    
+    css <- rule$cssText
+    expect_equal(css, "p { font-style: italic; }")
     closePage(page)
 })
 

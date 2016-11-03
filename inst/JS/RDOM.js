@@ -511,6 +511,26 @@ RDOM = (function(){
                                      response.response,
                                      response.responseType);
                 break;
+            case "insertRule":
+                var styleSheet = DOMnode(msgBody.styleSheet[0], 
+                                         msgBody.styleSheetType[0],
+                                         false);
+                var index = styleSheet.insertRule(msgBody.rule[0], 
+                                                  msgBody.index[0]);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     DOMresponse(index,
+                                                 msgBody.responseType[0], 
+                                                 false).response,
+                                     msgBody.responseType[0]);
+                break;
+            case "deleteRule":
+                var styleSheet = DOMnode(msgBody.styleSheet[0], 
+                                         msgBody.styleSheetType[0],
+                                         false);
+                styleSheet.deleteRule(msgBody.index[0]);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     null, "NULL");
+                break;
             case "click":
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0],
                                       false);

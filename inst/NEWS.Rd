@@ -48,6 +48,9 @@
     \item Support for modifying CSS rule style within stylesheet via new
     \code{DOM_CSSRule_ptr} class.
 
+    \item New \code{insertRule()} and \code{deleteRule()} functions
+    for adding/removing CSS rules to/from a stylesheet.
+    
     \item New \code{options("DOM.limit")} to control timeout length (in
     seconds) for requests.
     

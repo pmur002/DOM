@@ -118,6 +118,8 @@ setClass("DOM_error",
          contains="character")
 
 # Some class unions
+setClassUnion("DOM_error_or_NULL",
+              c("DOM_error", "NULL"))
 allowErrorOrNull <- function(class) {
     # Allow for error (for example)
     setClassUnion(paste0(class, "_OR_error"),
@@ -126,6 +128,7 @@ allowErrorOrNull <- function(class) {
     setClassUnion(paste0(class, "_OR_error_OR_NULL"),
                   c(paste0(class, "_OR_error"), "NULL"))
 }
+allowErrorOrNull("DOM_value")
 allowErrorOrNull("DOM_node")
 allowErrorOrNull("DOM_obj_response")
 

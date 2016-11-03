@@ -48,7 +48,11 @@ export(
     "getElementsByClassName",
     "getProperty",
     "setProperty",
+
+    ## Manipulate CSS
     "styleSheets",
+    "insertRule",
+    "deleteRule",
     "click"
 )
 

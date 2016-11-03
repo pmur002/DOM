@@ -25,6 +25,10 @@
 \alias{setProperty,numeric,DOM_obj_ref,character,DOM_obj_ref-method}
 \alias{setProperty,numeric,DOM_obj_ref,character,DOM_value-method}
 \alias{styleSheets}
+\alias{insertRule}
+\alias{insertRule,numeric,DOM_CSSStyleSheet_ptr,character,numeric-method}
+\alias{deleteRule}
+\alias{deleteRule,numeric,DOM_CSSStyleSheet_ptr,numeric-method}
 \alias{$,DOM_obj_ref-method}
 \alias{$<-,DOM_obj_ref-method}
 \alias{click}
@@ -76,6 +80,10 @@ propName, value, warn = TRUE,
 propName, value, warn = TRUE,
                        async = FALSE, callback = NULL, tag = getRequestID())
 styleSheets(pageID, async=FALSE, callback=NULL, tag=getRequestID())
+\S4method{insertRule}{numeric,DOM_CSSStyleSheet_ptr,character,numeric}(pageID, styleSheet, rule, index,
+                       async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{deleteRule}{numeric,DOM_CSSStyleSheet_ptr,numeric}(pageID, styleSheet, index,
+                       async = FALSE, callback = NULL, tag = getRequestID())
 }
 \arguments{
   \item{pageID}{
@@ -142,6 +150,15 @@ styleSheets(pageID, async=FALSE, callback=NULL, tag=getRequestID())
   }
   \item{attrValue}{
     The attribute value (will be coerced to a character value).
+  }
+  \item{styleSheet}{
+    A DOM node representation for an existing stylesheet.
+  }
+  \item{rule}{
+    A character value describing a CSS rule.
+  }
+  \item{index}{
+    A numeric index describing the location of the rule within the stylesheet.
   }
   \item{ns}{
     A namespace for the child element that is to be created.
