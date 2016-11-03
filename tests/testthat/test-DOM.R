@@ -441,6 +441,13 @@ test_that("properties", {
     elts <- getElementsByTagName(page, "p", response=css())
     expect_warning(getProperty(page, elts, "style"), "More than one object")
     closePage(page)
+
+    ## Test warnings for literal nodes in short hand
+    page <- htmlPage('<p class="test">p1</p>')
+    p <- getElementsByTagName(page, "p")
+    expect_error(p$class, "literal node is not supported") 
+    expect_error(p$class <- "new", "literal node is not supported")
+    closePage(page)
 })
 
 test_that("styleSheets", {

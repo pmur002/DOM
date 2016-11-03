@@ -143,6 +143,12 @@ setMethod("$",
               getProperty(x@pageID, x, name)
           })
 
+setMethod("$",
+          signature(x="DOM_node_literal"),
+          function(x, name) {
+              stop("Getting a property on a literal node is not supported")
+          })
+
 setMethod("$<-",
           signature(x="DOM_obj_ref"),
           function(x, name, value) {
@@ -156,3 +162,10 @@ setMethod("$<-",
               x
           })
 
+## A method just to provide a more useful error message in case
+## someone lazily does something stupid
+setMethod("$<-",
+          signature(x="DOM_node_literal"),
+          function(x, name, value) {
+              stop("Setting a property on a literal node is not supported")
+          })
