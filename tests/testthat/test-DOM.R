@@ -442,3 +442,25 @@ test_that("properties", {
     expect_warning(getProperty(page, elts, "style"), "More than one object")
     closePage(page)
 })
+
+test_that("styleSheets", {
+    page <- htmlPage("<p>test</p>")
+    ss <- styleSheets(page)
+    expect_equal(length(ss), 0)
+    appendChild(page, htmlNode('<style type="text/css">p { color: red }</style>'),
+                parent=css("head"))
+    ss <- styleSheets(page)[1]
+    rule <- ss$cssRules
+    expect_equal(length(rule), 1)
+    css <- rule$cssText
+    expect_equal(css, "p { color: red; }")
+    selector <- rule$selectorText
+    expect_equal(selector, "p")
+    color <- rule$style$color
+    expect_equal(color, "red")
+    rule$style$color <- "blue"
+    color <- rule$style$color
+    expect_equal(color, "blue")
+    closePage(page)
+})
+

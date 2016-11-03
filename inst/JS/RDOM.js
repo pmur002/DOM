@@ -200,8 +200,8 @@ RDOM = (function(){
     }
 
     // Try to determine a 'DOM' package S4 class for a response value
-    var DOMclasses = [ StyleSheetList, CSSStyleSheet, 
-                       CSSRuleList, CSSRule ];
+    var DOMclasses = [ "StyleSheetList", "CSSStyleSheet", 
+                       "CSSRuleList", "CSSRule" ];
 
     var DOMresponseType = function(object) {
         var responseType;
@@ -221,9 +221,9 @@ RDOM = (function(){
             responseType = "DOM_obj_ptr";
             var i = 0;
             while (i < DOMclasses.length && responseType === "DOM_obj_ptr") {
-                var constructor = DOMclasses[i];
-                if (object instanceof constructor) {
-                    responseType = "DOM_" + constructor.name + "_ptr";
+                var className = DOMclasses[i];
+                if (object instanceof window[className]) {
+                    responseType = "DOM_" + className + "_ptr";
                 }
                 i++;
             }
