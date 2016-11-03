@@ -16,7 +16,7 @@ setClass("DOM_obj",
 # Some basic values (for returning responses from browser)
 setClass("DOM_string",
          contains="DOM_obj")
-setClass("DOM_numeric",
+setClass("DOM_number",
          contains="DOM_obj")
 setClass("DOM_boolean",
          contains="DOM_obj")
@@ -101,8 +101,8 @@ objPtr <- function(x="", pageID=numeric()) {
     new("DOM_obj_ptr", x, pageID=pageID)
 }
 
-Numeric <- function(x="") {
-    new("DOM_numeric", x)
+Number <- function(x="") {
+    new("DOM_number", x)
 }
 
 String <- function(x="") {

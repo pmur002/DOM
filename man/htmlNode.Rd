@@ -6,7 +6,7 @@
 \alias{xpath}
 \alias{nodePtr}
 \alias{objPtr}
-\alias{Numeric}
+\alias{Number}
 \alias{String}
 \alias{Boolean}
 \alias{[,DOM_obj,ANY,missing,missing-method}
@@ -26,7 +26,7 @@ css(x="", pageID=numeric())
 xpath(x="", pageID=numeric())
 nodePtr(x="", pageID=numeric())
 objPtr(x="", pageID=numeric())
-Numeric(x="")
+Number(x="")
 String(x="")
 Boolean(x="")
 }
@@ -40,7 +40,7 @@ Boolean(x="")
   An S4 object of class \code{DOM_node_HTML}, \code{DOM_node_SVG},
   \code{DOM_node_JS},
   \code{DOM_node_CSS}, \code{DOM_node_XPath},
-  \code{DOM_node_ptr}, \code{DOM_obj_ptr}, \code{DOM_numeric},
+  \code{DOM_node_ptr}, \code{DOM_obj_ptr}, \code{DOM_number},
   \code{DOM_character}, or \code{DOM_boolean}, respectively.
 }
 \examples{

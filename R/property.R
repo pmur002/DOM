@@ -6,6 +6,12 @@
 getPropertyCore <- function(pageID, object, propName, response,
                         async, callback, tag) {
     checkDOMobj(object, pageID)
+    if (length(object) == 0) {
+        stop("No object to get property for")
+    } else if (length(object) > 1) {
+        warning("More than one object; only using first")
+        object <- object[1]
+    }
     responseType <- class(response)
     msg <- list(type="REQUEST", tag=tag,
                 body=list(fun="getProperty",
@@ -74,6 +80,12 @@ setPropertyCore <- function(pageID, object, propName, value, warn,
                             async, callback, tag) {
     checkDOMobj(object, pageID)
     checkDOMobj(value, pageID)
+    if (length(object) == 0) {
+        stop("No object to get property for")
+    } else if (length(object) > 1) {
+        warning("More than one object; only using first")
+        object <- object[1]
+    }
     if (readonlyProperty(object, propName)) {
         if (warn) {
             warning(paste0("Read-only property '", propName,

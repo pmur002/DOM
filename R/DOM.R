@@ -174,7 +174,7 @@ DOMresponse <- function(x, type, pageID) {
            DOM_CSSRule_ptr=,
            DOM_obj_ptr=new(type, as.character(x), pageID=pageID),
            # Requests that return a basic value
-           DOM_numeric=as.numeric(x),
+           DOM_number=as.numeric(x),
            DOM_string=as.character(x),
            DOM_boolean=as.logical(x))
 }

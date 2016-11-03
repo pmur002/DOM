@@ -32,7 +32,7 @@ export(
     "xpath",
     "nodePtr",
     "objPtr",
-    "Numeric",
+    "Number",
     "String",
     "Boolean",
     

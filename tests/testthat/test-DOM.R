@@ -429,4 +429,16 @@ test_that("properties", {
     style <- getProperty(page, p, "style")
     expect_warning(setProperty(page, p, "style", style), "Read-only property")
     closePage(page)
+
+    ## Test error from zero-length object
+    page <- htmlPage()
+    elt <- getElementById(page, "notThere", response=css())
+    expect_error(getProperty(page, elt, "style"), "No object")
+    closePage(page)
+    
+    ## Test warning from length-greater-than-one object
+    page <- htmlPage('<p>p1</p><p>p2</p>')
+    elts <- getElementsByTagName(page, "p", response=css())
+    expect_warning(getProperty(page, elts, "style"), "More than one object")
+    closePage(page)
 })

@@ -186,8 +186,8 @@ RDOM = (function(){
             node = getDOMnode(spec);
             break;
         // Variations on DOM_value
-        case "numeric":
-            node = Numeric(spec);
+        case "number":
+            node = Number(spec);
             break;
         case "character":
             node = String(spec);
@@ -206,8 +206,8 @@ RDOM = (function(){
     var DOMresponseType = function(object) {
         var responseType;
         switch (typeof object) {
-        case "numeric":
-            responseType = "DOM_numeric";
+        case "number":
+            responseType = "DOM_number";
             break;
         case "string":
             responseType = "DOM_string";
@@ -312,10 +312,10 @@ RDOM = (function(){
             }
             responseType = "DOM_CSSRule_ptr";
             break;
-        case "DOM_numeric":
+        case "DOM_number":
         case "DOM_string":
         case "DOM_boolean":
-            if (typeof node != "string") {
+            if (typeof node != responseType.substr(4)) {
                 throw new Error("Invalid DOM response");
             }
             result.push(node);

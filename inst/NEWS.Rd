@@ -8,7 +8,7 @@
     to handle wider range of objects than just DOM nodes, e.g., CSS
     stylesheets); \code{DOM_obj_ref} (umbrella for references to nodes
     and to other objects); \code{DOM_obj_ptr} (pointer to general
-    object); \code{DOM_numeric}, \code{DOM_string}, and
+    object); \code{DOM_number}, \code{DOM_string}, and
     \code{DOM_boolean} (to represent basic javascript types).
 
     The existing \code{DOM_node} class extends \code{DOM_obj}.
@@ -18,7 +18,7 @@
     The \code{DOM_obj_ref} class adds a \code{pageID} slot so that we
     can check that a pointer is being sent to the page that created it.
 
-    \item New functions \code{objPtr()}, \code{Numeric()},
+    \item New functions \code{objPtr()}, \code{Number()},
     \code{String()}, and \code{Boolean()} for specifying request
     response type.
 
