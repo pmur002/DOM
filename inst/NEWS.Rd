@@ -51,6 +51,8 @@
     \item Support for modifying CSS rule style within stylesheet via new
     \code{DOM_CSSRule_ptr} class.
 
+    \item New function \code{getAttribute()}.
+    
     \item New \code{options("DOM.limit")} to control timeout length (in
     seconds) for requests.
     
