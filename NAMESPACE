@@ -42,6 +42,7 @@ export(
     "appendChild",
     "removeChild",
     "replaceChild",
+    "getAttribute",
     "setAttribute",
     "getElementById",
     "getElementsByTagName",

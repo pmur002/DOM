@@ -465,6 +465,41 @@ setMethod("replaceChild",
                                response, ns, async, callback, tag)
           })
 
+getAttributeCore <- function(pageID, elt, attrName, response,
+                             async, callback, tag) {
+    checkDOMobj(elt, pageID)
+    if (length(elt) == 0) {
+        stop("No elt to get property for")
+    } else if (length(elt) > 1) {
+        warning("More than one elt; only using first")
+        elt <- elt[1]
+    }
+    responseType <- class(response)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="getAttribute",
+                          elt=as.character(elt),
+                          eltType=class(elt),
+                          attrName=attrName,
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
+}
+
+setGeneric("getAttribute",
+           function(pageID, elt, attrName, ...) {
+               standardGeneric("getAttribute")
+           },
+           valueClass="DOM_value_OR_error_OR_NULL")
+
+setMethod("getAttribute",
+          signature(pageID="numeric",
+                    elt="DOM_node_ref",
+                    attrName="character"),
+          function(pageID, elt, attrName, response=NULL,
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              getAttributeCore(pageID, elt, attrName, response,
+                               async, callback, tag)
+          })
+
 setAttributeCore <- function(pageID, elt, attrName, attrValue,
                              async, callback, tag) {
     checkDOMobj(elt, pageID)

@@ -190,7 +190,12 @@ test_that("replaceChild", {
                  "<html><head></head><body><p>test2</p></body></html>")
 })
     
-test_that("setAttribute", {
+test_that("attributes", {
+    headlessPage <- htmlPage()
+    appendChild(headlessPage, htmlNode('<p id="p1">test<p>'))
+    id <- getAttribute(headlessPage, css("p"), "id")
+    expect_equal(id, "p1")
+
     headlessPage <- htmlPage()
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     setAttribute(headlessPage, css("p"), "onclick", 'alert("test")')

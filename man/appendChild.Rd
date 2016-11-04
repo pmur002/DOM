@@ -10,6 +10,8 @@
 \alias{replaceChild}
 \alias{replaceChild,numeric,DOM_node,DOM_node_ref,missing-method}
 \alias{replaceChild,numeric,DOM_node,DOM_node_ref,DOM_node_ref-method}
+\alias{getAttribute}
+\alias{getAttribute,numeric,DOM_node_ref,character-method}
 \alias{setAttribute}
 \alias{setAttribute,numeric,DOM_node_ref,character,character-method}
 \alias{getElementById}
@@ -60,6 +62,9 @@ createElementNS(pageID, namespace, tagName, response=nodePtr(),
             ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{replaceChild}{numeric,DOM_node,DOM_node_ref,DOM_node_ref}(pageID, newChild, oldChild, parent, response=htmlNode(),
             ns = FALSE, async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{getAttribute}{numeric,DOM_node_ref,character}(pageID, elt,
+attrName, response = NULL,
+             async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{setAttribute}{numeric,DOM_node_ref,character,character}(pageID, elt, attrName, attrValue,
              async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{getElementById}{numeric,character}(pageID, id, response=htmlNode(),

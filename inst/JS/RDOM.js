@@ -421,6 +421,19 @@ RDOM = (function(){
                       " WITH " + newChild.toString());
                 parent.replaceChild(newChild, oldChild);
                 break;
+            case "getAttribute": // elt, attr
+                var element = DOMnode(msgBody.elt[0], msgBody.eltType[0], 
+                                      false);
+                var value = element.getAttribute(msgBody.attrName[0]);
+                var responseType = msgBody.responseType[0];
+                if (responseType === "NULL") {
+                    responseType = DOMresponseType(value);
+                } 
+                var response = DOMresponse(value, responseType, false);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     response.response,
+                                     response.responseType);
+                break;
             case "setAttribute": // elt, attr, value
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0], 
                                       false);
