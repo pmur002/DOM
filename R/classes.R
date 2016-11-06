@@ -71,7 +71,9 @@ setClass("DOM_CSSRuleList_ptr",
          contains="DOM_obj_ptr")
 setClass("DOM_CSSRule_ptr",
          contains="DOM_obj_ptr")
-    
+setClass("DOM_CSSStyleDeclaration_ptr",
+         contains="DOM_obj_ptr")
+
 # Constructors
 htmlNode <- function(x="") {
     new("DOM_node_HTML", x)

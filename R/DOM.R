@@ -172,6 +172,7 @@ DOMresponse <- function(x, type, pageID) {
            DOM_node_ptr=,
            DOM_CSSStyleSheet_ptr=,
            DOM_CSSRule_ptr=,
+           DOM_CSSStyleDeclaration_ptr=,
            DOM_obj_ptr=new(type, as.character(x), pageID=pageID),
            # Requests that return a basic value
            DOM_number=as.numeric(x),
