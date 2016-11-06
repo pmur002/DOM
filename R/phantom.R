@@ -10,6 +10,8 @@ phantomURL <- function(url, port, tag) {
     jsFile <- "phantom-test.js"
     writeLines(whisker.render(template,
                               list(url=url,
+                                   width=getOption("DOM.width"),
+                                   height=getOption("DOM.height"),
                                    CSGjs=CSGjs, bowserjs=bowserjs,
                                    RDOMjs=RDOMjs, 
                                    port=port, tag=tag)),

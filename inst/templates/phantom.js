@@ -10,6 +10,11 @@ var page = require('webpage').create();
 page.onConsoleMessage = function(msg) {
     console.log(msg);
 }
+// Set page size
+page.viewportSize = {
+    width: {{{width}}},
+    height: {{{height}}}
+};
 // NOTE that phantomjs wants 127.0.0.1 not 'localhost'
 // ALSO phantomjs (2) wants http: protocol explicit 
 // (otherwise it appears to assume file: protocol)
@@ -26,7 +31,18 @@ page.open("{{{url}}}",
                   // dblog("socket initialised");
                   // Kill PhantomJS when websocket closes
                   page.onCallback = function(data) { 
-                      phantom.exit() 
+                      if (data.type === "RENDER") {
+                          // RDOM.js has been asked to render page
+                          // Set default font to match visual browsers
+                          page.evaluate(function() {
+                              document.body.style.fontFamily = 'sans-serif';
+                          });
+                          page.render(data.outfile, 
+                                      { format: 'png', quality: '100' });
+                      } else if (data.type === "EXIT") {
+                          // RDOM.js has closed the socket connection
+                          phantom.exit() 
+                      }
                   };
               } else {
                   // dblog("Failed to load page");

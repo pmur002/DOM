@@ -55,6 +55,10 @@
     
     \item New \code{options("DOM.limit")} to control timeout length (in
     seconds) for requests.
+
+    \item New hidden function \code{DOM:::render()} for taking snapshots
+    of a headless page.  Size of the snapshot is controlled by new
+    \code{options("DOM.width")} and \code{options("DOM.height")}.
     
     \item DOM error messages now contain more information.
   }

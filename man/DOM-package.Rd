@@ -42,20 +42,28 @@
   The connection to the browser should be closed with
   \code{\link{closePage}}.
 
-  The hidden function \code{DOM:::debug} can be used to turn on
+  The hidden function \code{DOM:::debug(page)} can be used to turn on
   debugging output in both R and the browser.
-
-  The hidden function \code{DOM:::getPage} can be used to obtain
-  the current page content.
-
-  The environment variable \code{R_PHANTOMJSCMD} can be used to
-  specify the path to the phantomJS executable (for the headless
-  browser).
 
   The timeout for requests sent to the browser is controlled by
   \code{options("DOM.limit")} (default 5 [seconds]).  Setting this
   larger can be useful to stop R timing out while debugging in the
   browser.
+
+  The hidden function \code{DOM:::getPage(page)} can be used to obtain
+  the current page content.
+
+  The hidden function \code{DOM:::render(page, outfile} can be used to
+  produce a PNG file rendering of the current page in a headless
+  browser. The width and height of the image are controlled via
+  \code{options("DOM.width")} and \code{options("DOM.height")}.
+  The width and height must be set BEFORE opening a web page
+  (i.e., before the call to \code{htmlPage()}).
+  
+  The environment variable \code{R_PHANTOMJSCMD} can be used to
+  specify the path to the phantomJS executable (for the headless
+  browser).
+
 }
 \author{
   Paul Murrell

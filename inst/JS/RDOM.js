@@ -579,6 +579,17 @@ RDOM = (function(){
                                      });
             ws.send(msg);
 
+        } else if (msgJSON.type[0] === "RENDER") {
+	    // If we are running PhantomJS, send render message
+	    if (typeof window.callPhantom === 'function') {
+		window.callPhantom({ type: "RENDER", 
+                                     outfile: msgJSON.outfile[0] });
+	    }
+	    var msg = JSON.stringify({ type: "RENDERED",
+                                       tag: msgJSON.tag[0]
+                                     });
+            ws.send(msg);
+
         } else if (msgJSON.type[0] === "GETPAGE") {
 	    var msg = JSON.stringify({ type: "PAGECONTENT",
                                        tag: msgJSON.tag[0],
