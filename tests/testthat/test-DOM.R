@@ -426,6 +426,9 @@ test_that("properties", {
     p <- getElementById(page, "p1", response=css())
     col <- p$style$color
     expect_equal(col, "red")
+    x <- "color"
+    col <- p$style[[x]]
+    expect_equal(col, "red")
     propNames <- propertyNames(page, p$style)
     expect_equal(propNames, c("color", "font-style"))
     closePage(page)

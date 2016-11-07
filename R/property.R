@@ -169,3 +169,17 @@ setMethod("$<-",
           function(x, name, value) {
               stop("Setting a property on a literal node is not supported")
           })
+
+## Provide [[ method so can programmatically access style properties
+setMethod("[[",
+          signature(x="DOM_obj_ref"),
+          function(x, i) {
+              getProperty(x@pageID, x, i)
+          })
+
+setMethod("[[",
+          signature(x="DOM_node_literal"),
+          function(x, i) {
+              stop("Getting a property on a literal node is not supported")
+          })
+          

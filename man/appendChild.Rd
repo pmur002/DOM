@@ -37,6 +37,8 @@
 \alias{$,DOM_node_literal-method}
 \alias{$<-,DOM_obj_ref-method}
 \alias{$<-,DOM_node_literal-method}
+\alias{[[,DOM_obj_ref-method}
+\alias{[[,DOM_node_literal-method}
 \alias{click}
 \alias{click,numeric,DOM_node_ref-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
