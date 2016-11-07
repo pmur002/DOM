@@ -318,10 +318,15 @@ RDOM = (function(){
         case "DOM_number":
         case "DOM_string":
         case "DOM_boolean":
-            if (typeof node != responseType.substr(4)) {
-                throw new Error("Invalid DOM response");
+            if (!Array.isArray(node)) {
+                node = [ node ];
             }
-            result.push(node);
+            for (var i = 0; i < node.length; i++) {
+                if (typeof node[i] != responseType.substr(4)) {
+                    throw new Error("Invalid DOM response");
+                }
+                result.push(node[i]);
+            }
             break;
         }
         return { response: result, responseType: responseType };
@@ -547,6 +552,23 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      null, "NULL");
                 break;
+            case "propertyNames":
+                var style = DOMnode(msgBody.style[0], msgBody.styleType[0],
+                                      false);
+                var names = [];
+                if (style.length) {
+                    for (var i = 0; i < style.length; i++) {
+                        names.push(style[i])
+                    }
+                } else {
+                    names = "";
+                }
+                var response = DOMresponse(names, "DOM_string", false);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     response.response,
+                                     "DOM_string");
+                break;
+                
             case "click":
                 var element = DOMnode(msgBody.elt[0], msgBody.eltType[0],
                                       false);

@@ -120,7 +120,7 @@ setClass("DOM_error",
          contains="character")
 
 # Some class unions
-setClassUnion("DOM_error_or_NULL",
+setClassUnion("DOM_error_OR_NULL",
               c("DOM_error", "NULL"))
 allowErrorOrNull <- function(class) {
     # Allow for error (for example)

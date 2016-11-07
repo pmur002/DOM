@@ -10,6 +10,7 @@ styleSheets <- function(pageID,
     sendRequest(pageID, msg, tag, async, callback, responseType)
 }
 
+################################################################################
 insertRuleCore <- function(pageID, styleSheet, rule, index,
                            async, callback, tag) {
     checkDOMobj(styleSheet, pageID)
@@ -47,6 +48,7 @@ setMethod("insertRule",
                              async, callback, tag)
           })
 
+################################################################################
 deleteRuleCore <- function(pageID, styleSheet, index,
                            async, callback, tag) {
     checkDOMobj(styleSheet, pageID)
@@ -70,7 +72,7 @@ setGeneric("deleteRule",
            function(pageID, styleSheet, index, ...) {
                standardGeneric("deleteRule")
            },
-           valueClass="DOM_error_or_NULL")
+           valueClass="DOM_error_OR_NULL")
 
 setMethod("deleteRule",
           signature(pageID="numeric",
@@ -80,5 +82,36 @@ setMethod("deleteRule",
                    async=FALSE, callback=NULL, tag=getRequestID()) {
               deleteRuleCore(pageID, styleSheet, index,
                              async, callback, tag)
+          })
+
+################################################################################
+## Get a list of the property names in a CSSStyleDeclaration
+propertyNamesCore <- function(pageID, style, async, callback, tag) {
+    checkDOMobj(style, pageID)
+    if (length(style) == 0) {
+        character()
+    } else if (length(style) > 1) {
+        warning("More than one style declaration; only using first")
+        style <- style[1]
+    }
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="propertyNames",
+                          style=as.character(style),
+                          styleType=class(style)))
+    sendRequest(pageID, msg, tag, async, callback, "NULL")
+}
+
+setGeneric("propertyNames",
+           function(pageID, style, ...) {
+               standardGeneric("propertyNames")
+           },
+           valueClass="DOM_value_OR_error")
+
+setMethod("propertyNames",
+          signature(pageID="numeric",
+                    style="DOM_CSSStyleDeclaration_ptr"),
+          function(pageID, style,
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              propertyNamesCore(pageID, style, async, callback, tag)
           })
 

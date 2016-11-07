@@ -52,6 +52,9 @@
     \code{DOM_CSSRule_ptr} class.
 
     \item New function \code{getAttribute()}.
+
+    \item New function \code{propertyNames()} (to get the CSS property
+    names from a \code{DOM_CSSStyleDeclaration_ptr} object).
     
     \item New \code{options("DOM.limit")} to control timeout length (in
     seconds) for requests.

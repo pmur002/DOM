@@ -31,6 +31,8 @@
 \alias{insertRule,numeric,DOM_CSSStyleSheet_ptr,character,numeric-method}
 \alias{deleteRule}
 \alias{deleteRule,numeric,DOM_CSSStyleSheet_ptr,numeric-method}
+\alias{propertyNames}
+\alias{propertyNames,numeric,DOM_CSSStyleDeclaration_ptr-method}
 \alias{$,DOM_obj_ref-method}
 \alias{$,DOM_node_literal-method}
 \alias{$<-,DOM_obj_ref-method}
@@ -90,6 +92,8 @@ styleSheets(pageID, async=FALSE, callback=NULL, tag=getRequestID())
 \S4method{insertRule}{numeric,DOM_CSSStyleSheet_ptr,character,numeric}(pageID, styleSheet, rule, index,
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{deleteRule}{numeric,DOM_CSSStyleSheet_ptr,numeric}(pageID, styleSheet, index,
+                       async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{propertyNames}{numeric,DOM_CSSStyleDeclaration_ptr}(pageID, style,
                        async = FALSE, callback = NULL, tag = getRequestID())
 }
 \arguments{
@@ -159,7 +163,10 @@ styleSheets(pageID, async=FALSE, callback=NULL, tag=getRequestID())
     The attribute value (will be coerced to a character value).
   }
   \item{styleSheet}{
-    A DOM node representation for an existing stylesheet.
+    A DOM node representation for an existing style sheet.
+  }
+  \item{style}{
+    A DOM node representation for an existing style declaration.
   }
   \item{rule}{
     A character value describing a CSS rule.

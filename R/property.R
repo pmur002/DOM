@@ -108,7 +108,7 @@ setGeneric("setProperty",
            function(pageID, object, propName, value, ...) {
                standardGeneric("setProperty")
            },
-           valueClass="DOM_error_or_NULL")
+           valueClass="DOM_error_OR_NULL")
 
 # In general, the value of the property should be an
 # existing DOM object (because it can be a complex object)
