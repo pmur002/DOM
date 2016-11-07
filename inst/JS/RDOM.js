@@ -194,7 +194,13 @@ RDOM = (function(){
             node = String(spec);
             break;
         case "logical":
-            node = Boolean(spec);
+            if (spec === "TRUE") {
+                node = true;
+            } else if (spec === "FALSE") {
+                node = false;
+            } else {
+                node = Boolean(spec);
+            }
             break;
         }
         return node;
