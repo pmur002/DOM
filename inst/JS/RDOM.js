@@ -552,16 +552,26 @@ RDOM = (function(){
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 
                                      null, "NULL");
                 break;
+            case "removeProperty":
+                var style = DOMnode(msgBody.style[0], msgBody.styleType[0],
+                                      false);
+                var name = msgBody.propName[0];
+                var value = style.removeProperty(name);
+                var responseType = msgBody.responseType[0];
+                if (responseType === "NULL") {
+                    responseType = DOMresponseType(value);
+                } 
+                var response = DOMresponse(value, responseType, false);
+                result = returnValue(msgJSON.tag, msgBody.fun[0], 
+                                     response.response,
+                                     response.responseType);
+                break;
             case "propertyNames":
                 var style = DOMnode(msgBody.style[0], msgBody.styleType[0],
                                       false);
                 var names = [];
-                if (style.length) {
-                    for (var i = 0; i < style.length; i++) {
-                        names.push(style[i])
-                    }
-                } else {
-                    names = "";
+                for (var i = 0; i < style.length; i++) {
+                    names.push(style[i])
                 }
                 var response = DOMresponse(names, "DOM_string", false);
                 result = returnValue(msgJSON.tag, msgBody.fun[0], 

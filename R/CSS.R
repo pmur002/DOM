@@ -85,6 +85,43 @@ setMethod("deleteRule",
           })
 
 ################################################################################
+## Remove a property from a CSSStyleDeclaration
+removePropertyCore <- function(pageID, style, propName, response,
+                               async, callback, tag) {
+    checkDOMobj(style, pageID)
+    if (length(style) == 0) {
+        stop("No style declaration to remove property from")
+    } else if (length(style) > 1) {
+        warning("More than one style declaration; only using first")
+        style <- style[1]
+    }
+    responseType <- class(response)
+    msg <- list(type="REQUEST", tag=tag,
+                body=list(fun="removeProperty",
+                          style=as.character(style),
+                          styleType=class(style),
+                          propName=propName,
+                          responseType=responseType))
+    sendRequest(pageID, msg, tag, async, callback, responseType)
+}
+
+setGeneric("removeProperty",
+           function(pageID, style, propName, ...) {
+               standardGeneric("removeProperty")
+           },
+           valueClass="DOM_value_OR_error")
+
+setMethod("removeProperty",
+          signature(pageID="numeric",
+                    style="DOM_CSSStyleDeclaration_ptr",
+                    propName="character"),
+          function(pageID, style, propName, response=NULL,
+                   async=FALSE, callback=NULL, tag=getRequestID()) {
+              removePropertyCore(pageID, style, propName, response,
+                                 async, callback, tag)
+          })
+
+################################################################################
 ## Get a list of the property names in a CSSStyleDeclaration
 propertyNamesCore <- function(pageID, style, async, callback, tag) {
     checkDOMobj(style, pageID)

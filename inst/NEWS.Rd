@@ -53,6 +53,9 @@
 
     \item New function \code{getAttribute()}.
 
+    \item New function \code{removeProperty()} (to remove a CSS property
+    from a \code{DOM_CSSStyleDeclaration_ptr} object).
+    
     \item New function \code{propertyNames()} (to get the CSS property
     names from a \code{DOM_CSSStyleDeclaration_ptr} object).
     

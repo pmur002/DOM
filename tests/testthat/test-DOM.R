@@ -429,8 +429,6 @@ test_that("properties", {
     x <- "color"
     col <- p$style[[x]]
     expect_equal(col, "red")
-    propNames <- propertyNames(page, p$style)
-    expect_equal(propNames, c("color", "font-style"))
     closePage(page)
 
     ## Test warning from trying to set readonly property
@@ -486,11 +484,20 @@ test_that("styleSheets", {
     expect_equal(fontstyle, "italic")
     fontstyle <- rules[2]$style$"font-style"
     expect_equal(fontstyle, "italic")
+    ## propertyNames()
+    propNames <- propertyNames(page, rules[2]$style)
+    expect_equal(propNames, "font-style")
+    ## removeProperty()
+    value <- removeProperty(page, rules[2]$style, "font-style")
+    expect_equal(value, "italic")
+    propNames <- propertyNames(page, rules[2]$style)
+    expect_equal(propNames, character())
+    ## deleteRule()
     deleteRule(page, ss, 0)
     rule <- ss$cssRules
     expect_equal(length(rule), 1)    
     css <- rule$cssText
-    expect_equal(css, "p { font-style: italic; }")
+    expect_equal(css, "p { }")
     closePage(page)
 })
 

@@ -31,6 +31,8 @@
 \alias{insertRule,numeric,DOM_CSSStyleSheet_ptr,character,numeric-method}
 \alias{deleteRule}
 \alias{deleteRule,numeric,DOM_CSSStyleSheet_ptr,numeric-method}
+\alias{removeProperty}
+\alias{removeProperty,numeric,DOM_CSSStyleDeclaration_ptr,character-method}
 \alias{propertyNames}
 \alias{propertyNames,numeric,DOM_CSSStyleDeclaration_ptr-method}
 \alias{$,DOM_obj_ref-method}
@@ -94,6 +96,8 @@ styleSheets(pageID, async=FALSE, callback=NULL, tag=getRequestID())
 \S4method{insertRule}{numeric,DOM_CSSStyleSheet_ptr,character,numeric}(pageID, styleSheet, rule, index,
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{deleteRule}{numeric,DOM_CSSStyleSheet_ptr,numeric}(pageID, styleSheet, index,
+                       async = FALSE, callback = NULL, tag = getRequestID())
+\S4method{removeProperty}{numeric,DOM_CSSStyleDeclaration_ptr,character}(pageID, style, propName, response = NULL,
                        async = FALSE, callback = NULL, tag = getRequestID())
 \S4method{propertyNames}{numeric,DOM_CSSStyleDeclaration_ptr}(pageID, style,
                        async = FALSE, callback = NULL, tag = getRequestID())

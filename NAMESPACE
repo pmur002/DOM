@@ -49,6 +49,7 @@ export(
     "getElementsByClassName",
     "getProperty",
     "setProperty",
+    "removeProperty",
     "propertyNames",
 
     ## Manipulate CSS
