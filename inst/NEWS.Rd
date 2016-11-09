@@ -2,6 +2,15 @@
 \title{NEWS file for the DOM package}
 \encoding{UTF-8}
 
+\section{Changes in version 0.5}{
+  \itemize{
+    \item There is a copy of \code{RDOM.user.js} called
+    \code{RDOM.tamper.js} for use with Tampermonkey.  This can be
+    installed in a browser like Google Chrome (with the Tampermonkey
+    extension installed) to allow \code{filePage()} and \code{urlPage()}
+    to work in browsers other than Firefox.
+  }
+}
 \section{Changes in version 0.4}{
   \itemize{
     \item New classes: \code{DOM_obj} (new root of class hierarchy,
