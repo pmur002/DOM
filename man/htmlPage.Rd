@@ -42,7 +42,11 @@ urlPage(url, headless = getOption("DOM.headless"))
   For \code{filePage()} and \code{urlPage()} to work, the
   \code{RDOM.user.js} user script must be installed in the browser
   (for greasemonkey with Firefox).  There is also \code{RDOM.tamper.js}
-  (for Tampermonkey with, e.g., Chrome).
+  (for Tampermonkey with, e.g., Chrome).  In addition, for
+  \code{filePage()}, in Firefox at least,
+  \code{greasemonkey.fileIsGreaseable} must be
+  set to \code{true} in \code{about:config}.  \code{urlPage()} currently
+  only supports the \code{http://} protocol (not \code{https://}).
 
   For \code{headless=TRUE} to work, PhantomJS must be installed.
 }
