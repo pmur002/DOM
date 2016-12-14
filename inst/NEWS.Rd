@@ -9,6 +9,11 @@
     installed in a browser like Google Chrome (with the Tampermonkey
     extension installed) to allow \code{filePage()} and \code{urlPage()}
     to work in browsers other than Firefox.
+
+    \item Added \code{viewer} argument to \code{htmlPage};  if this
+    argument is \code{TRUE}, we will connect to and render in the
+    RStudio Viewer Pane, if it is available (i.e., if we are running in
+    RStudio).
   }
 }
 \section{Changes in version 0.4}{

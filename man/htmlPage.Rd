@@ -10,7 +10,7 @@
   Open a web page in a browser and provide a handle to that web page.
 }
 \usage{
-htmlPage(html = "", headless = getOption("DOM.headless"))
+htmlPage(html = "", headless = getOption("DOM.headless"), viewer = TRUE)
 filePage(file, headless = getOption("DOM.headless"))
 urlPage(url, headless = getOption("DOM.headless"))
 }
@@ -31,6 +31,10 @@ urlPage(url, headless = getOption("DOM.headless"))
   \item{headless}{
     A logical indicating whether to open the web page in a
     \dQuote{headless} browser (currently PhantomJS).  
+  }
+  \item{viewer}{
+    A logical indicating whether to use the RStudio Viewer Pane,
+    if it is available.
   }
 }
 \details{

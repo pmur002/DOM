@@ -59,11 +59,18 @@ selectPort <- function() {
 }
 
 # Run a browser from R (so that it can create a websocket connecting to R)
-runBrowser <- function(url, port=NULL, headless=FALSE, tag=NULL) {
+runBrowser <- function(url, port=NULL, headless=FALSE, viewer=FALSE, tag=NULL) {
     if (headless) {
         phantomURL(url, port, tag)
     } else {
-        browseURL(url)
+        if (viewer) {
+            rsviewer <- getOption("viewer")
+        }
+        if (viewer && !is.null(rsviewer)) {
+            rsviewer(url)
+        } else {
+            browseURL(url)
+        }
     }
 }
 
@@ -117,7 +124,8 @@ startServer <- function(pageID, app, port=NULL, body="",
 # supplying the <body> of the initial web page content
 # (default is a blank page)
 # PLUS open web socket between R and browser
-htmlPage <- function(html="", headless=getOption("DOM.headless")) {
+htmlPage <- function(html="", headless=getOption("DOM.headless"),
+                     viewer=TRUE) {
     pageID <- getPageID()
     if (headless) {
         app <- nullApp
@@ -133,7 +141,7 @@ htmlPage <- function(html="", headless=getOption("DOM.headless")) {
     port <- pageInfo(pageID)$port
     ## Use 127.0.0.1 rather than 'localhost' to keep PhantomJS happy (?)
     runBrowser(paste0("http://127.0.0.1:", port, "/"),
-               port, headless, tag=tag)
+               port, headless, viewer, tag=tag)
     ## Block until web socket has been established by browser
     waitForResponse(tag, onTimeout=function() closePage(pageID))
     ## Register pageID with browser
