@@ -334,10 +334,32 @@ RDOM = (function(){
                 result.push(node[i]);
             }
             break;
+        case "JSON":
+            result.push(node);
+            break;
         }
+        
         return { response: result, responseType: responseType };
     }
-    
+
+    var expandType = function(type) {
+        var result = type;
+        switch (type) {
+        case "HTML":
+        case "SVG":
+        case "CSS":
+        case "XPath":
+            result = "DOM_node_" + type;
+            break;
+        case "string":
+        case "number":
+        case "boolean":
+            result = "DOM_" + type;
+            break;
+        }
+        return result;
+    }
+
     // Main function for handling requests from R to JS
     var handleMessage = function(msg) {
         dblog("RECEIVING " + msg.data);
@@ -709,7 +731,7 @@ RDOM = (function(){
         var tag = getRequestID();
         addRequest(tag, callback);
         // Turn target into array even if length 1
-        if (typeof target.length === "undefined") {
+        if (!Array.isArray(target)) {
             target = [ target ];
         }
         var args = [];
@@ -718,9 +740,9 @@ RDOM = (function(){
             for (i = 0; i < target.length; i++) {
                 for (j = 0; j < targetType.length; j++) {
                     args.push(DOMresponse(target[i], 
-                                          'DOM_node_' + targetType[j],
+                                          expandType(targetType[j]),
                                           false).response[0]);
-                    argsType.push('DOM_node_' + targetType[j]);
+                    argsType.push(expandType(targetType[j]));
                 }
             }
         }

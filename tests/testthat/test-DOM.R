@@ -501,3 +501,70 @@ test_that("styleSheets", {
     closePage(page)
 })
 
+## Test passing basic value in RDOM.Rcall()
+test_that("rdom-rcall-simple", {
+    page <- htmlPage()
+    p <- appendChild(page, htmlNode("<p>test</p>"), response=nodePtr())
+    assign("f", (function() { x <- 1; function(y) x <<- y })(), 
+           envir=.GlobalEnv)
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f", "test", [ "string" ], null)')
+    click(page, p)
+    Sys.sleep(.5)
+    print(get("x", environment(f)))
+    expect_equal(get("x", environment(f)), "test")
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f", 1, [ "number" ], null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f)), 1)
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f", true, [ "boolean" ], null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f)), TRUE)
+    assign("f3", (function() { x <- 1; function(a, b, c) x <<- c(a, b, c) })(), 
+           envir=.GlobalEnv)
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f3", [ "1", "two", "3" ], [ "string" ], null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f3)), c("1", "two", "3"))
+})
+
+## Test passing JSON object in RDOM.Rcall()
+test_that("rdom-rcall-json", {
+    page <- htmlPage()
+    p <- appendChild(page, htmlNode("<p>test</p>"), response=nodePtr())
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f", "test1", [ "JSON" ], null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f)), "test1")
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f", [ "test2" ], [ "JSON" ], null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f)), "test2")
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f", { "a": [ 1, 2, 3 ] }, [ "JSON" ], null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f)), list(1:3))
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f", { "a": { "b": "test", "c": 1 } }, [ "JSON" ],
+                             null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f)),
+                 data.frame(b="test", c=1, stringsAsFactors=FALSE))
+    assign("f2", (function() { x <- 1; function(a, b) x <<- list(a, b) })(), 
+           envir=.GlobalEnv)
+    setAttribute(page, p, "onclick",
+                 'RDOM.Rcall("f2", { "a": "test", "b": 1 }, [ "JSON" ],
+                             null)')
+    click(page, p)
+    Sys.sleep(.5)
+    expect_equal(get("x", environment(f2)), list("test", 1))
+})
+

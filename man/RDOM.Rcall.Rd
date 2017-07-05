@@ -34,6 +34,11 @@
   the number of node types (with the number of types changing fastest).
   In the example above, the R function would receive only one argument.
 
+  It is also possible to pass raw javascript values in the second
+  argument, instead of DOM nodes.  In this case, the type argument
+  should be one of \code{"string"}, \code{"number"}, \code{"boolean"},
+  or \code{"JSON"} (for more complex sets of values).
+  
   The return value of the R function (if any) is converted to a JSON
   object and passed to the callback function specified
   in the call to \code{RDOM.Rcall}).

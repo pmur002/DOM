@@ -164,6 +164,8 @@ DOMresponse <- function(x, type, pageID) {
     switch(type,
            # Requests that have no return value
            "NULL"=NULL,
+           # Requests that return a JSON object
+           JSON=x,
            # Requests that return a DOM node of some sort
            DOM_node_HTML=,
            DOM_node_SVG=new(type, as.character(x)),

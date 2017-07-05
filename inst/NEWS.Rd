@@ -2,6 +2,14 @@
 \title{NEWS file for the DOM package}
 \encoding{UTF-8}
 
+\section{Changes in version 0.5-1}{
+  \itemize{
+    \item Added support for \code{"string"}, \code{"number"},
+    \code{"boolean"}, and \code{"JSON"} as valid response type in
+    \code{RDOM.Rcall}.  This allows arbitrary values to be passed from
+    javascript back to R function call.  Also added some test cases.
+  }
+}
 \section{Changes in version 0.5}{
   \itemize{
     \item There is a copy of \code{RDOM.user.js} called
