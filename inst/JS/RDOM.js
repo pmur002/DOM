@@ -349,6 +349,7 @@ RDOM = (function(){
         case "SVG":
         case "CSS":
         case "XPath":
+        case "ptr":
             result = "DOM_node_" + type;
             break;
         case "string":
