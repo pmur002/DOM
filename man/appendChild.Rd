@@ -278,7 +278,7 @@ styleSheets(pageID, async=FALSE, callback=NULL, tag=getRequestID())
   \code{\link{htmlPage}}, \code{\link{htmlNode}}
 }
 \examples{
-headlessPage <- htmlPage(headless=TRUE)
+headlessPage <- htmlPage(client=phantomClient)
 appendChild(headlessPage, htmlNode("<p>test</p>"))
 closePage(headlessPage)
 }

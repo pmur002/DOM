@@ -26,8 +26,11 @@ page.open("{{{url}}}",
                   page.injectJs("{{{bowserjs}}}");
                   page.injectJs("{{{RDOMjs}}}");
                   // dblog("opening socket")
-                  page.evaluate(function(port, tag) { RDOM.init(port, tag) }, 
-                                "{{{port}}}", "{{{tag}}}");
+                  page.evaluate(
+                      function(host, port, tag) { 
+                          RDOM.init(host, port, tag) 
+                      }, 
+                      "{{{host}}}", "{{{port}}}", "{{{tag}}}");
                   // dblog("socket initialised");
                   // Kill PhantomJS when websocket closes
                   page.onCallback = function(data) { 

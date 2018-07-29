@@ -24,6 +24,15 @@ export(
     "urlPage",
     "closePage",
 
+    ## Clients
+    "makeClient",
+    "browserClient",
+    "phantomClient",
+    "rstudioClient",
+
+    ## Callbacks
+    "registerCallback",
+    
     ## DOM nodes
     "htmlNode",
     "svgNode",

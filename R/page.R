@@ -9,13 +9,13 @@ pageClosure <- function() {
 
     # Page info
     pages <- list()
-    register <- function(id, handle, port, headless) {
+    register <- function(id, handle, port, client) {
         if (id <= length(pages) && !is.null(pages[[id]])) {
             stop(paste0("Page ", id, " already registered"))
         }
         pages[[id]] <<- list(handle=handle,
                              port=port,
-                             headless=headless)
+                             client=client)
     }
     registerSocket <- function(id, socket) {
         if (!is.null(pages[[id]]$socket)) {
@@ -34,14 +34,26 @@ pageClosure <- function() {
     }
     inUse <- function(port) {
         port %in% sapply(pages, function(x) x$port)
-    }        
+    }
+    kill <- function(id) {
+        ## Kill PhantomJS
+        ## nothing to be done for GUI browsers;
+        ## do not have permission to close tabs or windows)
+        client <- pages[[id]]$client
+        if (!is.null(client$kill)) {
+            client$kill(id)
+        } else {
+            NULL
+        }
+    }
     
     list(getID=getID,
          register=register,
          registerSocket=registerSocket,
          unregister=unregister,
          info=info,
-         inUse=inUse)
+         inUse=inUse,
+         kill=kill)
 }
 pageFunctions <- pageClosure()
 
@@ -51,6 +63,7 @@ registerPageSocket <- pageFunctions$registerSocket
 unregisterPage <- pageFunctions$unregister
 pageInfo <- pageFunctions$info
 portInUse <- pageFunctions$inUse
+killPage <- pageFunctions$kill
 
 # http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml
 # "Dynamic and/or Private Ports (49152-65535)"
@@ -58,34 +71,12 @@ selectPort <- function() {
     sample(49152:65535, 1)
 }
 
-# Run a browser from R (so that it can create a websocket connecting to R)
-runBrowser <- function(url, port=NULL, headless=FALSE, viewer=FALSE, tag=NULL) {
-    if (headless) {
-        phantomURL(url, port, tag)
-    } else {
-        if (viewer) {
-            rsviewer <- getOption("viewer")
-        }
-        if (viewer && !is.null(rsviewer)) {
-            rsviewer(url)
-        } else {
-            browseURL(url)
-        }
-    }
-}
-
-killBrowser <- function(pageID) {
-    # Kill PhantomJS
-    # (nothing to be done for GUI browsers;
-    #  do not have permission to close tabs or windows)
-    if (pageInfo(pageID)$headless) {
-        kill(pageID)
-    }
+killClient <- function(client, pageID) {
 }
 
 # If 'port' is NULL, randomly select a port
-startServer <- function(pageID, app, port=NULL, body="",
-                        tag=NULL, headless=FALSE) {
+startServer <- function(pageID, host, app, client,
+                        port=NULL, body="", tag=NULL) {
     # Fail immediately if port is specified and is already in use by
     # an existing page
     if (!is.null(port) && portInUse(port)) {
@@ -103,9 +94,11 @@ startServer <- function(pageID, app, port=NULL, body="",
         while (is.null(port) || portInUse(port)) {
             port <- selectPort()
         }
-        result <- try(startDaemonizedServer("0.0.0.0", port,
-                                            app(pageID, port, body, tag)),
-                      silent=TRUE)
+        result <-
+            try(startDaemonizedServer("0.0.0.0", port,
+                                      client$app(pageID, host, port,
+                                                 body, tag)),
+                silent=TRUE)
         attempts <- attempts + 1
         if (!inherits(result, "try-error")) {
             pageStarted <- TRUE
@@ -116,7 +109,7 @@ startServer <- function(pageID, app, port=NULL, body="",
         removeRequest(tag)
         stop("Failed to start page")
     }
-    registerPage(pageID, handle, port, headless)
+    registerPage(pageID, handle, port, client)
     invisible()
 }
 
@@ -124,24 +117,18 @@ startServer <- function(pageID, app, port=NULL, body="",
 # supplying the <body> of the initial web page content
 # (default is a blank page)
 # PLUS open web socket between R and browser
-htmlPage <- function(html="", headless=getOption("DOM.headless"),
-                     viewer=TRUE) {
+htmlPage <- function(html="", host="127.0.0.1",
+                     client=getOption("DOM.client")) {
     pageID <- getPageID()
-    if (headless) {
-        app <- nullApp
-    } else {
-        app <- wsApp
-    }
     ## Register a request so can wait for a response from browser
     tag <- getRequestID()
     addRequest(tag, FALSE, NULL, "NULL", pageID)
     ## Start R server to handle web socket activity
     ## (and possibly serve initial HTML)
-    startServer(pageID, app, body=html, tag=tag, headless=headless)
+    startServer(pageID, host, client$app, client, body=html, tag=tag)
     port <- pageInfo(pageID)$port
     ## Use 127.0.0.1 rather than 'localhost' to keep PhantomJS happy (?)
-    runBrowser(paste0("http://127.0.0.1:", port, "/"),
-               port, headless, viewer, tag=tag)
+    client$run(paste0("http://", host, ":", port, "/"), host, port, tag=tag)
     ## Block until web socket has been established by browser
     waitForResponse(tag, onTimeout=function() closePage(pageID))
     ## Register pageID with browser
@@ -155,15 +142,15 @@ htmlPage <- function(html="", headless=getOption("DOM.headless"),
 # initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-filePage <- function(file, headless=getOption("DOM.headless")) {
+filePage <- function(file, client=getOption("DOM.client")) {
     pageID <- getPageID()
     # Allow for "file://" missing
     if (!grepl("^file://", file)) {
         file <- paste0("file://", file)
     }
     addRequest("-1", FALSE, NULL, "NULL", pageID)
-    startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
-    runBrowser(file, 52000, headless, tag="-1")
+    startServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
+    client$run(file, "127.0.0.1", 52000, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
     ## Register pageID with browser
     tag <- getRequestID()
@@ -175,15 +162,15 @@ filePage <- function(file, headless=getOption("DOM.headless")) {
 # Browser http://<url> (i.e., 'url' supplies the initial web page content)
 # PLUS open web socket between R and browser
 # (requires greasemonkey AND RDOM.user.js user script installed on browser)
-urlPage <- function(url, headless=getOption("DOM.headless")) {
+urlPage <- function(url, client=getOption("DOM.client")) {
     pageID <- getPageID()
     # Allow for "http://" missing
     if (!grepl("^http://", url)) {
         url <- paste0("http://", url)
     }
     addRequest("-1", FALSE, NULL, "NULL", pageID)
-    startServer(pageID, nullApp, 52000, tag="-1", headless=headless)
-    runBrowser(url, 52000, headless, tag="-1")
+    startServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
+    client$run(url, "127.0.0.1", 52000, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
     ## Register pageID with browser
     tag <- getRequestID()
@@ -193,7 +180,7 @@ urlPage <- function(url, headless=getOption("DOM.headless")) {
 }
 
 closePage <- function(pageID) {
-    pageContent <- killBrowser(pageID)
+    pageContent <- killPage(pageID)
     stopDaemonizedServer(pageInfo(pageID)$handle)
     unregisterPage(pageID)
     invisible(pageContent)

@@ -75,7 +75,7 @@
   \code{\link{htmlPage}}
 }
 \examples{
-headlessPage <- htmlPage(headless=TRUE)
+headlessPage <- htmlPage(client=phantomClient)
 appendChild(headlessPage, htmlNode("<p>test</p>"))
 closePage(headlessPage)
 }

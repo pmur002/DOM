@@ -2,12 +2,24 @@
 \title{NEWS file for the DOM package}
 \encoding{UTF-8}
 
+\section{Changes in version 0.6}{
+  \itemize{
+    \item New \code{client} argument for \code{htmlPage()} (and
+    \code{filePage()} and \code{urlPage()}).  This replaces (and
+    generalises) \code{headless} and \code{viewer} arguments, so that it
+    is easier to add new clients to interact with DOM server, including
+    remote clients.
+    \item New \code{makeClient()} function for defining new clients.
+    \item New \code{registerCallback()} function (so that callbacks do
+    not have to pollute global workspace).
+  }
+}
 \section{Changes in version 0.5-1}{
   \itemize{
     \item Added support for \code{"string"}, \code{"number"},
     \code{"boolean"}, and \code{"JSON"} as valid response type in
     \code{RDOM.Rcall}.  This allows arbitrary values to be passed from
-    javascript back to R function call.  Also added some test cases.
+    javascript back to R function call.  
   }
 }
 \section{Changes in version 0.5}{

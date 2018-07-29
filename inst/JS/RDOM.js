@@ -693,9 +693,9 @@ RDOM = (function(){
 
     // EXPORTED functions
 
-    var init = function(port, tag) {
+    var init = function(host, port, tag) {
 	// Use 127.0.0.1 instead of 'localhost' to keep PhantomJS happy (?)
-	ws = new WebSocket("ws://127.0.0.1:" + port);
+	ws = new WebSocket("ws://" + host + ":" + port);
 	// Set up websocket methods
 	ws.onopen = function() {
             ws.send(JSON.stringify({ type: "ALIVE", 

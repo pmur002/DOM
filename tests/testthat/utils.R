@@ -1,6 +1,6 @@
 
 # For testing, all pages are headless
-options(DOM.headless=TRUE)
+options(DOM.client=phantomClient)
 
 # Function to remove all whitespace (including newlines) from HTML text
 # (to allow comparison between source HTML and HTML returned from PhantomJS)

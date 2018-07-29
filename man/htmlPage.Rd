@@ -10,9 +10,9 @@
   Open a web page in a browser and provide a handle to that web page.
 }
 \usage{
-htmlPage(html = "", headless = getOption("DOM.headless"), viewer = TRUE)
-filePage(file, headless = getOption("DOM.headless"))
-urlPage(url, headless = getOption("DOM.headless"))
+htmlPage(html = "", client = getOption("DOM.client"))
+filePage(file, client = getOption("DOM.client"))
+urlPage(url, client = getOption("DOM.client"))
 }
 \arguments{
   \item{html}{
@@ -27,14 +27,6 @@ urlPage(url, headless = getOption("DOM.headless"))
   }
   \item{url}{
     A URL to a web page on the internet.
-  }
-  \item{headless}{
-    A logical indicating whether to open the web page in a
-    \dQuote{headless} browser (currently PhantomJS).  
-  }
-  \item{viewer}{
-    A logical indicating whether to use the RStudio Viewer Pane,
-    if it is available.
   }
 }
 \details{
@@ -52,7 +44,7 @@ urlPage(url, headless = getOption("DOM.headless"))
   set to \code{true} in \code{about:config}.  \code{urlPage()} currently
   only supports the \code{http://} protocol (not \code{https://}).
 
-  For \code{headless=TRUE} to work, PhantomJS must be installed.
+  For \code{client=phantomClient} to work, PhantomJS must be installed.
 }
 \value{
   A page identifier, to be used to send DOM requests to the web page, or to
@@ -68,7 +60,7 @@ urlPage(url, headless = getOption("DOM.headless"))
   \code{\link{appendChild}}
 }
 \examples{
-headlessPage <- htmlPage(headless=TRUE)
+headlessPage <- htmlPage(client=phantomClient)
 appendChild(headlessPage, htmlNode("<p>test</p>"))
 closePage(headlessPage)
 }

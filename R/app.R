@@ -4,8 +4,10 @@
 
 # App that serves web page with given 'body'
 # (but does NOT create web socket; that is expected to be handled by browser)
-# 'port' and 'tag' are not used because they are hard-coded in RDOM.user.js
-nullApp <- function(pageID, port=52000, body, tag="-1") {
+# 'port' and 'tag' are not used because they are provided by the client
+# (e.g., they are hard-coded in RDOM.user.js)
+nullApp <- function(pageID,
+                    url="http://127.0.0.1", port=52000, body, tag="-1") {
     list(
         call = function(req) {
             list(status = 200L,
@@ -27,12 +29,12 @@ nullApp <- function(pageID, port=52000, body, tag="-1") {
 
 # App that serves web page with given 'body'
 # AND creates web socket (back to R) on load
-wsApp <- function(pageID, port, body, tag) {
+wsApp <- function(pageID, host, port, body, tag) {
     template <- readLines(system.file("templates", "app.html", package="DOM"))
     pkgVersion <- packageVersion("DOM")
     html <- whisker.render(template,
                            list(pkgVersion=as.character(pkgVersion),
-                                port=port, tag=tag,
+                                host=host, port=port, tag=tag,
                                 body=paste(body, collapse="\n")))
     list(
         call = function(req) {

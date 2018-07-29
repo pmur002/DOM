@@ -282,7 +282,7 @@ test_that("Rcall", {
     element <- ""
     elementCSS <- ""
     assign("recordRequest",
-           function(target, targetCSS) {
+           function(target, targetCSS, ...) {
                element <<- target
                elementCSS <<- targetCSS
            },
@@ -300,8 +300,7 @@ test_that("Rcall", {
     # Call R from browser (no arguments)
     headlessPage <- htmlPage()
     testResult <- FALSE
-    assign("noArgs", function() { testResult <<- TRUE }, envir=.GlobalEnv)
-    noArgs <- 
+    assign("noArgs", function(...) { testResult <<- TRUE }, envir=.GlobalEnv)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     setAttribute(headlessPage, css("p"), "onclick",
                  'RDOM.Rcall("noArgs", this, null, null)')
@@ -321,7 +320,7 @@ test_that("Rcall", {
     click(headlessPage, css("p"))
     Sys.sleep(.2)
     closePage(headlessPage)
-    expect_length(testResult, 4)
+    expect_length(testResult, 5)
     expect_s4_class(testResult[[1]], "DOM_node_HTML")
     expect_s4_class(testResult[[2]], "DOM_node_CSS")
     expect_s4_class(testResult[[3]], "DOM_node_HTML")
@@ -329,7 +328,7 @@ test_that("Rcall", {
     # Call R from browser, then call browser from R
     headlessPage <- htmlPage()
     callbackGen <- function(page) {
-        function(target, targetCSS) {
+        function(target, targetCSS, ...) {
             require(xtable)
             require(XML)
             text <- xmlValue(xmlRoot(xmlParse(target)))
@@ -505,7 +504,7 @@ test_that("styleSheets", {
 test_that("rdom-rcall-simple", {
     page <- htmlPage()
     p <- appendChild(page, htmlNode("<p>test</p>"), response=nodePtr())
-    assign("f", (function() { x <- 1; function(y) x <<- y })(), 
+    assign("f", (function() { x <- 1; function(y, ...) x <<- y })(), 
            envir=.GlobalEnv)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", "test", [ "string" ], null)')
@@ -523,7 +522,8 @@ test_that("rdom-rcall-simple", {
     click(page, p)
     Sys.sleep(.5)
     expect_equal(get("x", environment(f)), TRUE)
-    assign("f3", (function() { x <- 1; function(a, b, c) x <<- c(a, b, c) })(), 
+    assign("f3",
+           (function() { x <- 1; function(a, b, c, ...) x <<- c(a, b, c) })(), 
            envir=.GlobalEnv)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f3", [ "1", "two", "3" ], [ "string" ], null)')
@@ -558,7 +558,8 @@ test_that("rdom-rcall-json", {
     Sys.sleep(.5)
     expect_equal(get("x", environment(f)),
                  data.frame(b="test", c=1, stringsAsFactors=FALSE))
-    assign("f2", (function() { x <- 1; function(a, b) x <<- list(a, b) })(), 
+    assign("f2",
+           (function() { x <- 1; function(a, b, ...) x <<- list(a, b) })(), 
            envir=.GlobalEnv)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f2", { "a": "test", "b": 1 }, [ "JSON" ],

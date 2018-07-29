@@ -252,7 +252,8 @@ handleMessage <- function(msgJSON, ws) {
         args <- mapply(DOMresponse, msg$body$args, msg$body$argsType,
                        MoreArgs=list(pageID=msg$pageID),
                        SIMPLIFY=FALSE, USE.NAMES=FALSE)
-        result <- do.call(msg$body$fn, args)
+        callback <- getRegisteredCallback(msg$body$fn)
+        result <- do.call(callback, c(args, list(pageID=msg$pageID)))
         msg <- list(type="RESPONSE",
                     tag=msg$tag,
                     body=result)

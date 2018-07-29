@@ -9,5 +9,5 @@
 // @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/{{{pkgVersion}}}/JS/RDOM.js
 // @grant       none
 // ==/UserScript==
-RDOM.init("52000", "-1");
+RDOM.init("127.0.0.1", "52000", "-1");
 window.RDOM = RDOM;
