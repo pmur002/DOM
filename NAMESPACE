@@ -8,8 +8,8 @@ importFrom("utils",
 
 importFrom("httpuv",
            "service",
-           "startDaemonizedServer",
-           "stopDaemonizedServer")
+           "startServer",
+           "stopServer")
 
 importFrom("jsonlite",
            "fromJSON",

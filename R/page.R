@@ -75,7 +75,7 @@ killClient <- function(client, pageID) {
 }
 
 # If 'port' is NULL, randomly select a port
-startServer <- function(pageID, host, app, client,
+startDOMServer <- function(pageID, host, app, client,
                         port=NULL, body="", tag=NULL) {
     # Fail immediately if port is specified and is already in use by
     # an existing page
@@ -95,9 +95,8 @@ startServer <- function(pageID, host, app, client,
             port <- selectPort()
         }
         result <-
-            try(startDaemonizedServer("0.0.0.0", port,
-                                      client$app(pageID, host, port,
-                                                 body, tag)),
+            try(startServer("0.0.0.0", port,
+                            client$app(pageID, host, port, body, tag)),
                 silent=TRUE)
         attempts <- attempts + 1
         if (!inherits(result, "try-error")) {
@@ -125,7 +124,7 @@ htmlPage <- function(html="", host="127.0.0.1",
     addRequest(tag, FALSE, NULL, "NULL", pageID)
     ## Start R server to handle web socket activity
     ## (and possibly serve initial HTML)
-    startServer(pageID, host, client$app, client, body=html, tag=tag)
+    startDOMServer(pageID, host, client$app, client, body=html, tag=tag)
     port <- pageInfo(pageID)$port
     ## Use 127.0.0.1 rather than 'localhost' to keep PhantomJS happy (?)
     client$run(paste0("http://", host, ":", port, "/"), host, port, tag=tag)
@@ -149,7 +148,7 @@ filePage <- function(file, client=getOption("DOM.client")) {
         file <- paste0("file://", file)
     }
     addRequest("-1", FALSE, NULL, "NULL", pageID)
-    startServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
+    startDOMServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
     client$run(file, "127.0.0.1", 52000, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
     ## Register pageID with browser
@@ -169,7 +168,7 @@ urlPage <- function(url, client=getOption("DOM.client")) {
         url <- paste0("http://", url)
     }
     addRequest("-1", FALSE, NULL, "NULL", pageID)
-    startServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
+    startDOMServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
     client$run(url, "127.0.0.1", 52000, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
     ## Register pageID with browser
@@ -181,7 +180,7 @@ urlPage <- function(url, client=getOption("DOM.client")) {
 
 closePage <- function(pageID) {
     pageContent <- killPage(pageID)
-    stopDaemonizedServer(pageInfo(pageID)$handle)
+    stopServer(pageInfo(pageID)$handle)
     unregisterPage(pageID)
     invisible(pageContent)
 }

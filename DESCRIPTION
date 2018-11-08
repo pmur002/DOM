@@ -5,7 +5,7 @@ Authors@R: person("Paul", "Murrell", role = c("cre", "aut"),
                    email = "paul@stat.auckland.ac.nz")
 Description: Functions to connect to a web browser and manipulate the DOM
              for the page loaded in the browser.
-Imports: methods, httpuv, jsonlite, utils, whisker
+Imports: methods, httpuv (>= 1.4.5), jsonlite, utils, whisker
 Suggests: covr, testthat, xtable, XML
 Collate: classes.R callback.R client.R page.R DOM.R property.R CSS.R app.R phantom.R zzz.R
 License: file LICENSE
