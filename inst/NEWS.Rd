@@ -2,6 +2,15 @@
 \title{NEWS file for the DOM package}
 \encoding{UTF-8}
 
+\section{Changes in version 0.6-1}{
+  \itemize{
+    \item Update \pkg{DOM} for changes in \pkg{httpuv},
+    particularly to add \code{service} within
+    \code{waitForResponse} so that
+    client (browser) requests are handled if R is blocking (to
+    wait for request to be handled).
+  }
+}
 \section{Changes in version 0.6}{
   \itemize{
     \item New \code{client} argument for \code{htmlPage()} (and

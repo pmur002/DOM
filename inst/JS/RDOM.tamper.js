@@ -5,8 +5,8 @@
 // @version     1
 // @include     http://pmur002.neocities.org/*
 // @include     file:///*
-// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/0.6/JS/css-selector-generator.min.js
-// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/0.6/JS/RDOM.js
+// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/0.6.1/JS/css-selector-generator.min.js
+// @require     https://www.stat.auckland.ac.nz/~paul/R/DOM/0.6.1/JS/RDOM.js
 // @grant       none
 // ==/UserScript==
 RDOM.init("127.0.0.1", "52000", "-1");

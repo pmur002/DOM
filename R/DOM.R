@@ -269,7 +269,9 @@ handleMessage <- function(msgJSON, ws) {
 waitForResponse <- function(tag, limit=getOption("DOM.limit"), onTimeout=NULL) {
     ptm <- proc.time()
     while (requestPending(tag)) {
-        Sys.sleep(.1)
+        ## Sys.sleep(.1)
+        ## Make sure that requests are service while we are waiting
+        service(100)
         if ((proc.time() - ptm)[3] > limit) {
             ## Give up on this request
             removeRequest(tag)
