@@ -10,7 +10,7 @@
   Open a web page in a browser and provide a handle to that web page.
 }
 \usage{
-htmlPage(html = "", client = getOption("DOM.client"))
+htmlPage(html = "", host = "127.0.0.1", client = getOption("DOM.client"))
 filePage(file, client = getOption("DOM.client"))
 urlPage(url, client = getOption("DOM.client"))
 }
@@ -19,6 +19,13 @@ urlPage(url, client = getOption("DOM.client"))
     A character vector containing HTML code, which will be used as the
     \emph{body} of
     the web page that is opened.
+  }
+  \item{host}{
+    The client host.  By default this is the localhost, but in theory
+    it allows for a remote client.
+  }
+  \item{client}{
+    A definition of the client, as created by \code{makeClient}.
   }
   \item{file}{
     A path to a file on the local file system, which should be a text
