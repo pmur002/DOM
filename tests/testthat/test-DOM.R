@@ -530,6 +530,7 @@ test_that("rdom-rcall-simple", {
     click(page, p)
     Sys.sleep(.5)
     expect_equal(get("x", environment(f3)), c("1", "two", "3"))
+    closePage(page)
 })
 
 ## Test passing JSON object in RDOM.Rcall()
@@ -567,5 +568,6 @@ test_that("rdom-rcall-json", {
     click(page, p)
     Sys.sleep(.5)
     expect_equal(get("x", environment(f2)), list("test", 1))
+    closePage(page)
 })
 
