@@ -76,7 +76,7 @@ killClient <- function(client, pageID) {
 
 # If 'port' is NULL, randomly select a port
 startDOMServer <- function(pageID, host, app, client,
-                        port=NULL, body="", tag=NULL) {
+                        port=NULL, body="", head="", tag=NULL) {
     # Fail immediately if port is specified and is already in use by
     # an existing page
     if (!is.null(port) && portInUse(port)) {
@@ -96,7 +96,7 @@ startDOMServer <- function(pageID, host, app, client,
         }
         result <-
             try(startServer("0.0.0.0", port,
-                            client$app(pageID, host, port, body, tag)),
+                            client$app(pageID, host, port, body, head, tag)),
                 silent=TRUE)
         attempts <- attempts + 1
         if (!inherits(result, "try-error")) {
@@ -116,7 +116,7 @@ startDOMServer <- function(pageID, host, app, client,
 # supplying the <body> of the initial web page content
 # (default is a blank page)
 # PLUS open web socket between R and browser
-htmlPage <- function(html="", host="127.0.0.1",
+htmlPage <- function(html="", head="", host="127.0.0.1",
                      client=getOption("DOM.client")) {
     pageID <- getPageID()
     ## Register a request so can wait for a response from browser
@@ -124,7 +124,8 @@ htmlPage <- function(html="", host="127.0.0.1",
     addRequest(tag, FALSE, NULL, "NULL", pageID)
     ## Start R server to handle web socket activity
     ## (and possibly serve initial HTML)
-    startDOMServer(pageID, host, client$app, client, body=html, tag=tag)
+    startDOMServer(pageID, host, client$app, client,
+                   body=html, head=head, tag=tag)
     port <- pageInfo(pageID)$port
     ## Use 127.0.0.1 rather than 'localhost' to keep PhantomJS happy (?)
     client$run(paste0("http://", host, ":", port, "/"), host, port, tag=tag)
@@ -148,7 +149,8 @@ filePage <- function(file, client=getOption("DOM.client")) {
         file <- paste0("file://", file)
     }
     addRequest("-1", FALSE, NULL, "NULL", pageID)
-    startDOMServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
+    startDOMServer(pageID, "127.0.0.1", nullApp, client,
+                   port=52000, tag="-1")
     client$run(file, "127.0.0.1", 52000, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
     ## Register pageID with browser
@@ -168,7 +170,8 @@ urlPage <- function(url, client=getOption("DOM.client")) {
         url <- paste0("http://", url)
     }
     addRequest("-1", FALSE, NULL, "NULL", pageID)
-    startDOMServer(pageID, "127.0.0.1", nullApp, client, 52000, tag="-1")
+    startDOMServer(pageID, "127.0.0.1", nullApp, client,
+                   port=52000, tag="-1")
     client$run(url, "127.0.0.1", 52000, tag="-1")
     waitForResponse("-1", onTimeout=function() closePage(pageID))
     ## Register pageID with browser

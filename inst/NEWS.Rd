@@ -2,16 +2,7 @@
 \title{NEWS file for the DOM package}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-1}{
-  \itemize{
-    \item Update \pkg{DOM} for changes in \pkg{httpuv},
-    particularly to add \code{service} within
-    \code{waitForResponse} so that
-    client (browser) requests are handled if R is blocking (to
-    wait for request to be handled).
-  }
-}
-\section{Changes in version 0.6}{
+\section{Changes in version 0.6-0}{
   \itemize{
     \item New \code{client} argument for \code{htmlPage()} (and
     \code{filePage()} and \code{urlPage()}).  This replaces (and
@@ -21,6 +12,19 @@
     \item New \code{makeClient()} function for defining new clients.
     \item New \code{registerCallback()} function (so that callbacks do
     not have to pollute global workspace).
+    \item Update \pkg{DOM} for changes in \pkg{httpuv},
+    particularly to add \code{service} within
+    \code{waitForResponse} so that
+    client (browser) requests are handled if R is blocking (to
+    wait for request to be handled).
+    \item \code{htmlPage} can now serve
+    files from \code{/assets} directory (so we can, for example,
+    generate HTML with external images or fonts).
+    \item Added \code{head} argument to \code{htmlPage} so that
+    head element content can be supplied (as well as body element
+    content).
+    \item \code{htmlPage} with \code{browserClient} now
+    only calls \code{RDOM.init} once the page has fully loaded.
   }
 }
 \section{Changes in version 0.5-1}{

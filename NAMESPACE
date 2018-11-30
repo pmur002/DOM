@@ -18,6 +18,11 @@ importFrom("jsonlite",
 importFrom("whisker",
            "whisker.render")
 
+importFrom("Rook",
+           "App",
+           "Builder",
+           "Static")
+
 export(
     ## Start/stop pages
     "htmlPage",
