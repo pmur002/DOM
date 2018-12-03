@@ -20,7 +20,7 @@ test_that("createElement", {
     appendChild(page, htmlNode("<p>test</p>"), ptr)
     appendChild(page, ptr)
     pageContent <- closePage(page)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body><div><p>test</p></div></body></html>")
     # Check that asking (stupidly) for CSS or XPath result does not
     # fail messily
@@ -36,7 +36,7 @@ test_that("createElement", {
     appendChild(page, svgNode('<circle xmlns="http://www.w3.org/2000/svg" cx="50" cy="50" r="50"/>'), parent=ptr, ns=TRUE, response=svgNode())
     appendChild(page, ptr, ns=TRUE, response=svgNode())
     pageContent <- closePage(page)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle xmlns="http://www.w3.org/2000/svg" cx="50" cy="50" r="50"></circle></svg></body></html>')
 })
     
@@ -45,7 +45,7 @@ test_that("appendChild", {
     headlessPage <- htmlPage()
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body><p>test</p></body></html>")
     # Append CSS child
     headlessPage <- htmlPage()
@@ -53,7 +53,7 @@ test_that("appendChild", {
     appendChild(headlessPage, htmlNode("<p>test2<p>"))
     appendChild(headlessPage, css("p"))
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body><p>test2</p><p>test</p></body></html>")
     # Append HTML child and return CSS
     headlessPage <- htmlPage()
@@ -78,7 +78,7 @@ test_that("appendChild", {
                 svgNode('<svg xmlns="http://www.w3.org/2000/svg"><circle/></svg>'),
                 ns=TRUE)
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><circle></circle></svg></body></html>')
     # Append HTML within SVG within HTML
     headlessPage <- htmlPage()
@@ -90,7 +90,7 @@ test_that("appendChild", {
                 ns=TRUE,
                 parent=css("#fo"))
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><svg xmlns="http://www.w3.org/2000/svg"><foreignObject id="fo"><p xmlns="http://www.w3.org/1999/xhtml">test</p></foreignObject></svg></body></html>')
     # Append JavaScript
     headlessPage <- htmlPage()
@@ -99,7 +99,7 @@ test_that("appendChild", {
     pageContent <- closePage(headlessPage)
     ## Not just the <script>, but also the <p> that the script creates
     ## (to show that the script has been added AND run)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><script>document.body.appendChild(document.createElement("p"));</script><p></p></body></html>')    
 })
 
@@ -124,7 +124,7 @@ test_that("appendChild with callback with appendChild", {
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body><p>test</p><p>test2</p></body></html>")
 })
 
@@ -135,7 +135,7 @@ test_that("removeChild", {
     appendChild(headlessPage, htmlNode("<p>test2<p>"))
     removeChild(headlessPage, css("p"))
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body><p>test2</p></body></html>")
     # Remove child that exists (parent implicit) and return CSS
     headlessPage <- htmlPage()
@@ -186,7 +186,7 @@ test_that("replaceChild", {
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     replaceChild(headlessPage, htmlNode("<p>test2</p>"), oldChild=css("p"))
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body><p>test2</p></body></html>")
 })
     
@@ -200,7 +200,7 @@ test_that("attributes", {
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     setAttribute(headlessPage, css("p"), "onclick", 'alert("test")')
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><p onclick="alert(&quot;test&quot;)">test</p></body></html>')
 })
 
@@ -231,7 +231,7 @@ test_that("getElementsByTagName", {
     expect_equal(unclass(elts), c("<p>p1</p>", "<p>p2</p>"))
     expect_equal(as.character(css),
                  c("body > :nth-child(1)", "body > :nth-child(2)"))
-    expect_equal(unclass(all),
+    expect_equal(minifyHTML(all, collapse=FALSE),
                  c("<html><head></head><body><p>p1</p><p>p2</p></body></html>",
                    "<head></head>",
                    "<body><p>p1</p><p>p2</p></body>",
@@ -272,7 +272,7 @@ test_that("click", {
     # Call is asynchronous, so pause for it to finish
     Sys.sleep(.2)
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><p onclick="this.setAttribute(&quot;style&quot;, &quot;color: red&quot;)" style="color: red">test</p></body></html>')
 })
 
@@ -291,8 +291,8 @@ test_that("Rcall", {
     call <- 'RDOM.Rcall("recordRequest", this, [ "HTML", "CSS" ], null)'
     setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
-    # Call is asynchronous, so pause for it to finish
-    Sys.sleep(.2)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(200)
     closePage(headlessPage)
     model <- '<p onclick="RDOM.Rcall(&quot;recordRequest&quot;, this, [ &quot;HTML&quot;, &quot;CSS&quot; ], null)">test</p>'
     expect_equal(unclass(element), model) 
@@ -342,15 +342,17 @@ test_that("Rcall", {
                          async=TRUE)
         }
     }
-    assign("replaceWithTable", callbackGen(headlessPage), envir=.GlobalEnv)
+    replaceWithTable <- callbackGen(headlessPage)
+    registerCallback(replaceWithTable)
     appendChild(headlessPage, htmlNode("<p>test<p>"))
     call <- 'RDOM.Rcall("replaceWithTable", this, [ "HTML", "CSS" ], null)'
     setAttribute(headlessPage, css("p"), "onclick", call)
     click(headlessPage, css("p"))
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     pageContent <- closePage(headlessPage)
     expect_equal(minifyHTML(pageContent),
-                 '<html><head></head><body><tableborder="1"><tbody><tr><th></th><th>V1</th></tr><tr><tdalign="right">test</td><tdalign="right">1</td></tr></tbody></table></body></html>')
+                 '<html><head></head><body><table border="1"><tbody><tr><th></th><th>V1</th></tr><tr><td align="right">test</td><td align="right">1</td></tr></tbody></table></body></html>')
 })
     
 test_that("nodePtr", {
@@ -361,7 +363,7 @@ test_that("nodePtr", {
     # Use DOM_node_ptr to specify a node 
     setAttribute(headlessPage, ptr, "style", "color: red")
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><p style="color: red">test</p></body></html>')
     
     ## Check that DOM_node_ptr does not change on reuse
@@ -380,7 +382,7 @@ test_that("XPath", {
     # Use DOM_node_ptr to specify a node 
     setAttribute(headlessPage, xpath, "style", "color: red")
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  '<html><head></head><body><p style="color: red">test</p></body></html>')
 })
 
@@ -504,31 +506,34 @@ test_that("styleSheets", {
 test_that("rdom-rcall-simple", {
     page <- htmlPage()
     p <- appendChild(page, htmlNode("<p>test</p>"), response=nodePtr())
-    assign("f", (function() { x <- 1; function(y, ...) x <<- y })(), 
-           envir=.GlobalEnv)
+    f <- (function() { x <- 1; function(y, ...) x <<- y })()
+    registerCallback(f)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", "test", [ "string" ], null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     print(get("x", environment(f)))
     expect_equal(get("x", environment(f)), "test")
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", 1, [ "number" ], null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f)), 1)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", true, [ "boolean" ], null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f)), TRUE)
-    assign("f3",
-           (function() { x <- 1; function(a, b, c, ...) x <<- c(a, b, c) })(), 
-           envir=.GlobalEnv)
+    f3 <- (function() { x <- 1; function(a, b, c, ...) x <<- c(a, b, c) })()
+    registerCallback(f3)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f3", [ "1", "two", "3" ], [ "string" ], null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f3)), c("1", "two", "3"))
     closePage(page)
 })
@@ -537,36 +542,42 @@ test_that("rdom-rcall-simple", {
 test_that("rdom-rcall-json", {
     page <- htmlPage()
     p <- appendChild(page, htmlNode("<p>test</p>"), response=nodePtr())
+    f <- (function() { x <- 1; function(y, ...) x <<- y })()
+    registerCallback(f)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", "test1", [ "JSON" ], null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f)), "test1")
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", [ "test2" ], [ "JSON" ], null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f)), "test2")
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", { "a": [ 1, 2, 3 ] }, [ "JSON" ], null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f)), list(1:3))
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f", { "a": { "b": "test", "c": 1 } }, [ "JSON" ],
                              null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f)),
                  data.frame(b="test", c=1, stringsAsFactors=FALSE))
-    assign("f2",
-           (function() { x <- 1; function(a, b, ...) x <<- list(a, b) })(), 
-           envir=.GlobalEnv)
+    f2 <- (function() { x <- 1; function(a, b, ...) x <<- list(a, b) })()
+    registerCallback(f2)
     setAttribute(page, p, "onclick",
                  'RDOM.Rcall("f2", { "a": "test", "b": 1 }, [ "JSON" ],
                              null)')
     click(page, p)
-    Sys.sleep(.5)
+    ## Make sure RDOM.Rcall request from browser is serviced
+    httpuv::service(500)
     expect_equal(get("x", environment(f2)), list("test", 1))
     closePage(page)
 })

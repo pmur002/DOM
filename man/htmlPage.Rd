@@ -10,7 +10,8 @@
   Open a web page in a browser and provide a handle to that web page.
 }
 \usage{
-htmlPage(html = "", host = "127.0.0.1", client = getOption("DOM.client"))
+htmlPage(html = "", head = "",
+         host = "127.0.0.1", client = getOption("DOM.client"))
 filePage(file, client = getOption("DOM.client"))
 urlPage(url, client = getOption("DOM.client"))
 }
@@ -19,6 +20,10 @@ urlPage(url, client = getOption("DOM.client"))
     A character vector containing HTML code, which will be used as the
     \emph{body} of
     the web page that is opened.
+  }
+  \item{head}{
+    A character vector that will be added to the \emph{head} of the web
+    page.
   }
   \item{host}{
     The client host.  By default this is the localhost, but in theory

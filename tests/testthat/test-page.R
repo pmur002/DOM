@@ -9,7 +9,7 @@ context("opening (and closing) web pages")
 test_that("page start (and stop) works", {    
     headlessPage <- htmlPage()
     pageContent <- closePage(headlessPage)
-    expect_equal(unclass(pageContent),
+    expect_equal(minifyHTML(pageContent),
                  "<html><head></head><body></body></html>")
 
     fileURL <- system.file("HTML", "RDOM.html", package="DOM")
@@ -24,6 +24,6 @@ test_that("page start (and stop) works", {
     urlContents <- paste(readLines(url), collapse="")
     pageContent <- closePage(headlessURL)
     expect_equal(minifyHTML(pageContent),
-                 gsub("<!DOCTYPEhtml>", "", minifyHTML(urlContents)))
+                 gsub("<!DOCTYPE html>", "", minifyHTML(urlContents)))
 })
 
